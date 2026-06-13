@@ -1,0 +1,10 @@
+player_id,real_name,title,federation,fide_rating,lichess_username,games_fetched,fetched_at_utc
+1,"GM Vignesh, N R",GM,IND,2515,Goodgoodchess,83,2026-06-11T07:01:00+00:00
+2,"GM Shyaam, Nikhil P",GM,IND,2435,,0,
+3,"IM Vignesh, Advaith Vemula",IM,IND,2421,,0,
+4,"IM Tan, Jun Ying",IM,MAS,2404,,0,
+5,"IM Chan, Kim Yew",IM,MAS,2360,Smirnov85,49,2026-06-11T07:01:05+00:00
+6,"IM Susilodinata, Andrean",IM,INA,2360,,0,
+7,"GM Thejkumar, M. S.",GM,IND,2358,,0,
+8,"FM Ang, Ern Jie Anderson",FM,MAS,2309,,0,
+9,FM Arlan Cabe,FM,PHI,2298,,0,
