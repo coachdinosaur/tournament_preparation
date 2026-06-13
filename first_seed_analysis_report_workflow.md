@@ -259,6 +259,348 @@ Avoid:
 - Recommending a line Dino does not already understand.
 - Mixing result-score targets and engine-accuracy targets without explaining the difference.
 
+## Optimization Notes For The Second Seed
+
+Use this first-seed workflow as the structure for the second seed, not as a source of copied conclusions. The second seed needs a fresh evidence pass from his own games.
+
+### Second Seed Target
+
+- Player: GM Shyaam, Nikhil P
+- Player ID: `3`
+- Main dossier after export: `manual_sections/Opponent_GM_Shyaam_Nikhil_P.md`
+- Suggested report files:
+  - `second_seed_report.md`
+  - `second_seed_report.docx`
+- Suggested report title: `Second Seed Report: GM Shyaam, Nikhil P`
+
+### Analysis Command
+
+Analyze all available games for the second seed at the same practical depth used for the first seed:
+
+```powershell
+python prep_manual_app.py --analyze --scope player --player 3 --depth 12 --export
+```
+
+After the command finishes, verify that the Shyaam dossier reports:
+
+- Total games
+- OTB PGN games
+- Lichess metadata games
+- Engine-analyzed games
+- Pending games
+- Overall ACPL
+- Phase ACPL
+- Profile confidence lines
+- Top weakness categories
+
+If pending games remain, do not hide that in the report. State the coverage directly.
+
+### Reusable Report Checklist
+
+For the second seed, collect the same fixed evidence fields before writing prose:
+
+- Game coverage: total games, OTB PGNs, Lichess metadata, analyzed count, pending count.
+- Opening profile: strongest lines, candidate weak lines, color split, and sample counts.
+- Phase profile: opening, middlegame, and endgame ACPL with mistake counts.
+- Practical repair lines: what Dino should review or avoid before the game.
+- Structure targets: structures Dino can realistically reach from his current repertoire.
+- Structure avoids: lines where the opponent's sample looks too clean or too comfortable.
+- Endgame profile: top weakness categories and 3 to 5 clean sample positions.
+- Confidence notes: high, medium, or low confidence for each major claim.
+
+### Writing Rules For The Second Seed
+
+- Do not copy Vignesh-specific opening or endgame conclusions into Shyaam's report.
+- Keep all labels evidence-based: every strength, weakness, or tendency needs a number, sample count, phase score, or concrete game example.
+- Separate engine-analyzed OTB PGNs from Lichess metadata.
+- Include the engine depth near tactical or accuracy claims.
+- Prefer "candidate target" and "sample suggests" when the evidence is limited.
+- Tie recommendations to Dino's actual preparation, not to abstract engine preferences.
+
+### DOCX Reuse
+
+The embedded DOCX builder below can be reused for the second seed by changing only the config values:
+
+- `SOURCE_MD = "second_seed_report.md"`
+- `OUTPUT_DOCX = "second_seed_report.docx"`
+- `REPORT_TITLE = "Second Seed Report: GM Shyaam, Nikhil P"`
+
+Longer term, extract the embedded builder into a permanent `build_standalone_report.py` script so each seed report can be regenerated with config changes instead of copying code.
+
+## Producing the Report Files (Markdown + Standalone DOCX)
+
+Each seed report ships as **two files at the repo root**:
+
+1. `<seed>_report.md` — the curated 6-section report (see *Turning This Into A Report* above).
+2. `<seed>_report.docx` — the **same** report as a standalone Word file, formatted in this manual's
+   style (same fonts, heading styles, bullets, bordered tables).
+
+> **Do not modify `Tournament_Preparation_Manual.docx`.** The standalone `.docx` only *borrows* the
+> manual's look by opening it as a **read-only style template**; the manual file itself is never
+> written to. "Format it like the manual" — not "append it to the manual."
+
+### Step 1 — Write the curated Markdown
+
+Author `<seed>_report.md` following the 6-section structure and the Report Quality Rules above.
+
+### Step 2 — Generate the standalone DOCX
+
+Needs `python-docx` (already installed; otherwise `pip install python-docx`). Save the script below
+as `build_standalone_report.py` **in the project root**, edit the three CONFIG lines at the top for
+the seed, and run:
+
+```powershell
+python -X utf8 build_standalone_report.py
+```
+
+```python
+#!/usr/bin/env python
+"""Render <seed>_report.md as a standalone <seed>_report.docx, styled from the Tournament
+Preparation Manual (used READ-ONLY as a template). The manual itself is never modified."""
+import re
+from pathlib import Path
+from docx import Document
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
+from docx.shared import Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+ROOT = Path(__file__).resolve().parent
+
+# ===== CONFIG — change these three lines per seed =====
+MD         = ROOT / "first_seed_report.md"
+OUT        = ROOT / "first_seed_report.docx"
+HEADER_NEW = "First Seed Report: GM Vignesh, N R"     # replaces the manual's running-header title
+# ======================================================
+
+TEMPLATE     = ROOT / "Tournament_Preparation_Manual.docx"   # read-only style template; never written
+HEADER_OLD   = "Tournament Preparation Manual"
+BULLET_NUMID = 2
+
+LINK_RE = re.compile(r'\[([^\]]+)\]\([^)]*\)')
+def strip_links(s): return LINK_RE.sub(r'\1', s)
+
+# ---- recursive inline parser: **bold**, *italic*, `code` (code may nest in emphasis) ----
+def _fmt(b, i, m):
+    d = {}
+    if b: d["bold"] = True
+    if i: d["italic"] = True
+    if m: d["mono"] = True
+    return d
+def _emit(text, bold, italic, out):
+    while text:
+        m = re.search(r'(\*\*|\*|`)', text)
+        if not m:
+            out.append((text, _fmt(bold, italic, False))); return
+        if m.start() > 0:
+            out.append((text[:m.start()], _fmt(bold, italic, False)))
+        mk = m.group(1); rest = text[m.end():]
+        if mk == '`':
+            j = rest.find('`')
+            if j < 0: out.append(('`' + rest, _fmt(bold, italic, False))); return
+            out.append((rest[:j], _fmt(bold, italic, True))); text = rest[j+1:]
+        elif mk == '**':
+            j = rest.find('**')
+            if j < 0: out.append(('**' + rest, _fmt(bold, italic, False))); return
+            _emit(rest[:j], True, italic, out); text = rest[j+2:]
+        else:
+            j = rest.find('*')
+            if j < 0: out.append(('*' + rest, _fmt(bold, italic, False))); return
+            _emit(rest[:j], bold, True, out); text = rest[j+1:]
+def inline_runs(text):
+    text = strip_links(text).replace("⚠️", "").replace("⚠", "").strip()
+    out = []; _emit(text, False, False, out)
+    return out or [("", {})]
+
+# ---- block parser (handles hard-wrapped list items / paragraphs) ----
+def cells(row):
+    row = row.strip()
+    if row.startswith("|"): row = row[1:]
+    if row.endswith("|"): row = row[:-1]
+    return [c.strip() for c in row.split("|")]
+def is_block_start(line):
+    s = line.strip()
+    if not s: return True
+    if re.match(r'#{1,6}\s', s): return True
+    if s.startswith(("|", ">")): return True
+    if re.fullmatch(r'-{3,}', s): return True
+    if re.match(r'-\s+', s) or re.match(r'\d+\.\s+', s): return True
+    return False
+def collect_cont(lines, i):
+    n = len(lines); buf = []
+    while i < n and not is_block_start(lines[i]):
+        buf.append(lines[i].strip()); i += 1
+    return " ".join(x for x in buf if x), i
+def is_sep(line):
+    s = line.strip()
+    return bool(s) and set(s) <= set("|:- ") and "-" in s
+def parse_blocks(md):
+    lines = md.split("\n"); blocks = []; i = 0; n = len(lines)
+    while i < n:
+        s = lines[i].rstrip()
+        if not s.strip(): i += 1; continue
+        if re.fullmatch(r'-{3,}', s.strip()): i += 1; continue
+        m = re.match(r'(#{1,6})\s+(.*)', s)
+        if m: blocks.append(("h", len(m.group(1)), m.group(2).strip())); i += 1; continue
+        if s.lstrip().startswith("|") and i+1 < n and is_sep(lines[i+1]):
+            tbl = [s]; sep = lines[i+1]; j = i + 2
+            while j < n and lines[j].lstrip().startswith("|"): tbl.append(lines[j]); j += 1
+            aligns = ["center" if c.startswith(":") and c.endswith(":") else "right" if c.endswith(":") else "left"
+                      for c in cells(sep)]
+            blocks.append(("table", cells(tbl[0]), aligns, [cells(r) for r in tbl[1:]])); i = j; continue
+        if s.lstrip().startswith(">"):
+            q = []
+            while i < n and lines[i].lstrip().startswith(">"):
+                q.append(re.sub(r'^\s*>\s?', '', lines[i])); i += 1
+            blocks.append(("quote", " ".join(x.strip() for x in q if x.strip()))); continue
+        m = re.match(r'\s*-\s+(.*)', s)
+        if m:
+            extra, i = collect_cont(lines, i + 1)
+            blocks.append(("bullet", (m.group(1).strip() + " " + extra).strip())); continue
+        m = re.match(r'\s*(\d+)\.\s+(.*)', s)
+        if m:
+            extra, i = collect_cont(lines, i + 1)
+            blocks.append(("number", m.group(1), (m.group(2).strip() + " " + extra).strip())); continue
+        extra, i = collect_cont(lines, i + 1)
+        blocks.append(("p", (s.strip() + " " + extra).strip()))
+    return blocks
+
+def bullet_is_real(doc):
+    try: numbering = doc.part.numbering_part.element
+    except Exception: return False
+    num = next((e for e in numbering.findall(qn('w:num')) if e.get(qn('w:numId')) == str(BULLET_NUMID)), None)
+    if num is None: return False
+    absId = num.find(qn('w:abstractNumId')).get(qn('w:val'))
+    for ab in numbering.findall(qn('w:abstractNum')):
+        if ab.get(qn('w:abstractNumId')) == absId:
+            for lvl in ab.findall(qn('w:lvl')):
+                if lvl.get(qn('w:ilvl')) == "0":
+                    nf = lvl.find(qn('w:numFmt'))
+                    return nf is not None and nf.get(qn('w:val')) == "bullet"
+    return False
+
+# ---- builders ----
+def add_runs(p, runs):
+    for text, f in runs:
+        r = p.add_run(text)
+        if f.get("bold"):   r.bold = True
+        if f.get("italic"): r.italic = True
+        if f.get("mono"):   r.font.name = "Consolas"
+    return p
+def set_pstyle(p, style_id):
+    pPr = p._p.get_or_add_pPr()
+    ex = pPr.find(qn('w:pStyle'))
+    if ex is not None: pPr.remove(ex)
+    e = OxmlElement('w:pStyle'); e.set(qn('w:val'), style_id); pPr.insert(0, e)
+def set_bullet(p):
+    pPr = p._p.get_or_add_pPr()
+    numPr = OxmlElement('w:numPr')
+    il = OxmlElement('w:ilvl'); il.set(qn('w:val'), "0"); numPr.append(il)
+    nid = OxmlElement('w:numId'); nid.set(qn('w:val'), str(BULLET_NUMID)); numPr.append(nid)
+    pPr.append(numPr)
+def style_table(tbl):
+    tblPr = tbl.tblPr
+    w = OxmlElement('w:tblW'); w.set(qn('w:type'), 'dxa'); w.set(qn('w:w'), '9360'); tblPr.append(w)
+    b = OxmlElement('w:tblBorders')
+    for edge in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
+        e = OxmlElement('w:' + edge); e.set(qn('w:val'), 'single')
+        e.set(qn('w:color'), 'auto'); e.set(qn('w:sz'), '4'); b.append(e)
+    tblPr.append(b)
+
+# ---- main ----
+doc = Document(str(TEMPLATE))
+real_bullets = bullet_is_real(doc)
+
+# resolve style IDs from the template body (apply by ID, not display name)
+defined_ids = {s.style_id for s in doc.styles if s.style_id}
+level_to_id = {}; list_id = "ListParagraph"
+for p in doc.paragraphs:
+    nm = p.style.name if p.style else ""
+    pPr = p._p.find(qn('w:pPr')); ps = pPr.find(qn('w:pStyle')) if pPr is not None else None
+    if ps is None: continue
+    sid = ps.get(qn('w:val'))
+    if nm.startswith("Heading"):
+        lvl = nm.replace("Heading", "").strip()
+        if lvl.isdigit(): level_to_id.setdefault(int(lvl), sid)
+    elif nm == "List Paragraph": list_id = sid
+title_id = "Title" if "Title" in defined_ids else level_to_id.get(1, "Heading1")
+def style_for(report_level):
+    if report_level == 1: return title_id            # report H1 -> Title
+    t = report_level - 1                             # report H2 -> Heading1, H3 -> Heading2 ...
+    return level_to_id.get(t) or (("Heading%d" % t) if ("Heading%d" % t) in defined_ids else level_to_id.get(1, "Heading1"))
+
+# clear the body but keep the trailing section properties (page setup + header/footer refs)
+body = doc.element.body
+sectPr = body.find(qn('w:sectPr'))
+for child in list(body):
+    if child.tag in (qn('w:p'), qn('w:tbl')): body.remove(child)
+
+def emit_para():
+    p = doc.add_paragraph(); sectPr.addprevious(p._p); return p
+def emit_table(rows, cols):
+    t = doc.add_table(rows=rows, cols=cols); sectPr.addprevious(t._tbl); return t
+
+for blk in parse_blocks(MD.read_text(encoding="utf-8")):
+    kind = blk[0]
+    if kind == "h":
+        p = emit_para(); set_pstyle(p, style_for(blk[1])); add_runs(p, inline_runs(blk[2]))
+    elif kind == "p":
+        add_runs(emit_para(), inline_runs(blk[1]))
+    elif kind == "bullet":
+        p = emit_para(); set_pstyle(p, list_id)
+        if real_bullets: set_bullet(p); add_runs(p, inline_runs(blk[1]))
+        else: add_runs(p, [("•  ", {})] + inline_runs(blk[1]))
+    elif kind == "number":
+        p = emit_para(); set_pstyle(p, list_id)
+        add_runs(p, [(blk[1] + ".  ", {})] + inline_runs(blk[2]))
+    elif kind == "quote":
+        p = emit_para()
+        add_runs(p, [(t, {**f, "italic": True}) for t, f in inline_runs(blk[1])])
+        p.paragraph_format.left_indent = Pt(18)
+    elif kind == "table":
+        header, aligns, rows = blk[1], blk[2], blk[3]; nc = len(header)
+        tbl = emit_table(len(rows) + 1, nc)
+        for c, h in enumerate(header):
+            add_runs(tbl.cell(0, c).paragraphs[0], [(strip_links(h), {"bold": True})])
+        for ri, row in enumerate(rows):
+            for c in range(nc):
+                cp = tbl.cell(ri + 1, c).paragraphs[0]
+                add_runs(cp, inline_runs(row[c] if c < len(row) else ""))
+                if aligns[c] == "right":  cp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+                elif aligns[c] == "center": cp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        style_table(tbl._tbl)
+
+# relabel the inherited running header so the standalone file isn't titled as the whole manual
+for sec in doc.sections:
+    for p in sec.header.paragraphs:
+        for r in p.runs:
+            if HEADER_OLD in r.text:
+                r.text = r.text.replace(HEADER_OLD, HEADER_NEW)
+
+doc.save(str(OUT))
+print("saved ->", OUT.name)
+```
+
+### How it works (and the gotchas that matter when duplicating)
+
+- **Manual as a read-only template.** Opens the manual, clears its body in memory (removing every
+  paragraph/table but keeping the trailing `w:sectPr`, so page setup + header/footer survive), then
+  renders the report before that `sectPr`. The output inherits the manual's fonts, heading styles,
+  bullet list and table look. The manual on disk is never saved.
+- **Apply styles by styleId, not display name.** The manual has duplicate latent heading styles, so
+  `style="Heading 1"` raises `KeyError`. The script reads the body's real style IDs and maps report
+  **H1 → Title, H2 → Heading 1, H3 → Heading 2**.
+- **Bullets** reuse the manual's bullet list (`numId=2`); **tables** get full-width single-line
+  borders, a bold header row, and right-aligned numeric columns.
+- **Hard-wrapped Markdown is handled.** The parser merges multi-line (wrapped) list items and
+  paragraphs, so wrapping in the `.md` never splits a bullet or breaks an inline `code` span.
+- **Header is relabeled** so the standalone file doesn't claim to be the whole manual.
+
+### Duplicating for the next seed
+
+Edit the three CONFIG lines (`MD`, `OUT`, `HEADER_NEW`) — e.g. point them at `second_seed_report.md`
+→ `second_seed_report.docx` — and re-run. Nothing else changes.
+
 ## Next Player Workflow
 
 For the next seed, run the same player-scope pattern:
@@ -273,4 +615,6 @@ Then review:
 manual_sections/Opponent_GM_Shyaam_Nikhil_P.md
 ```
 
-Repeat one player at a time so each dossier becomes complete and easy to verify.
+Repeat one player at a time so each dossier becomes complete and easy to verify. Then produce that
+seed's two report files (`second_seed_report.md` + `second_seed_report.docx`) with the steps in
+*Producing the Report Files* above.
