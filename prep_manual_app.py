@@ -27,8 +27,14 @@ Usage
     python prep_manual_app.py            # starts http://localhost:8765
     python prep_manual_app.py --export   # headless: just write markdown
     python prep_manual_app.py --port 9000 --no-browser
+    python prep_manual_app.py --engine-check        # test the Stockfish UCI link
+    python prep_manual_app.py --analyze [--depth N]  # run engine analysis over stored games
+    python prep_manual_app.py --online ...           # opt in to Lichess explorer/cloud-eval
 
 No third-party packages required (Python 3.10+ standard library only).
+Optional engine analysis uses a local Stockfish binary (see find_stockfish());
+optional opening classification uses the bundled Lichess opening database in
+./openings/. Both degrade gracefully when absent.
 """
 
 from __future__ import annotations
@@ -38,10 +44,16 @@ import csv
 import datetime as dt
 import hashlib
 import json
+import os
 import re
+import shutil
 import sqlite3
+import subprocess
 import sys
 import threading
+import urllib.error
+import urllib.parse
+import urllib.request
 import webbrowser
 from collections import Counter
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -59,23 +71,86 @@ LICHESS_DB = BASE_DIR / "tournament_pool_2026.db"
 LICHESS_CSV = BASE_DIR / "tournament_pool_2026_Games.csv"
 
 # ---------------------------------------------------------------------------
+# OPTIONAL CHESS TOOLING — all of this degrades gracefully when absent.
+# ---------------------------------------------------------------------------
+# Stockfish: a local UCI engine binary drives the (optional) blunder / accuracy
+# analysis. We probe a few sensible locations; set PREP_STOCKFISH to override.
+# The repo deliberately ships NO engine binary (it is large); the app runs fine
+# without one — engine sections simply stay hidden.
+STOCKFISH_CANDIDATES = [
+    os.environ.get("PREP_STOCKFISH", ""),
+    str(BASE_DIR / "stockfish" / "stockfish-windows-x86-64-avx2.exe"),
+    str(BASE_DIR / "stockfish" / "stockfish.exe"),
+    str(BASE_DIR / "stockfish.exe"),
+    # sibling project that already carries a native Stockfish 18 build
+    str(BASE_DIR.parent / "Extract_ZST" / "stockfish" / "stockfish-windows-x86-64-avx2.exe"),
+]
+
+
+def find_stockfish() -> str | None:
+    """Return the first Stockfish binary that exists, or None."""
+    for cand in STOCKFISH_CANDIDATES:
+        if cand and Path(cand).is_file():
+            return cand
+    return shutil.which("stockfish")
+
+
+# Bundled Lichess opening database (CC0). openings_index.json maps a 4-field
+# FEN (board / side / castling / ep) -> [{eco, name, variation, ...}].
+OPENINGS_DIR = BASE_DIR / "openings"
+if not (OPENINGS_DIR / "openings_index.json").is_file():
+    _sib = BASE_DIR.parent / "et_optimus" / "endgame_trainer" / "assets" / "openings"
+    if (_sib / "openings_index.json").is_file():
+        OPENINGS_DIR = _sib
+OPENING_INDEX_PATH = OPENINGS_DIR / "openings_index.json"
+OPENING_EXPLAIN_PATH = OPENINGS_DIR / "opening_explanations.json"
+
+# Engine analysis tunables.
+ENGINE_DEPTH = 16            # search depth per position
+ENGINE_THREADS = 2
+ENGINE_HASH_MB = 128
+ANALYZE_FROM_PLY = 8         # skip the first few book plies (ply 0 == before move 1)
+ANALYZE_TO_PLY = 80          # cap work at ~move 40
+# Centipawn-loss thresholds for classifying a side's move (loss vs engine best).
+CP_INACCURACY = 50
+CP_MISTAKE = 100
+CP_BLUNDER = 200
+MATE_CP = 10000             # internal score used to stand in for a forced mate
+
+# Online opt-in (Lichess). OFF by default to preserve offline-by-default design.
+ONLINE_ENABLED = False
+LICHESS_CLOUD_EVAL = "https://lichess.org/api/cloud-eval"
+LICHESS_EXPLORER = "https://explorer.lichess.ovh"
+HTTP_TIMEOUT = 6
+
+# ---------------------------------------------------------------------------
 # ROSTER — Dino + the 9 opponents (same pool as lichess_tournament_prep.py)
 # ---------------------------------------------------------------------------
 HERO_NAME = "Dino Ballecer"
 HERO_ALIASES = ["coach dinosaur", "ballecer, dino", "dino ballecer", "ballecer dino"]
 
 ROSTER: list[dict] = [
-    {"real_name": HERO_NAME,                  "title": "",   "federation": "PHI", "fide": None, "is_hero": 1},
+    {"real_name": HERO_NAME,                  "title": "FM", "federation": "PHI", "fide": 2372, "is_hero": 1},
     {"real_name": "GM Vignesh, N R",          "title": "GM", "federation": "IND", "fide": 2515, "is_hero": 0},
     {"real_name": "GM Shyaam, Nikhil P",      "title": "GM", "federation": "IND", "fide": 2435, "is_hero": 0},
-    {"real_name": "IM Vignesh, Advaith Vemula","title": "IM","federation": "IND", "fide": 2421, "is_hero": 0},
+    {"real_name": "IM Morris, James",          "title": "IM", "federation": "AUS", "fide": 2423, "is_hero": 0},
     {"real_name": "IM Tan, Jun Ying",         "title": "IM", "federation": "MAS", "fide": 2404, "is_hero": 0},
     {"real_name": "IM Chan, Kim Yew",         "title": "IM", "federation": "MAS", "fide": 2360, "is_hero": 0},
     {"real_name": "IM Susilodinata, Andrean", "title": "IM", "federation": "INA", "fide": 2360, "is_hero": 0},
-    {"real_name": "GM Thejkumar, M. S.",      "title": "GM", "federation": "IND", "fide": 2358, "is_hero": 0},
+    {"real_name": "GM Thejkumar, M. S.",      "title": "GM", "federation": "IND", "fide": 2352, "is_hero": 0},
     {"real_name": "FM Ang, Ern Jie Anderson", "title": "FM", "federation": "MAS", "fide": 2309, "is_hero": 0},
     {"real_name": "FM Arlan Cabe",            "title": "FM", "federation": "PHI", "fide": 2298, "is_hero": 0},
 ]
+
+# ChessBase PGN exports spell some names with compressed initials / variant
+# spellings the token matcher can't bridge on its own (it needs >=2 shared
+# tokens). Map the raw PGN header string (lower-cased) -> roster real_name so
+# their games attach on scan. Keys must match the header text exactly.
+ROSTER_ALIASES: dict[str, str] = {
+    "shyam,nikil p": "GM Shyaam, Nikhil P",   # Shyam/Shyaam, Nikil/Nikhil
+    "thejkumar,ms.": "GM Thejkumar, M. S.",   # "MS." one token vs "M. S."
+    "vignesh,nr.":   "GM Vignesh, N R",       # "NR." one token vs "N R"
+}
 
 TITLE_WORDS = {"gm", "im", "fm", "cm", "nm", "wgm", "wim", "wfm", "wcm",
                "agm", "aim", "afm", "acm", "fst", "fi", "ca"}
@@ -301,6 +376,297 @@ def fens_for(moves: list[str]) -> tuple[list[str], str | None]:
             return fens, f"replay stopped at '{mv}': {exc}"
         fens.append(bd.fen())
     return fens, None
+
+
+# ===========================================================================
+# OPTIONAL CHESS TOOLING — Stockfish engine + bundled opening database.
+# Everything here is for the app's *automated* analysis (the engine the model
+# reasons over to build dossiers / the self-audit / the exported manual). It is
+# NOT an interactive board tool. All of it degrades gracefully when absent.
+# ===========================================================================
+def epd_key(fen: str) -> str:
+    """First 4 FEN fields (board / side / castling / ep) — the opening-DB and
+    position-eval cache key. Drops the move counters so transpositions collide."""
+    p = fen.split()
+    return " ".join(p[:4]) if len(p) >= 4 else fen
+
+
+# --- bundled opening database (Lichess chess-openings, CC0) ----------------
+_OPENING_INDEX: dict | None = None
+
+
+def load_opening_index() -> dict:
+    """Lazy-load openings_index.json -> {4-field-FEN: [{eco,name,variation,...}]}."""
+    global _OPENING_INDEX
+    if _OPENING_INDEX is None:
+        try:
+            data = json.loads(OPENING_INDEX_PATH.read_text(encoding="utf-8"))
+            _OPENING_INDEX = data.get("entriesByFen", data)
+        except (OSError, ValueError):
+            _OPENING_INDEX = {}
+    return _OPENING_INDEX
+
+
+def opening_db_available() -> bool:
+    return bool(load_opening_index())
+
+
+def _name_from_entry(entry: list) -> tuple[str, str]:
+    e = entry[0]
+    name = e.get("name", "") or ""
+    var = e.get("variation", "") or ""
+    full = f"{name}: {var}" if var and var.lower() not in name.lower() else name
+    return full, e.get("eco", "") or ""
+
+
+def classify_opening_db(fens: list[str]) -> tuple[str, str] | None:
+    """Most-specific (deepest) opening name/ECO for a FEN sequence, or None."""
+    idx = load_opening_index()
+    if not idx or not fens:
+        return None
+    for k in range(len(fens) - 1, -1, -1):
+        key = epd_key(fens[k])
+        ent = idx.get(key)
+        if not ent:  # en-passant-notation mismatch: retry with ep='-'
+            parts = key.split()
+            if len(parts) == 4 and parts[3] != "-":
+                ent = idx.get(" ".join(parts[:3] + ["-"]))
+        if ent:
+            return _name_from_entry(ent)
+    return None
+
+
+# --- Stockfish UCI client (stdlib subprocess; no python-chess) -------------
+def _white_to_move(fen: str) -> bool:
+    parts = fen.split()
+    return len(parts) < 2 or parts[1] == "w"
+
+
+def fold_score(cp: int | None, mate: int | None, white_to_move: bool) -> int:
+    """Engine score (side-to-move POV) -> a single White-POV centipawn scalar.
+    Mate is folded into a large signed value so arithmetic stays simple."""
+    if mate is not None:
+        val = (MATE_CP - abs(mate)) * (1 if mate > 0 else -1)
+    elif cp is not None:
+        val = cp
+    else:
+        return 0
+    return val if white_to_move else -val
+
+
+class Engine:
+    """Minimal persistent UCI client around a Stockfish binary."""
+
+    def __init__(self, path: str):
+        self.path = path
+        self.name = "Stockfish"
+        self.proc = subprocess.Popen(
+            [path], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL, text=True, bufsize=1)
+        self._send("uci")
+        for line in self.proc.stdout:                       # type: ignore[union-attr]
+            if line.startswith("id name"):
+                self.name = line[7:].strip()
+            if line.startswith("uciok"):
+                break
+        self._send(f"setoption name Threads value {ENGINE_THREADS}")
+        self._send(f"setoption name Hash value {ENGINE_HASH_MB}")
+        self._ready()
+
+    def _send(self, cmd: str) -> None:
+        self.proc.stdin.write(cmd + "\n")                   # type: ignore[union-attr]
+        self.proc.stdin.flush()                             # type: ignore[union-attr]
+
+    def _ready(self) -> None:
+        self._send("isready")
+        for line in self.proc.stdout:                       # type: ignore[union-attr]
+            if line.strip() == "readyok":
+                return
+
+    def analyse(self, fen_full: str, depth: int) -> tuple[int | None, int | None, str | None]:
+        """Return (cp, mate, bestmove_uci) — score is side-to-move POV (UCI raw)."""
+        self._send(f"position fen {fen_full}")
+        self._send(f"go depth {depth}")
+        cp = mate = None
+        best = None
+        for line in self.proc.stdout:                       # type: ignore[union-attr]
+            line = line.strip()
+            if line.startswith("info") and " score " in line:
+                t = line.split()
+                if "cp" in t:
+                    cp, mate = int(t[t.index("cp") + 1]), None
+                elif "mate" in t:
+                    mate, cp = int(t[t.index("mate") + 1]), None
+            elif line.startswith("bestmove"):
+                parts = line.split()
+                best = parts[1] if len(parts) > 1 and parts[1] != "(none)" else None
+                break
+        return cp, mate, best
+
+    def close(self) -> None:
+        try:
+            self._send("quit")
+            self.proc.wait(timeout=3)
+        except Exception:
+            try:
+                self.proc.kill()
+            except Exception:
+                pass
+
+
+_ENGINE: Engine | None = None
+_ENGINE_TRIED = False
+_ENGINE_LOCK = threading.Lock()
+
+
+def get_engine() -> Engine | None:
+    """Lazily start (once) the shared Stockfish process; None if unavailable."""
+    global _ENGINE, _ENGINE_TRIED
+    with _ENGINE_LOCK:
+        if _ENGINE is not None or _ENGINE_TRIED:
+            return _ENGINE
+        _ENGINE_TRIED = True
+        path = find_stockfish()
+        if not path:
+            return None
+        try:
+            _ENGINE = Engine(path)
+        except Exception:
+            _ENGINE = None
+        return _ENGINE
+
+
+def engine_info() -> dict:
+    path = find_stockfish()
+    return {"available": bool(path), "path": path or "",
+            "name": _ENGINE.name if _ENGINE else ""}
+
+
+def eval_position(conn, fen_full: str, depth: int = ENGINE_DEPTH,
+                  allow_engine: bool = True) -> tuple[int, str | None] | None:
+    """White-POV (score_cp, bestmove_uci) for a position. Cached in PositionEval
+    by the 4-field FEN key. Falls back to Lichess cloud-eval when online and no
+    local engine. Returns None if nothing can evaluate it."""
+    key = epd_key(fen_full)
+    row = conn.execute(
+        "SELECT score_cp, bestmove FROM PositionEval WHERE fen=? AND depth=?",
+        (key, depth)).fetchone()
+    if row is not None:
+        return row["score_cp"], row["bestmove"]
+    if not allow_engine:
+        return None
+    score = None
+    best = None
+    src = None
+    eng = get_engine()
+    if eng is not None:
+        with _ENGINE_LOCK:
+            cp, mate, best = eng.analyse(key + " 0 1", depth)
+        score = fold_score(cp, mate, _white_to_move(key))
+        src = eng.name
+    elif ONLINE_ENABLED:
+        res = cloud_eval(key)
+        if res is not None:
+            score, best = res
+            src = "lichess-cloud"
+    if score is None:
+        return None
+    conn.execute(
+        "INSERT OR REPLACE INTO PositionEval (fen, depth, score_cp, bestmove, source) "
+        "VALUES (?,?,?,?,?)", (key, depth, int(score), best, src))
+    return int(score), best
+
+
+# --- UCI move -> readable long-algebraic (for showing the engine's best move) -
+def uci_to_long(fen: str, uci: str | None) -> str:
+    """g1f3 -> 'Ng1-f3', e7e8q -> 'e7-e8=Q', e1g1 -> 'O-O'. Uses the FEN board to
+    name the piece and detect captures. Pretty enough for prep notes; no
+    disambiguation/check marks needed because squares are explicit."""
+    if not uci or len(uci) < 4:
+        return uci or "?"
+    board = fen.split()[0]
+    sq: dict[str, str] = {}
+    rank, file = 8, 0
+    for ch in board:
+        if ch == "/":
+            rank, file = rank - 1, 0
+        elif ch.isdigit():
+            file += int(ch)
+        else:
+            sq[FILES_STR[file] + str(rank)] = ch
+            file += 1
+    frm, to, promo = uci[:2], uci[2:4], uci[4:5]
+    piece = sq.get(frm, "")
+    pt = piece.upper()
+    if pt == "K" and frm in ("e1", "e8") and to in ("g1", "g8", "c1", "c8"):
+        return "O-O" if to[0] == "g" else "O-O-O"
+    capture = to in sq or (pt == "P" and frm[0] != to[0])
+    head = "" if pt == "P" else pt
+    s = f"{head}{frm}{'x' if capture else '-'}{to}"
+    if promo:
+        s += "=" + promo.upper()
+    return s
+
+
+def cp_to_pawns(cp: int) -> str:
+    """Format a White-POV/side-POV centipawn scalar as a pawn string (#-mate aware)."""
+    if cp >= MATE_CP - 1000:
+        return f"#{MATE_CP - cp}"
+    if cp <= -(MATE_CP - 1000):
+        return f"#-{MATE_CP + cp}"
+    return f"{cp / 100:+.1f}"
+
+
+# --- online opt-in (Lichess) — OFF by default ------------------------------
+def _http_get_json(url: str) -> dict | None:
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "prep_manual_app"})
+        with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as r:
+            return json.load(r)
+    except Exception:
+        return None
+
+
+def cloud_eval(epd: str) -> tuple[int, str | None] | None:
+    """Lichess cloud eval (White POV cp) for a position; eval fallback when no
+    local engine. Returns (score_cp, bestmove_uci) or None."""
+    if not ONLINE_ENABLED:
+        return None
+    data = _http_get_json(LICHESS_CLOUD_EVAL + "?" +
+                          urllib.parse.urlencode({"fen": epd}))
+    pvs = (data or {}).get("pvs") or []
+    if not pvs:
+        return None
+    pv = pvs[0]
+    if pv.get("mate") is not None:
+        m = pv["mate"]
+        score = (MATE_CP - abs(m)) * (1 if m > 0 else -1)
+    else:
+        score = pv.get("cp")
+    if score is None:
+        return None
+    moves = (pv.get("moves") or "").split()
+    return int(score), (moves[0] if moves else None)
+
+
+def explorer_lookup(conn, epd: str, scope: str = "masters") -> dict | None:
+    """Lichess opening-explorer population stats for a position (cached). Used to
+    add real theory context to generated dossiers when online is enabled."""
+    row = conn.execute("SELECT json FROM ExplorerCache WHERE fen=? AND scope=?",
+                        (epd, scope)).fetchone()
+    if row is not None:
+        return json.loads(row["json"])
+    if not ONLINE_ENABLED:
+        return None
+    base = LICHESS_EXPLORER + ("/masters" if scope == "masters" else "/lichess")
+    data = _http_get_json(base + "?" + urllib.parse.urlencode({"fen": epd}))
+    if data is None:
+        return None
+    conn.execute("INSERT OR REPLACE INTO ExplorerCache (fen, scope, json, fetched_at) "
+                 "VALUES (?,?,?,?)",
+                 (epd, scope, json.dumps(data), dt.datetime.now().isoformat(timespec="seconds")))
+    conn.commit()
+    return data
 
 
 # ===========================================================================
@@ -648,6 +1014,31 @@ CREATE TABLE IF NOT EXISTS Tags (
 );
 CREATE TABLE IF NOT EXISTS UnmatchedNames ( name TEXT PRIMARY KEY, games INTEGER );
 CREATE INDEX IF NOT EXISTS idx_games_player ON Games(player_id);
+
+-- Optional engine-analysis caches. Keyed by stable values (position FEN / the
+-- game dedup_hash) so a full rescan (which rebuilds Games) never wipes them.
+CREATE TABLE IF NOT EXISTS PositionEval (
+    fen      TEXT NOT NULL,      -- 4-field FEN (board/side/castling/ep)
+    depth    INTEGER NOT NULL,
+    score_cp INTEGER,            -- White POV; mate folded into a large value
+    bestmove TEXT,               -- UCI
+    source   TEXT,
+    PRIMARY KEY (fen, depth)
+);
+CREATE TABLE IF NOT EXISTS GameAnalysis (
+    dedup_hash  TEXT PRIMARY KEY,
+    depth       INTEGER,
+    engine      TEXT,
+    analyzed_at TEXT,
+    acpl_white  REAL, acpl_black REAL,
+    moves_white INTEGER, moves_black INTEGER,
+    phase_json  TEXT,            -- {white:{op:[sum,cnt],mid,end}, black:{...}}
+    blunders_json TEXT           -- [{ply,mover,move_no,san,sev,loss,before,after,best}]
+);
+CREATE TABLE IF NOT EXISTS ExplorerCache (
+    fen TEXT NOT NULL, scope TEXT NOT NULL, json TEXT, fetched_at TEXT,
+    PRIMARY KEY (fen, scope)
+);
 """
 
 
@@ -655,6 +1046,7 @@ def db() -> sqlite3.Connection:
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute("PRAGMA busy_timeout = 8000")
     return conn
 
 
@@ -673,10 +1065,21 @@ def init_db():
                  title=excluded.title, federation=excluded.federation,
                  fide=excluded.fide, is_hero=excluded.is_hero""",
             (p["real_name"], p["title"], p["federation"], p["fide"], p["is_hero"]))
+    # Prune roster rows no longer in ROSTER (e.g. players dropped from the pool);
+    # their games cascade-delete and are re-added on the next scan if present.
+    names = [p["real_name"] for p in ROSTER]
+    conn.execute(
+        f"DELETE FROM Roster WHERE real_name NOT IN ({','.join('?' * len(names))})",
+        names)
     hero_id = conn.execute("SELECT player_id FROM Roster WHERE is_hero=1").fetchone()[0]
     for a in HERO_ALIASES:
         conn.execute("INSERT OR IGNORE INTO Aliases (alias, player_id, source) VALUES (?,?,'seed')",
                      (a, hero_id))
+    for alias, real_name in ROSTER_ALIASES.items():
+        row = conn.execute("SELECT player_id FROM Roster WHERE real_name=?", (real_name,)).fetchone()
+        if row:
+            conn.execute("INSERT OR IGNORE INTO Aliases (alias, player_id, source) VALUES (?,?,'seed')",
+                         (alias, row[0]))
     conn.commit()
     conn.close()
 
@@ -843,7 +1246,7 @@ def scan(conn) -> dict:
     unmatched: Counter = Counter()
     summary = {"files": 0, "games_seen": 0, "games_stored": 0}
 
-    for path in sorted(BASE_DIR.glob("*.pgn")):
+    for path in sorted(BASE_DIR.rglob("*.pgn")):  # recurse into subfolders (e.g. chessbasepgn/)
         try:
             raw = path.read_text(encoding="utf-8-sig", errors="replace")
         except OSError:
@@ -865,7 +1268,14 @@ def scan(conn) -> dict:
             result = h.get("Result", "*")
             parsed += 1
             summary["games_seen"] += 1
-            opening, eco_guess = classify_opening(moves)
+            # Opening: prefer the bundled ECO database (replay first ~36 plies and
+            # look the position up), fall back to the hand-built BOOK. A PGN's own
+            # ECO/Opening headers still win when present (unchanged precedence).
+            db_cls = classify_opening_db(fens_for(moves[:36])[0])
+            if db_cls:
+                opening, eco_guess = db_cls
+            else:
+                opening, eco_guess = classify_opening(moves)
             eco = h.get("ECO", "").strip() or eco_guess
             if h.get("Opening"):
                 opening = h["Opening"]
@@ -905,6 +1315,270 @@ def scan(conn) -> dict:
                          (name, n))
     conn.commit()
     return summary
+
+
+# ===========================================================================
+# ENGINE ANALYSIS — optional; powers the engine-backed blunder findings and the
+# opponent "fingerprints". GET endpoints read cached results only (allow_engine
+# = False); the heavy pass runs via analyze_all() (the Analyze button / --analyze).
+# ===========================================================================
+PHASE_KEYS = ("op", "mid", "end")
+PHASE_LABEL = {"op": "opening", "mid": "middlegame", "end": "endgame"}
+
+# Progress for the background analysis pass (read by /api/state).
+ANALYZE_STATUS: dict = {"running": False, "current": 0, "total": 0,
+                        "scope": "", "started": None}
+
+
+def _phase_of(ply: int) -> str:
+    return "op" if ply < 20 else ("mid" if ply < 40 else "end")
+
+
+def _empty_phase() -> dict:
+    return {"op": [0.0, 0], "mid": [0.0, 0], "end": [0.0, 0]}
+
+
+def _mean(sum_cnt: list) -> float | None:
+    return round(sum_cnt[0] / sum_cnt[1], 1) if sum_cnt[1] else None
+
+
+def _rollup_from_row(row) -> dict:
+    return {
+        "depth": row["depth"], "engine": row["engine"],
+        "acpl_white": row["acpl_white"], "acpl_black": row["acpl_black"],
+        "moves_white": row["moves_white"], "moves_black": row["moves_black"],
+        "phases": json.loads(row["phase_json"] or "{}"),
+        "moves": json.loads(row["blunders_json"] or "[]"),
+    }
+
+
+def analyze_game(conn, dedup_hash: str, moves: list[str], depth: int = ENGINE_DEPTH,
+                 allow_engine: bool = True, force: bool = False) -> dict | None:
+    """Engine rollup for one game, cached by (dedup_hash, depth). Centipawn loss
+    is measured per move vs the engine's best; results feed blunder findings and
+    fingerprints. Returns None when not cached and analysis can't run."""
+    if not force:
+        row = conn.execute("SELECT * FROM GameAnalysis WHERE dedup_hash=? AND depth=?",
+                           (dedup_hash, depth)).fetchone()
+        # Cache-only callers (GET/export) display whatever analysis exists, even if
+        # it was computed at a different depth. The analysis pass (allow_engine=True)
+        # instead recomputes at its requested depth when the exact row is missing.
+        if row is None and not allow_engine:
+            row = conn.execute("SELECT * FROM GameAnalysis WHERE dedup_hash=? "
+                               "ORDER BY depth DESC LIMIT 1", (dedup_hash,)).fetchone()
+        if row is not None:
+            return _rollup_from_row(row)
+    if not allow_engine or (get_engine() is None and not ONLINE_ENABLED):
+        return None
+
+    fens, _ = fens_for(moves)
+    n = len(fens)
+    evals: dict[int, tuple[int, str | None] | None] = {}
+    for k in range(ANALYZE_FROM_PLY, min(n, ANALYZE_TO_PLY + 1)):
+        evals[k] = eval_position(conn, fens[k], depth)
+
+    phases = {"white": _empty_phase(), "black": _empty_phase()}
+    sums = {"white": [0.0, 0], "black": [0.0, 0]}
+    sig: list[dict] = []
+    for k in range(ANALYZE_FROM_PLY, min(n - 1, ANALYZE_TO_PLY)):
+        eb, ea = evals.get(k), evals.get(k + 1)
+        if eb is None or ea is None:
+            continue
+        white_moved = (k % 2 == 0)
+        side = "white" if white_moved else "black"
+        eb_cp, ea_cp = eb[0], ea[0]
+        loss = (eb_cp - ea_cp) if white_moved else (ea_cp - eb_cp)
+        loss = max(0, min(loss, 1500))      # cap so one disaster can't wreck the mean
+        ph = _phase_of(k)
+        phases[side][ph][0] += loss
+        phases[side][ph][1] += 1
+        sums[side][0] += loss
+        sums[side][1] += 1
+        if loss >= CP_INACCURACY:
+            sev = ("blunder" if loss >= CP_BLUNDER else
+                   "mistake" if loss >= CP_MISTAKE else "inaccuracy")
+            sig.append({
+                "ply": k, "mover": side, "move_no": k // 2 + 1,
+                "san": moves[k] if k < len(moves) else "",
+                "sev": sev, "loss": loss,
+                "before": (eb_cp if white_moved else -eb_cp),
+                "after": (ea_cp if white_moved else -ea_cp),
+                "best": uci_to_long(fens[k], eb[1]),
+            })
+    sig.sort(key=lambda m: -m["loss"])
+    conn.execute(
+        "INSERT OR REPLACE INTO GameAnalysis (dedup_hash, depth, engine, analyzed_at,"
+        " acpl_white, acpl_black, moves_white, moves_black, phase_json, blunders_json)"
+        " VALUES (?,?,?,?,?,?,?,?,?,?)",
+        (dedup_hash, depth, engine_info()["name"] or "lichess-cloud",
+         dt.datetime.now().isoformat(timespec="seconds"),
+         _mean(sums["white"]), _mean(sums["black"]),
+         sums["white"][1], sums["black"][1],
+         json.dumps(phases), json.dumps(sig[:16])))
+    conn.commit()
+    return _rollup_from_row(conn.execute(
+        "SELECT * FROM GameAnalysis WHERE dedup_hash=? AND depth=?",
+        (dedup_hash, depth)).fetchone())
+
+
+def analyze_all(conn, depth: int = ENGINE_DEPTH, scope: str = "all",
+                pid: int | None = None, max_games: int | None = None,
+                status: dict | None = None, progress=None) -> dict:
+    """The heavy pass: run/refresh analysis over stored games (deduped by hash so
+    each unique game is analysed once). scope: all | losses (Dino) | player."""
+    hero = conn.execute("SELECT player_id FROM Roster WHERE is_hero=1").fetchone()
+    hero_id = hero["player_id"] if hero else None
+    rows = conn.execute(
+        "SELECT dedup_hash, moves_json, presult, player_id FROM Games "
+        "WHERE source!='lichess'").fetchall()
+    games, seen = [], set()
+    for r in rows:
+        if scope == "losses" and not (r["player_id"] == hero_id and r["presult"] == "loss"):
+            continue
+        if scope == "player" and pid is not None and r["player_id"] != pid:
+            continue
+        if r["dedup_hash"] in seen:
+            continue
+        seen.add(r["dedup_hash"])
+        games.append(r)
+    if max_games:
+        games = games[:max_games]
+    if status is not None:
+        status.update(total=len(games), current=0, running=True, scope=scope,
+                      started=dt.datetime.now().isoformat(timespec="seconds"))
+    done = 0
+    for r in games:
+        analyze_game(conn, r["dedup_hash"], json.loads(r["moves_json"]), depth,
+                     allow_engine=True)
+        done += 1
+        if status is not None:
+            status["current"] = done
+        if progress:
+            progress(done, len(games))
+    if status is not None:
+        status["running"] = False
+    return {"analyzed": done, "total": len(games)}
+
+
+def hero_blunder_findings(conn, depth: int = ENGINE_DEPTH,
+                          allow_engine: bool = False) -> dict:
+    """Engine-pinpointed critical mistakes across Dino's losses + accuracy-by-phase.
+    Reads cached analysis only by default (cheap on GET)."""
+    out = {"available": engine_info()["available"] or ONLINE_ENABLED,
+           "analyzed": 0, "pending": 0, "total": 0, "depth": depth,
+           "findings": [], "phase_acpl": {}, "acpl": None}
+    hero = conn.execute("SELECT * FROM Roster WHERE is_hero=1").fetchone()
+    if not hero:
+        return out
+    rows = conn.execute(
+        "SELECT game_id, dedup_hash, color, opening, eco, white, black, date, event,"
+        " moves_json FROM Games WHERE player_id=? AND presult='loss' AND source!='lichess'"
+        " ORDER BY date DESC", (hero["player_id"],)).fetchall()
+    out["total"] = len(rows)
+    phase_sum, tot, depths = _empty_phase(), [0.0, 0], set()
+    for r in rows:
+        roll = analyze_game(conn, r["dedup_hash"], json.loads(r["moves_json"]),
+                            depth, allow_engine=allow_engine)
+        if roll is None:
+            out["pending"] += 1
+            continue
+        out["analyzed"] += 1
+        depths.add(roll["depth"])
+        color = r["color"]
+        ph = roll["phases"].get(color, {})
+        for key in PHASE_KEYS:
+            s, c = ph.get(key, [0, 0])
+            phase_sum[key][0] += s
+            phase_sum[key][1] += c
+            tot[0] += s
+            tot[1] += c
+        hero_moves = [m for m in roll["moves"] if m["mover"] == color]
+        if hero_moves:
+            crit = max(hero_moves, key=lambda m: m["loss"])
+            out["findings"].append({
+                "game_id": r["game_id"],
+                "opponent": r["black"] if color == "white" else r["white"],
+                "color": color, "opening": r["opening"], "eco": r["eco"],
+                "date": r["date"], "event": r["event"], "ply": crit["ply"],
+                "move_no": crit["move_no"], "san": crit["san"], "sev": crit["sev"],
+                "before": crit["before"], "after": crit["after"], "best": crit["best"]})
+    out["findings"].sort(key=lambda f: f["after"] - f["before"])  # biggest drop first
+    out["phase_acpl"] = {k: _mean(phase_sum[k]) for k in PHASE_KEYS}
+    out["acpl"] = _mean(tot)
+    if depths:
+        out["depth"] = max(depths)
+    return out
+
+
+def opponent_fingerprint(conn, pid: int, depth: int = ENGINE_DEPTH,
+                         allow_engine: bool = False) -> dict:
+    """An opponent's engine accuracy profile: overall/by-phase ACPL, blunder
+    counts, and which openings/structure families they err in (target) vs play
+    solidly (avoid). Cached-only on GET."""
+    out = {"available": engine_info()["available"] or ONLINE_ENABLED,
+           "analyzed": 0, "pending": 0, "total": 0, "depth": depth, "acpl": None,
+           "phase_acpl": {}, "counts": {"blunder": 0, "mistake": 0, "inaccuracy": 0},
+           "by_family": [], "by_opening": [], "targets": [], "solid": []}
+    rows = conn.execute(
+        "SELECT g.game_id, g.dedup_hash, g.color, g.opening, g.eco, g.moves_json,"
+        " group_concat(t.family,'|') AS fams FROM Games g"
+        " LEFT JOIN Tags t ON t.game_id=g.game_id"
+        " WHERE g.player_id=? AND g.source!='lichess' GROUP BY g.game_id",
+        (pid,)).fetchall()
+    out["total"] = len(rows)
+    tot, phase_sum, depths = [0.0, 0], _empty_phase(), set()
+    fam_acc: dict[str, list] = {}
+    op_acc: dict[str, list] = {}
+    for r in rows:
+        roll = analyze_game(conn, r["dedup_hash"], json.loads(r["moves_json"]),
+                            depth, allow_engine=allow_engine)
+        if roll is None:
+            out["pending"] += 1
+            continue
+        out["analyzed"] += 1
+        depths.add(roll["depth"])
+        color = r["color"]
+        ph = roll["phases"].get(color, {})
+        gsum = [0.0, 0]
+        for key in PHASE_KEYS:
+            s, c = ph.get(key, [0, 0])
+            phase_sum[key][0] += s
+            phase_sum[key][1] += c
+            tot[0] += s
+            tot[1] += c
+            gsum[0] += s
+            gsum[1] += c
+        own = [m for m in roll["moves"] if m["mover"] == color]
+        for m in own:
+            out["counts"][m["sev"]] = out["counts"].get(m["sev"], 0) + 1
+        serious = sum(1 for m in own if m["sev"] != "inaccuracy")
+        for fam in ((r["fams"] or "").split("|") if r["fams"] else []):
+            a = fam_acc.setdefault(fam, [0.0, 0, 0])
+            a[0] += gsum[0]
+            a[1] += gsum[1]
+            a[2] += serious
+        op = r["opening"] or "(unclassified)"
+        a = op_acc.setdefault(op, [0.0, 0, 0, r["eco"]])
+        a[0] += gsum[0]
+        a[1] += gsum[1]
+        a[2] += serious
+    out["acpl"] = _mean(tot)
+    out["phase_acpl"] = {k: _mean(phase_sum[k]) for k in PHASE_KEYS}
+    fam_rows = [{"family": f, "acpl": _mean([v[0], v[1]]), "moves": v[1], "blunders": v[2]}
+                for f, v in fam_acc.items() if v[1]]
+    fam_rows.sort(key=lambda x: -(x["acpl"] or 0))
+    out["by_family"] = fam_rows
+    op_rows = [{"opening": o, "eco": v[3], "acpl": _mean([v[0], v[1]]),
+                "moves": v[1], "blunders": v[2]}
+               for o, v in op_acc.items() if v[1] >= 4]
+    op_rows.sort(key=lambda x: -(x["acpl"] or 0))
+    out["by_opening"] = op_rows[:8]
+    sig_fams = [x for x in fam_rows if x["moves"] >= 6]
+    out["targets"] = [x["family"] for x in sig_fams[:2]]
+    out["solid"] = [x["family"] for x in sorted(sig_fams, key=lambda x: (x["acpl"] or 0))[:2]]
+    if depths:
+        out["depth"] = max(depths)
+    return out
 
 
 # ===========================================================================
@@ -979,6 +1653,8 @@ def player_dossier(conn, pid: int) -> dict:
         "black": {**wdl(bg), "openings": opening_table(bg)},
         "families": family_table(games),
         "games": games,
+        # Engine accuracy profile (cached results only — see analyze_all()).
+        "fingerprint": opponent_fingerprint(conn, pid, allow_engine=False),
     }
 
 
@@ -1068,6 +1744,8 @@ def hero_improvement(conn) -> dict:
         "families": fams, "loss_phases": phases,
         "repeated_lines": repeated, "bullets": bullets,
         "losses": [g for g in games if g["presult"] == "loss"],
+        # Engine-pinpointed critical mistakes + accuracy-by-phase (cached only).
+        "engine": hero_blunder_findings(conn, allow_engine=False),
     }
 
 
@@ -1102,6 +1780,61 @@ def safe_filename(s: str) -> str:
     return re.sub(r"[^A-Za-z0-9_-]+", "_", s).strip("_")
 
 
+def md_fingerprint(fp: dict | None) -> str:
+    """Opponent engine accuracy profile, as Markdown."""
+    if not fp or not fp.get("available"):
+        return ("_Engine fingerprint unavailable — no Stockfish binary configured "
+                "(set PREP_STOCKFISH or drop one in ./stockfish/)._\n")
+    if fp.get("analyzed", 0) == 0:
+        return (f"_Not analysed yet ({fp.get('pending', 0)} games pending). Run "
+                "`python prep_manual_app.py --analyze --scope all`, or click "
+                "“Analyze with Stockfish” in the app._\n")
+    ph = fp["phase_acpl"]
+    c = fp["counts"]
+    out = [f"*From {fp['analyzed']} analysed game(s) at depth {fp['depth']}. "
+           "Average centipawn loss (ACPL) — lower is more accurate.*", "",
+           f"- **Overall ACPL:** {fp['acpl']} "
+           f"(opening {ph.get('op')}, middlegame {ph.get('mid')}, endgame {ph.get('end')})",
+           f"- **Serious errors on file:** {c.get('blunder', 0)} blunders, "
+           f"{c.get('mistake', 0)} mistakes, {c.get('inaccuracy', 0)} inaccuracies"]
+    if fp.get("targets"):
+        out.append("- **Target structures (least accurate):** "
+                   + ", ".join(f"*{t}*" for t in fp["targets"]))
+    if fp.get("solid"):
+        out.append("- **Avoid — they are solid here (most accurate):** "
+                   + ", ".join(f"*{t}*" for t in fp["solid"]))
+    if fp.get("by_family"):
+        out += ["", "| Structure family | Moves | ACPL | Serious errors |",
+                "|---|---:|---:|---:|"]
+        for r in fp["by_family"]:
+            out.append(f"| {r['family']} | {r['moves']} | {r['acpl']} | {r['blunders']} |")
+    return "\n".join(out) + "\n"
+
+
+def md_engine_findings(eng: dict | None) -> str:
+    """Dino's engine-pinpointed critical mistakes + accuracy-by-phase, as Markdown."""
+    if not eng or not eng.get("available"):
+        return ("_Engine analysis unavailable — no Stockfish binary configured._\n")
+    if eng.get("analyzed", 0) == 0:
+        return (f"_Losses not analysed yet ({eng.get('pending', 0)} pending). Run "
+                "`python prep_manual_app.py --analyze --scope losses`._\n")
+    ph = eng["phase_acpl"]
+    out = [f"*From {eng['analyzed']} analysed loss(es) at depth {eng['depth']}. "
+           f"Accuracy by phase (average centipawn loss): opening {ph.get('op')}, "
+           f"middlegame {ph.get('mid')}, endgame {ph.get('end')} "
+           f"(overall {eng['acpl']}).*", ""]
+    if eng["findings"]:
+        out += ["| Game | Opening | Critical move | Eval swing | Engine prefers |",
+                "|---|---|---|---|---|"]
+        for f in eng["findings"]:
+            dots = "." if f["color"] == "white" else "..."
+            mv = f"{f['move_no']}{dots}{f['san']} ({f['sev']})"
+            swing = f"{cp_to_pawns(f['before'])} → {cp_to_pawns(f['after'])}"
+            out.append(f"| vs {f['opponent']} | {f['opening']} ({f['eco']}) | "
+                       f"{mv} | {swing} | {f['best']} |")
+    return "\n".join(out) + "\n"
+
+
 def export_markdown(conn) -> list[str]:
     EXPORT_DIR.mkdir(exist_ok=True)
     today = dt.date.today().isoformat()
@@ -1126,6 +1859,8 @@ def export_markdown(conn) -> list[str]:
                  md_opening_table(d["black"]["openings"]), "",
                  "## Core Structure Families", "",
                  md_family_table(d["families"]), "",
+                 "## Engine fingerprint", "",
+                 md_fingerprint(d.get("fingerprint")), "",
                  "## Prep pointers", ""]
         pointers = []
         for f in d["families"]:
@@ -1178,6 +1913,8 @@ def export_markdown(conn) -> list[str]:
               "## Loss profile", ""]
     for k, v in imp["loss_phases"].items():
         lines.append(f"- Losses in {k}: **{v}**")
+    lines += ["", "## Engine-detected critical mistakes", "",
+              md_engine_findings(imp.get("engine"))]
     if imp["repeated_lines"]:
         lines += ["", "## Repeated problem lines (2+ losses, same first moves)", ""]
         for rl in imp["repeated_lines"]:
@@ -1268,6 +2005,19 @@ class Handler(BaseHTTPRequestHandler):
                     "opening": r["opening"], "eco": r["eco"],
                     "orientation": r["color"], "moves": moves, "fens": fens,
                     "replay_error": err})
+            elif u.path == "/api/explorer":
+                # Opt-in Lichess opening-explorer population stats for a position
+                # (theory context for the analysis). Cached; only fetches when --online.
+                if not ONLINE_ENABLED:
+                    self._json({"error": "online disabled — start with --online"}, 400)
+                    return
+                conn = db()
+                try:
+                    data = explorer_lookup(conn, epd_key(q["fen"][0]),
+                                           (q.get("scope", ["masters"])[0]))
+                finally:
+                    conn.close()
+                self._json(data or {"error": "no data"})
             else:
                 self._json({"error": "unknown route"}, 404)
         except Exception as exc:
@@ -1323,6 +2073,36 @@ class Handler(BaseHTTPRequestHandler):
             elif u.path == "/api/export":
                 files = export_markdown(conn)
                 self._json({"ok": True, "dir": str(EXPORT_DIR), "files": files})
+            elif u.path == "/api/analyze":
+                # Kick off the heavy engine pass in the background; the UI polls
+                # /api/state for progress. Results land in GameAnalysis and then
+                # flow into dossiers, the self-audit, and the export.
+                if ANALYZE_STATUS.get("running"):
+                    self._json({"ok": False, "error": "analysis already running",
+                                "status": dict(ANALYZE_STATUS)})
+                    return
+                if get_engine() is None and not ONLINE_ENABLED:
+                    self._json({"error": "No engine available — drop a Stockfish binary "
+                                "in ./stockfish/ (or set PREP_STOCKFISH), or use --online."},
+                               400)
+                    return
+                scope = body.get("scope") or "losses"
+                pid = body.get("player_id")
+                depth = int(body.get("depth") or ENGINE_DEPTH)
+                maxg = body.get("max_games")
+
+                def _worker(scope=scope, pid=pid, depth=depth, maxg=maxg):
+                    c = db()
+                    try:
+                        analyze_all(c, depth=depth, scope=scope,
+                                    pid=int(pid) if pid else None,
+                                    max_games=int(maxg) if maxg else None,
+                                    status=ANALYZE_STATUS)
+                    finally:
+                        c.close()
+
+                threading.Thread(target=_worker, daemon=True).start()
+                self._json({"ok": True, "started": True, "status": dict(ANALYZE_STATUS)})
             else:
                 self._json({"error": "unknown route"}, 404)
         except Exception as exc:
@@ -1354,8 +2134,12 @@ class Handler(BaseHTTPRequestHandler):
             aliases = [dict(r) for r in conn.execute(
                 """SELECT a.alias, a.source, r.real_name FROM Aliases a
                    JOIN Roster r ON r.player_id = a.player_id ORDER BY r.real_name, a.alias""")]
+            analyzed = conn.execute("SELECT COUNT(*) FROM GameAnalysis").fetchone()[0]
             return {"roster": roster, "files": files, "unmatched": unmatched,
-                    "aliases": aliases, "folder": str(BASE_DIR)}
+                    "aliases": aliases, "folder": str(BASE_DIR),
+                    "engine": engine_info(), "opening_db": opening_db_available(),
+                    "online": ONLINE_ENABLED, "analyze": dict(ANALYZE_STATUS),
+                    "analyzed_games": analyzed}
         finally:
             conn.close()
 
@@ -1445,6 +2229,8 @@ textarea { width:100%; font-family:Consolas, monospace; }
   <h1>Tournament Prep Manual — Dino Ballecer 2026</h1>
   <span class="sub" id="folder"></span>
   <span style="flex:1"></span>
+  <span class="sub" id="engineStatus" title="Engine analysis powers the dossiers, the self-audit and the export — it is not an interactive board."></span>
+  <button id="analyzeBtn" onclick="runAnalyze()">⚙ Analyze with Stockfish</button>
   <button class="primary" onclick="rescan()">⟳ Rescan PGN folder</button>
 </header>
 <nav>
@@ -1513,8 +2299,42 @@ function tab(name){ curTab=name;
 
 async function refresh(){ STATE=await api('/api/state');
   document.getElementById('folder').textContent='watching: '+STATE.folder+'\\*.pgn';
+  updateEngineStatus();
   renderOverview(); renderFiles(); renderExportTab();
   if(curTab==='opponents') renderOpponents(); }
+
+/* ---------------- Engine analysis (powers the generated analysis only) ---- */
+function fmtCp(cp){ if(cp>=9000) return '#'+(10000-cp); if(cp<=-9000) return '#-'+(10000+cp);
+  return (cp>=0?'+':'')+(cp/100).toFixed(1); }
+function updateEngineStatus(){
+  if(!STATE) return; const e=STATE.engine||{}, a=STATE.analyze||{};
+  const bits=[ e.available?('engine: '+esc(e.name||'Stockfish')):'engine: none',
+    'openings DB: '+(STATE.opening_db?'on':'off') ];
+  if(STATE.online) bits.push('online: on');
+  bits.push('analysed: '+(STATE.analyzed_games||0));
+  if(a.running) bits.push('analysing '+(a.current||0)+'/'+(a.total||0)+'…');
+  const se=document.getElementById('engineStatus'); if(se) se.textContent=bits.join('  ·  ');
+  const btn=document.getElementById('analyzeBtn');
+  if(btn){ btn.disabled = !!a.running || !(e.available||STATE.online);
+    btn.textContent = a.running ? ('⚙ Analysing '+(a.current||0)+'/'+(a.total||0))
+                                : '⚙ Analyze with Stockfish'; }
+}
+async function runAnalyze(){
+  try{ const r=await post('/api/analyze',{scope:'all'});
+    if(r.error){ toast(r.error); return; }
+    toast('Engine analysis started — results feed the dossiers, audit and export.');
+    pollAnalyze();
+  }catch(e){ toast('Analyze failed: '+e.message); }
+}
+function pollAnalyze(){ clearTimeout(window._ap);
+  window._ap=setTimeout(async()=>{
+    try{ STATE=await api('/api/state'); updateEngineStatus();
+      if(STATE.analyze && STATE.analyze.running){ pollAnalyze(); }
+      else { toast('Engine analysis complete.');
+        if(curTab==='dino') loadDino(); if(curPlayer) selectPlayer(curPlayer); }
+    }catch(e){ /* keep polling quietly */ pollAnalyze(); }
+  }, 1500);
+}
 
 async function rescan(){ try{ const r=await post('/api/scan');
   toast('Scanned '+r.summary.files+' files — '+r.summary.games_stored+' games stored.');
@@ -1609,8 +2429,57 @@ function dossierHtml(d){
     openingTbl(d.white.openings)+'</div><div><h3>As Black — '+d.black.n+' games ('+
     d.black.score+'%)</h3>'+openingTbl(d.black.openings)+'</div></div>'+
     '<h3>Core Structure Families</h3>'+famTbl(d.families)+'</div>'+
+    fingerprintHtml(d.fingerprint)+
     '<div class="card"><h2>Games ('+d.games.length+') — click to replay</h2>'+
     gamesTbl(d.games)+'</div>';
+}
+function fingerprintHtml(fp){
+  if(!fp) return '';
+  if(!fp.available) return '<div class="card"><h3>Engine fingerprint</h3><p class="muted">'+
+    'No Stockfish engine configured — set PREP_STOCKFISH or drop a binary in ./stockfish/.</p></div>';
+  if(!fp.analyzed) return '<div class="card"><h3>Engine fingerprint</h3><p class="muted">'+
+    'Not analysed yet ('+fp.pending+' games pending). Click <b>Analyze with Stockfish</b> above.</p></div>';
+  const ph=fp.phase_acpl||{}, c=fp.counts||{};
+  let h='<div class="card"><h3>Engine fingerprint <span class="muted small">('+fp.analyzed+
+    ' games, depth '+fp.depth+')</span></h3>'+
+    '<p>Overall <b>ACPL '+fp.acpl+'</b> <span class="muted">(lower = more accurate)</span> · '+
+    'opening '+ph.op+' / middlegame '+ph.mid+' / endgame '+ph.end+'<br>'+
+    'Serious errors on file: <b>'+(c.blunder||0)+'</b> blunders, '+(c.mistake||0)+
+    ' mistakes, '+(c.inaccuracy||0)+' inaccuracies</p>';
+  if(fp.targets&&fp.targets.length) h+='<p>&#127919; <b>Target (least accurate):</b> '+
+    fp.targets.map(esc).join(', ')+'</p>';
+  if(fp.solid&&fp.solid.length) h+='<p>&#128737; <b>Avoid — solid here:</b> '+
+    fp.solid.map(esc).join(', ')+'</p>';
+  if(fp.by_family&&fp.by_family.length){
+    h+='<table><tr><th>Structure family</th><th>Moves</th><th>ACPL</th><th>Serious errors</th></tr>';
+    for(const r of fp.by_family) h+='<tr><td>'+esc(r.family)+'</td><td>'+r.moves+'</td><td>'+
+      r.acpl+'</td><td>'+r.blunders+'</td></tr>';
+    h+='</table>'; }
+  return h+'</div>';
+}
+function engineFindingsHtml(eng){
+  if(!eng) return '';
+  if(!eng.available) return '<div class="card"><h2>Engine-detected critical mistakes</h2>'+
+    '<p class="muted">No Stockfish engine configured.</p></div>';
+  if(!eng.analyzed) return '<div class="card"><h2>Engine-detected critical mistakes</h2>'+
+    '<p class="muted">Losses not analysed yet ('+eng.pending+' pending). Click '+
+    '<b>Analyze with Stockfish</b> above.</p></div>';
+  const ph=eng.phase_acpl||{};
+  let h='<div class="card"><h2>Engine-detected critical mistakes <span class="muted small">('+
+    eng.analyzed+' losses, depth '+eng.depth+')</span></h2>'+
+    '<p class="muted">Accuracy by phase (avg centipawn loss): opening '+ph.op+' · middlegame '+
+    ph.mid+' · endgame '+ph.end+' · overall '+eng.acpl+'</p>';
+  if(eng.findings.length){
+    h+='<table><tr><th>Game</th><th>Opening</th><th>Critical move</th><th>Eval swing</th>'+
+       '<th>Engine prefers</th></tr>';
+    for(const f of eng.findings){
+      const mv=f.move_no+(f.color==='white'?'.':'…')+esc(f.san)+
+        ' <span class="pill l">'+esc(f.sev)+'</span>';
+      h+='<tr class="click" onclick="openGame('+f.game_id+','+f.ply+')"><td>vs '+esc(f.opponent)+
+        '</td><td>'+esc(f.opening)+' ('+esc(f.eco)+')</td><td>'+mv+'</td><td>'+fmtCp(f.before)+
+        ' &rarr; '+fmtCp(f.after)+'</td><td>'+esc(f.best)+'</td></tr>'; }
+    h+='</table>'; }
+  return h+'</div>';
 }
 
 /* ---------------- Dino tab ---------------- */
@@ -1640,6 +2509,7 @@ async function loadDino(){
       for(const r of d.repeated_lines) h+='<div class="bullet">As '+r.color+': <code>'+
         esc(r.line)+'</code> — '+r.count+' losses ('+esc(r.opening)+')</div>'; }
     h+='</div></div>';
+    h+=engineFindingsHtml(d.engine);
     h+='<div class="card"><h2>All losses — click to replay</h2>'+gamesTbl(d.losses)+'</div>';
     el.innerHTML=h;
   }catch(e){ el.innerHTML='<div class="card">Error: '+esc(e.message)+'</div>'; }
@@ -1717,7 +2587,8 @@ function renderExportTab(){
    '<p class="muted">Writes one dossier per opponent plus '+
    '<b>Dino_Ballecer_Needs_Improvement.md</b> into the <code>manual_sections</code> folder. '+
    'Open them in any editor and paste into Tournament_Preparation_Manual.docx. '+
-   'Re-export any time after adding PGNs.</p>'+
+   'Re-export any time after adding PGNs. Run <b>Analyze with Stockfish</b> first to include '+
+   'the engine fingerprint and critical-mistake sections.</p>'+
    '<p><button class="primary" onclick="doExport()">Generate manual sections</button></p>'+
    '<div id="exportResult"></div></div>';
 }
@@ -1730,7 +2601,7 @@ async function doExport(){
 }
 
 /* ---------------- Board viewer ---------------- */
-async function openGame(id){
+async function openGame(id, jumpPly){
   try{
     viewer=await api('/api/game?id='+id);
     orient=viewer.orientation==='black'?'black':'white';
@@ -1739,7 +2610,7 @@ async function openGame(id){
     document.getElementById('vsub').textContent=
       (viewer.event||'')+' · '+(viewer.date||'')+' · '+(viewer.opening||'')+' ('+(viewer.eco||'')+')';
     document.getElementById('verr').textContent=viewer.replay_error||'';
-    renderMoves(); goPly(0);
+    renderMoves(); goPly(jumpPly||0);   // jump to the engine's flagged critical ply when given
     document.getElementById('modal').classList.add('open');
   }catch(e){ toast('Could not load game: '+e.message); }
 }
@@ -1796,6 +2667,7 @@ refresh();
 # ENTRY POINT
 # ===========================================================================
 def main():
+    global ONLINE_ENABLED, ENGINE_DEPTH
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
@@ -1806,7 +2678,44 @@ def main():
     ap.add_argument("--export", action="store_true",
                     help="headless: scan + write markdown sections, no server")
     ap.add_argument("--scan-only", action="store_true", help="headless: scan and exit")
+    ap.add_argument("--engine-check", action="store_true",
+                    help="probe Stockfish + opening DB, eval the start position, exit")
+    ap.add_argument("--analyze", action="store_true",
+                    help="run the engine analysis pass over stored games after scanning")
+    ap.add_argument("--scope", choices=["all", "losses", "player"], default="all",
+                    help="--analyze scope (default: all stored games)")
+    ap.add_argument("--player", type=int, default=None,
+                    help="player_id for --scope player")
+    ap.add_argument("--depth", type=int, default=ENGINE_DEPTH,
+                    help=f"engine search depth (default {ENGINE_DEPTH})")
+    ap.add_argument("--max-games", type=int, default=None,
+                    help="cap the number of games analysed (for a quick pass)")
+    ap.add_argument("--online", action="store_true",
+                    help="opt in to Lichess cloud-eval/explorer (off by default)")
     args = ap.parse_args()
+
+    ONLINE_ENABLED = args.online
+    ENGINE_DEPTH = args.depth
+
+    if args.engine_check:
+        path = find_stockfish()
+        print(f"Stockfish binary : {path or 'NOT FOUND (set PREP_STOCKFISH or use ./stockfish/)'}")
+        idx = load_opening_index()
+        print(f"Opening database : {OPENING_INDEX_PATH if idx else 'NOT FOUND'}"
+              + (f"  ({len(idx)} positions)" if idx else ""))
+        eng = get_engine()
+        if eng is None:
+            print("Engine           : unavailable — engine analysis will be skipped.")
+            return
+        fen = MiniBoard().fen()
+        with _ENGINE_LOCK:
+            cp, mate, best = eng.analyse(fen, args.depth)
+        sc = fold_score(cp, mate, True)
+        print(f"Engine           : {eng.name}")
+        print(f"Start position   : {cp_to_pawns(sc)} (White POV)  best "
+              f"{uci_to_long(fen, best)} [{best}]")
+        eng.close()
+        return
 
     init_db()
     conn = db()
@@ -1818,6 +2727,23 @@ def main():
                           "FROM Roster ORDER BY is_hero DESC, fide DESC"):
         mark = "*" if r["is_hero"] else " "
         print(f"  {mark} {r['real_name']:<30} {r['n']:>4} games")
+
+    if args.analyze:
+        if get_engine() is None and not ONLINE_ENABLED:
+            print("\n--analyze: no engine found and --online not set; skipping analysis.")
+        else:
+            print(f"\nEngine analysis (depth {args.depth}, scope {args.scope}) — "
+                  f"{engine_info()['name'] or 'lichess-cloud'}:")
+
+            def _prog(done, total):
+                print(f"\r  analyzing {done}/{total} games...", end="", flush=True)
+
+            res = analyze_all(conn, depth=args.depth, scope=args.scope, pid=args.player,
+                              max_games=args.max_games, status=ANALYZE_STATUS,
+                              progress=_prog)
+            print(f"\r  analysed {res['analyzed']}/{res['total']} games. "
+                  f"PositionEval cache rows: "
+                  f"{conn.execute('SELECT COUNT(*) FROM PositionEval').fetchone()[0]}")
 
     if args.export:
         files = export_markdown(conn)

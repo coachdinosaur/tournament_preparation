@@ -1,6 +1,6 @@
 # Opponent Dossier — FM Arlan Cabe
 
-*Generated 2026-06-11 from 0 games (0 over-the-board PGN, 0 Lichess online).*
+*Generated 2026-06-13 from 0 games (0 over-the-board PGN, 0 Lichess online).*
 
 **Title:** FM | **Federation:** PHI | **FIDE:** 2298
 
@@ -26,6 +26,11 @@ _No games on file yet._
 | Catalan / Réti Squeeze | 0 | — | — |
 | Anti-Sicilian Counter-Package | 0 | — | — |
 | IQP / Panov Attack | 0 | — | — |
+
+
+## Engine fingerprint
+
+_Not analysed yet (0 games pending). Run `python prep_manual_app.py --analyze --scope all`, or click “Analyze with Stockfish” in the app._
 
 
 ## Prep pointers

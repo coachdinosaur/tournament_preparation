@@ -1,0 +1,4 @@
+Source: https://github.com/lichess-org/chess-openings
+Files: a.tsv, b.tsv, c.tsv, d.tsv, e.tsv
+License: CC0 / Public Domain
+
