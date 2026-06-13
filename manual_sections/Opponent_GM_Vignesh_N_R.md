@@ -56,19 +56,61 @@
 
 ## Engine fingerprint
 
-*From 12 analysed game(s) at depth 10. Average centipawn loss (ACPL) — lower is more accurate.*
+*From 104 analysed game(s) at depth 12. Average centipawn loss (ACPL) — lower is more accurate.*
 
-- **Overall ACPL:** 11.8 (opening 10.3, middlegame 10.2, endgame 13.4)
-- **Serious errors on file:** 1 blunders, 2 mistakes, 17 inaccuracies
-- **Target structures (least accurate):** *Catalan / Réti Squeeze*, *Reversed-Sicilian / Flank Annexation*
-- **Avoid — they are solid here (most accurate):** *Advance Caro-Kann*, *Anti-Sicilian Counter-Package*
+- **Overall ACPL:** 13.9 (opening 7.7, middlegame 11.7, endgame 18.0)
+- **Serious errors on file:** 10 blunders, 46 mistakes, 151 inaccuracies
+- **Target structures (least accurate):** *IQP / Panov Attack*, *Catalan / Réti Squeeze*
+- **Avoid — they are solid here (most accurate):** *Advance Caro-Kann*, *Fianchetto KID / Grünfeld Complexes*
 
 | Structure family | Moves | ACPL | Serious errors |
 |---|---:|---:|---:|
-| Catalan / Réti Squeeze | 33 | 23.8 | 1 |
-| Reversed-Sicilian / Flank Annexation | 69 | 19.1 | 1 |
-| Anti-Sicilian Counter-Package | 25 | 8.8 | 0 |
-| Advance Caro-Kann | 36 | 8.3 | 0 |
+| IQP / Panov Attack | 96 | 17.6 | 2 |
+| Catalan / Réti Squeeze | 535 | 13.0 | 5 |
+| Anti-Sicilian Counter-Package | 477 | 11.8 | 9 |
+| Reversed-Sicilian / Flank Annexation | 225 | 10.7 | 1 |
+| Fianchetto KID / Grünfeld Complexes | 123 | 8.7 | 0 |
+| Advance Caro-Kann | 69 | 7.9 | 0 |
+
+
+## Player Profile
+
+*From 104 analysed game(s) at depth 12. Overall ACPL 13.9 — opening 7.7, middlegame 11.7, endgame 18.0.*
+
+- **Mistakes on file:** 10 blunders, 46 mistakes, 151 inaccuracies
+- **Opening breadth:** 128 distinct openings
+- **Confidence lines:** Sicilian Defense: Nyezhmetdinov-Rossolimo Attack (100.0% over 6 games), Rapport-Jobava System (100.0% over 5 games), English Opening: Agincourt Defense, Neo-Catalan Declined (100.0% over 4 games)
+- **Repair lines:** Caro-Kann Defense: Advance Variation, Tal Variation (0.0% over 2 games), Queen's Gambit Declined: Ragozin Defense, Alekhine Variation (25.0% over 2 games)
+
+### Data-backed tendencies
+
+- **Opening breadth** (high confidence): Broad: 128 distinct openings across 187 games.
+- **Risk tendency** (high confidence): Moderate tactical volatility: 56 blunders/mistakes in 104 analysed games.
+- **Phase stability** (high confidence): Least accurate phase: endgame ACPL 18.0; best phase: opening ACPL 7.7.
+- **Conversion reliability** (medium confidence): 2 conversion-failure sample(s) among 12 classified endgame/late-simplified samples.
+- **Drawing-defense reliability** (medium confidence): 4 drawing-defense failure sample(s) among 12 classified endgame/late-simplified samples.
+- **Confidence lines** (medium confidence): Sicilian Defense: Nyezhmetdinov-Rossolimo Attack (100.0%/6g), Rapport-Jobava System (100.0%/5g), English Opening: Agincourt Defense, Neo-Catalan Declined (100.0%/4g)
+
+### Endgame / simplified-position weakness categories
+
+| Category | Samples | Evidence |
+|---|---:|---|
+| Drawing defense failure | 4 | The move turned a drawable position into a losing one. |
+| Philidor | 3 | The rook-and-pawn structure resembles a Philidor defense.; The move turned a winning position into a non-winning one.; The rook became passive after the move. |
+| Conversion failure | 2 | The rook-and-pawn structure resembles a Philidor defense.; The move turned a winning position into a non-winning one.; The rook became passive after the move. |
+| Rook activity | 2 | The rook became passive after the move.; The rook-and-pawn structure resembles a Philidor defense.; The move turned a winning position into a non-winning one. |
+| Rook behind pawn | 1 | The rook-and-pawn structure resembles a Philidor defense.; A passed pawn was present but the rook was not behind it. |
+
+### Sample positions
+
+| Game | Move | Severity | Category | Engine prefers |
+|---|---|---|---|---|
+| vs Aaditya,Dhingra | 37...Bg5 | blunder | Drawing defense failure | h5-h4 |
+| vs Boci,Mateo | 38...Kg5 | blunder | Drawing defense failure | Rc2-c1 |
+| vs Anand,Batsukh | 36.Bd3 | mistake | Philidor, Rook behind pawn | Rc1-c5 |
+| vs Sukovic,Andrej | 39.Rd2 | mistake | Philidor, Rook activity, Conversion failure | Rf2-f4 |
+| vs Boci,Mateo | 36...Rc2 | mistake | Drawing defense failure | Re2-e3 |
+| vs Ruzhansky,Elias | 38.Rxc6 | mistake | Rook activity | a5-a6 |
 
 
 ## Prep pointers

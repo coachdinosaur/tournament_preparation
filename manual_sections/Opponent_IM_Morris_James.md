@@ -56,7 +56,41 @@
 
 ## Engine fingerprint
 
-_Not analysed yet (100 games pending). Run `python prep_manual_app.py --analyze --scope all`, or click “Analyze with Stockfish” in the app._
+*From 2 analysed game(s) at depth 16. Average centipawn loss (ACPL) — lower is more accurate.*
+
+- **Overall ACPL:** 26.0 (opening 25.8, middlegame 34.2, endgame 20.1)
+- **Serious errors on file:** 2 blunders, 2 mistakes, 6 inaccuracies
+
+
+## Player Profile
+
+*From 2 analysed game(s) at depth 16. Overall ACPL 26.0 — opening 25.8, middlegame 34.2, endgame 20.1.*
+
+- **Mistakes on file:** 2 blunders, 2 mistakes, 6 inaccuracies
+- **Opening breadth:** 62 distinct openings
+- **Confidence lines:** Pseudo Queen's Indian Defense (100.0% over 4 games), Sicilian Defense: Closed (100.0% over 4 games), Zukertort Opening: Nimzo-Larsen Variation (100.0% over 3 games)
+- **Repair lines:** Nimzowitsch Defense: Williams Variation (21.4% over 7 games), Sicilian Defense: Najdorf Variation (25.0% over 2 games), Caro-Kann Defense: Exchange Variation (33.3% over 3 games)
+
+### Data-backed tendencies
+
+- **Opening breadth** (high confidence): Broad: 62 distinct openings across 100 games.
+- **Risk tendency** (low confidence): High tactical volatility: 4 blunders/mistakes in 2 analysed games.
+- **Phase stability** (low confidence): Least accurate phase: middlegame ACPL 34.2; best phase: endgame ACPL 20.1.
+- **Conversion reliability** (low confidence): 0 conversion-failure sample(s) among 1 classified endgame/late-simplified samples.
+- **Drawing-defense reliability** (low confidence): 1 drawing-defense failure sample(s) among 1 classified endgame/late-simplified samples.
+- **Confidence lines** (medium confidence): Pseudo Queen's Indian Defense (100.0%/4g), Sicilian Defense: Closed (100.0%/4g), Zukertort Opening: Nimzo-Larsen Variation (100.0%/3g)
+
+### Endgame / simplified-position weakness categories
+
+| Category | Samples | Evidence |
+|---|---:|---|
+| Drawing defense failure | 1 | The engine score changed from drawable to losing. |
+
+### Sample positions
+
+| Game | Move | Severity | Category | Engine prefers |
+|---|---|---|---|---|
+| vs Porozhniak,Maya | 26...Nb2 | blunder | Drawing defense failure | Rd8xd5 |
 
 
 ## Prep pointers

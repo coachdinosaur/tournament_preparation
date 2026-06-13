@@ -28,7 +28,7 @@ Usage
     python prep_manual_app.py --export   # headless: just write markdown
     python prep_manual_app.py --port 9000 --no-browser
     python prep_manual_app.py --engine-check        # test the Stockfish UCI link
-    python prep_manual_app.py --analyze [--depth N]  # run engine analysis over stored games
+    python prep_manual_app.py --analyze --scope player --player ID  # analyse one player
     python prep_manual_app.py --online ...           # opt in to Lichess explorer/cloud-eval
 
 No third-party packages required (Python 3.10+ standard library only).
@@ -59,6 +59,8 @@ from collections import Counter
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
+
+import player_profile as profile_engine
 
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "prep_manual.db"
@@ -1425,6 +1427,10 @@ def analyze_game(conn, dedup_hash: str, moves: list[str], depth: int = ENGINE_DE
                 "sev": sev, "loss": loss,
                 "before": (eb_cp if white_moved else -eb_cp),
                 "after": (ea_cp if white_moved else -ea_cp),
+                "fen_before": fens[k],
+                "fen_after": fens[k + 1],
+                "move_uci": profile_engine.infer_move_uci(fens[k], fens[k + 1]) or "",
+                "best_uci": eb[1] or "",
                 "best": uci_to_long(fens[k], eb[1]),
             })
     sig.sort(key=lambda m: -m["loss"])
@@ -1447,22 +1453,42 @@ def analyze_all(conn, depth: int = ENGINE_DEPTH, scope: str = "all",
                 pid: int | None = None, max_games: int | None = None,
                 status: dict | None = None, progress=None) -> dict:
     """The heavy pass: run/refresh analysis over stored games (deduped by hash so
-    each unique game is analysed once). scope: all | losses (Dino) | player."""
+    each unique game is analysed once). scope: fast | all | losses (Dino) | player."""
+    if scope == "player" and pid is None:
+        raise ValueError("scope='player' requires a player id")
     hero = conn.execute("SELECT player_id FROM Roster WHERE is_hero=1").fetchone()
     hero_id = hero["player_id"] if hero else None
     rows = conn.execute(
-        "SELECT dedup_hash, moves_json, presult, player_id FROM Games "
-        "WHERE source!='lichess'").fetchall()
+        "SELECT game_id, dedup_hash, moves_json, presult, player_id, date FROM Games "
+        "WHERE source!='lichess' ORDER BY date DESC, game_id DESC").fetchall()
     games, seen = [], set()
-    for r in rows:
-        if scope == "losses" and not (r["player_id"] == hero_id and r["presult"] == "loss"):
-            continue
-        if scope == "player" and pid is not None and r["player_id"] != pid:
-            continue
+    recent_by_player: dict[int, int] = {}
+
+    def add_game(r) -> None:
         if r["dedup_hash"] in seen:
-            continue
+            return
         seen.add(r["dedup_hash"])
         games.append(r)
+
+    if scope == "fast":
+        for r in rows:
+            if r["player_id"] == hero_id and r["presult"] == "loss":
+                add_game(r)
+        for r in rows:
+            if r["player_id"] == hero_id:
+                continue
+            n = recent_by_player.get(r["player_id"], 0)
+            if n >= 10:
+                continue
+            add_game(r)
+            recent_by_player[r["player_id"]] = n + 1
+    else:
+        for r in rows:
+            if scope == "losses" and not (r["player_id"] == hero_id and r["presult"] == "loss"):
+                continue
+            if scope == "player" and pid is not None and r["player_id"] != pid:
+                continue
+            add_game(r)
     if max_games:
         games = games[:max_games]
     if status is not None:
@@ -1603,6 +1629,19 @@ def opponent_fingerprint(conn, pid: int, depth: int = ENGINE_DEPTH,
     return out
 
 
+def build_player_profile(conn, player_id: int, *, depth: int = ENGINE_DEPTH,
+                         allow_engine: bool = False) -> dict:
+    """Reusable player profile. Normal GET/export callers keep allow_engine=False
+    so this reads cached GameAnalysis rows only and never blocks on Stockfish."""
+    return profile_engine.build_player_profile(
+        conn,
+        player_id,
+        depth=depth,
+        allow_engine=allow_engine,
+        analyze_game=analyze_game,
+    )
+
+
 # ===========================================================================
 # ANALYSIS
 # ===========================================================================
@@ -1677,6 +1716,7 @@ def player_dossier(conn, pid: int) -> dict:
         "games": games,
         # Engine accuracy profile (cached results only — see analyze_all()).
         "fingerprint": opponent_fingerprint(conn, pid, allow_engine=False),
+        "player_profile": build_player_profile(conn, pid, allow_engine=False),
     }
 
 
@@ -1768,6 +1808,7 @@ def hero_improvement(conn) -> dict:
         "losses": [g for g in games if g["presult"] == "loss"],
         # Engine-pinpointed critical mistakes + accuracy-by-phase (cached only).
         "engine": hero_blunder_findings(conn, allow_engine=False),
+        "player_profile": build_player_profile(conn, pid, allow_engine=False),
     }
 
 
@@ -1857,6 +1898,66 @@ def md_engine_findings(eng: dict | None) -> str:
     return "\n".join(out) + "\n"
 
 
+def md_player_profile(pp: dict | None) -> str:
+    if not pp:
+        return "_Player profile unavailable._\n"
+    phase = pp.get("phase_profile") or {}
+    opening = pp.get("opening_profile") or {}
+    out = []
+    analyzed = phase.get("analyzed", 0)
+    if analyzed:
+        ph = phase.get("phase_acpl") or {}
+        counts = phase.get("mistake_counts") or {}
+        out += [
+            f"*From {analyzed} analysed game(s) at depth {phase.get('depth')}. "
+            f"Overall ACPL {phase.get('acpl')} — opening {ph.get('op')}, "
+            f"middlegame {ph.get('mid')}, endgame {ph.get('end')}.*",
+            "",
+            f"- **Mistakes on file:** {counts.get('blunder', 0)} blunders, "
+            f"{counts.get('mistake', 0)} mistakes, {counts.get('inaccuracy', 0)} inaccuracies",
+        ]
+    else:
+        out += [
+            f"_No cached engine profile yet ({phase.get('pending', 0)} games pending). "
+            "Run the fast Stockfish pass from the app or CLI._",
+            "",
+        ]
+    out.append(f"- **Opening breadth:** {opening.get('distinct_openings', 0)} distinct openings")
+    if opening.get("strongest_lines"):
+        lines = ", ".join(
+            f"{r['opening']} ({r['score']}% over {r['n']} games)"
+            for r in opening["strongest_lines"][:3])
+        out.append(f"- **Confidence lines:** {lines}")
+    if opening.get("weak_lines"):
+        lines = ", ".join(
+            f"{r['opening']} ({r['score']}% over {r['n']} games)"
+            for r in opening["weak_lines"][:3])
+        out.append(f"- **Repair lines:** {lines}")
+    if pp.get("tendencies"):
+        out += ["", "### Data-backed tendencies", ""]
+        for t in pp["tendencies"]:
+            out.append(f"- **{t['label']}** ({t['confidence']} confidence): {t['evidence']}")
+    if pp.get("weakness_categories"):
+        out += ["", "### Endgame / simplified-position weakness categories", "",
+                "| Category | Samples | Evidence |",
+                "|---|---:|---|"]
+        for c in pp["weakness_categories"]:
+            reason = "; ".join(c.get("reasons") or [])
+            out.append(f"| {c['title']} | {c['count']} | {reason or 'Classified from engine samples.'} |")
+    if pp.get("samples"):
+        out += ["", "### Sample positions", "",
+                "| Game | Move | Severity | Category | Engine prefers |",
+                "|---|---|---|---|---|"]
+        for s in pp["samples"][:6]:
+            cats = ", ".join(profile_engine.WEAKNESS_TITLES.get(c, c)
+                             for c in s.get("categories", []))
+            dots = "." if s.get("color") == "white" else "..."
+            move = f"{s.get('move_no')}{dots}{s.get('san')}"
+            out.append(f"| vs {s.get('opponent', '')} | {move} | {s.get('severity')} | "
+                       f"{cats} | {s.get('best', '')} |")
+    return "\n".join(out) + "\n"
+
+
 def export_markdown(conn) -> list[str]:
     EXPORT_DIR.mkdir(exist_ok=True)
     today = dt.date.today().isoformat()
@@ -1883,6 +1984,8 @@ def export_markdown(conn) -> list[str]:
                  md_family_table(d["families"]), "",
                  "## Engine fingerprint", "",
                  md_fingerprint(d.get("fingerprint")), "",
+                 "## Player Profile", "",
+                 md_player_profile(d.get("player_profile")), "",
                  "## Prep pointers", ""]
         pointers = []
         for f in d["families"]:
@@ -1926,7 +2029,9 @@ def export_markdown(conn) -> list[str]:
              f"White {md_wdl(imp['white'])}, Black {md_wdl(imp['black'])}", "",
              "## Priority work list", ""]
     lines += [f"{i}. {b}" for i, b in enumerate(imp["bullets"], 1)] or ["_No findings._"]
-    lines += ["", f"## Openings as White ({imp['white']['n']} games)", "",
+    lines += ["", "## Player Profile", "",
+              md_player_profile(imp.get("player_profile")), "",
+              f"## Openings as White ({imp['white']['n']} games)", "",
               md_opening_table(imp["white"]["openings"], 20), "",
               f"## Openings as Black ({imp['black']['n']} games)", "",
               md_opening_table(imp["black"]["openings"], 20), "",
@@ -2108,8 +2213,11 @@ class Handler(BaseHTTPRequestHandler):
                                 "in ./stockfish/ (or set PREP_STOCKFISH), or use --online."},
                                400)
                     return
-                scope = body.get("scope") or "losses"
+                scope = body.get("scope") or "fast"
                 pid = body.get("player_id")
+                if scope == "player" and not pid:
+                    self._json({"error": "player_id required for player analysis"}, 400)
+                    return
                 depth = int(body.get("depth") or ENGINE_DEPTH)
                 maxg = body.get("max_games")
 
@@ -2252,7 +2360,7 @@ textarea { width:100%; font-family:Consolas, monospace; }
   <span class="sub" id="folder"></span>
   <span style="flex:1"></span>
   <span class="sub" id="engineStatus" title="Engine analysis powers the dossiers, the self-audit and the export — it is not an interactive board."></span>
-  <button id="analyzeBtn" onclick="runAnalyze()">⚙ Analyze with Stockfish</button>
+  <button id="analyzeBtn" onclick="runAnalyze()">⚙ Analyze selected player</button>
   <button class="primary" onclick="rescan()">⟳ Rescan PGN folder</button>
 </header>
 <nav>
@@ -2339,12 +2447,29 @@ function updateEngineStatus(){
   const btn=document.getElementById('analyzeBtn');
   if(btn){ btn.disabled = !!a.running || !(e.available||STATE.online);
     btn.textContent = a.running ? ('⚙ Analysing '+(a.current||0)+'/'+(a.total||0))
-                                : '⚙ Analyze with Stockfish'; }
+                                : '⚙ Analyze selected player'; }
 }
 async function runAnalyze(){
-  try{ const r=await post('/api/analyze',{scope:'all'});
+  const pid=selectedAnalyzePlayerId();
+  if(!pid){ toast('Open Dino or an opponent first, then analyze that player.'); return; }
+  await analyzePlayer(pid);
+}
+function selectedAnalyzePlayerId(){
+  if(!STATE) return null;
+  if(curTab==='dino'){
+    const hero=STATE.roster.find(r=>r.is_hero); return hero ? hero.player_id : null;
+  }
+  if(curTab==='opponents' && curPlayer) return curPlayer;
+  return null;
+}
+function playerName(pid){
+  const p=(STATE&&STATE.roster||[]).find(r=>r.player_id===pid);
+  return p ? p.real_name : ('player '+pid);
+}
+async function analyzePlayer(pid){
+  try{ const r=await post('/api/analyze',{scope:'player', player_id:pid});
     if(r.error){ toast(r.error); return; }
-    toast('Engine analysis started — results feed the dossiers, audit and export.');
+    toast('Engine analysis started for '+playerName(pid)+' — all PGN games for this player.');
     pollAnalyze();
   }catch(e){ toast('Analyze failed: '+e.message); }
 }
@@ -2447,11 +2572,13 @@ function dossierHtml(d){
     ' &middot; '+esc(p.federation)+' &middot; FIDE '+(p.fide||'—')+' &middot; '+d.totals.n+
     ' games on file ('+d.totals.w+'-'+d.totals.d+'-'+d.totals.l+', '+d.totals.score+'%)'+
     ' &middot; sources: '+d.sources.pgn+' OTB PGN / '+d.sources.lichess+' Lichess online</p>'+
+    '<p><button class="primary" onclick="analyzePlayer('+p.player_id+')">Analyze all games for this player</button></p>'+
     '<div class="cols"><div><h3>As White — '+d.white.n+' games ('+d.white.score+'%)</h3>'+
     openingTbl(d.white.openings)+'</div><div><h3>As Black — '+d.black.n+' games ('+
     d.black.score+'%)</h3>'+openingTbl(d.black.openings)+'</div></div>'+
     '<h3>Core Structure Families</h3>'+famTbl(d.families)+'</div>'+
     fingerprintHtml(d.fingerprint)+
+    playerProfileHtml(d.player_profile)+
     '<div class="card"><h2>Games ('+d.games.length+') — click to replay</h2>'+
     gamesTbl(d.games)+'</div>';
 }
@@ -2477,6 +2604,58 @@ function fingerprintHtml(fp){
     for(const r of fp.by_family) h+='<tr><td>'+esc(r.family)+'</td><td>'+r.moves+'</td><td>'+
       r.acpl+'</td><td>'+r.blunders+'</td></tr>';
     h+='</table>'; }
+  return h+'</div>';
+}
+function playerProfileHtml(pp){
+  if(!pp) return '';
+  const phase=pp.phase_profile||{}, op=pp.opening_profile||{};
+  let h='<div class="card"><h2>Player Profile</h2>';
+  if(phase.analyzed){
+    const ph=phase.phase_acpl||{}, c=phase.mistake_counts||{};
+    h+='<p><b>'+phase.analyzed+'</b> analysed game(s), depth '+phase.depth+
+       ' · ACPL '+phase.acpl+' <span class="muted">(opening '+ph.op+
+       ' / middlegame '+ph.mid+' / endgame '+ph.end+')</span><br>'+
+       'Errors: '+(c.blunder||0)+' blunders, '+(c.mistake||0)+
+       ' mistakes, '+(c.inaccuracy||0)+' inaccuracies.</p>';
+  } else {
+    h+='<p class="muted">No cached engine profile yet ('+(phase.pending||0)+
+       ' games pending). Run the fast Stockfish pass to unlock phase and weakness data.</p>';
+  }
+  h+='<p><b>Opening breadth:</b> '+(op.distinct_openings||0)+' distinct openings.</p>';
+  if(op.strongest_lines&&op.strongest_lines.length){
+    h+='<p><b>Confidence lines:</b> '+op.strongest_lines.slice(0,3).map(r=>
+      esc(r.opening)+' ('+r.score+'% / '+r.n+'g)').join(', ')+'</p>';
+  }
+  if(op.weak_lines&&op.weak_lines.length){
+    h+='<p><b>Repair lines:</b> '+op.weak_lines.slice(0,3).map(r=>
+      esc(r.opening)+' ('+r.score+'% / '+r.n+'g)').join(', ')+'</p>';
+  }
+  if(pp.tendencies&&pp.tendencies.length){
+    h+='<h3>Data-backed tendencies</h3><table><tr><th>Label</th><th>Evidence</th><th>Confidence</th></tr>';
+    for(const t of pp.tendencies) h+='<tr><td>'+esc(t.label)+'</td><td>'+
+      esc(t.evidence)+'</td><td>'+esc(t.confidence)+'</td></tr>';
+    h+='</table>';
+  }
+  if(pp.weakness_categories&&pp.weakness_categories.length){
+    h+='<h3>Endgame / simplified-position weakness categories</h3>'+
+       '<table><tr><th>Category</th><th>Samples</th><th>Evidence</th></tr>';
+    for(const c of pp.weakness_categories) h+='<tr><td>'+esc(c.title)+
+      '</td><td>'+c.count+'</td><td>'+esc((c.reasons||[]).join('; '))+'</td></tr>';
+    h+='</table>';
+  }
+  if(pp.samples&&pp.samples.length){
+    h+='<h3>Sample positions</h3><table><tr><th>Game</th><th>Move</th><th>Severity</th>'+
+       '<th>Category</th><th>Engine prefers</th></tr>';
+    for(const s of pp.samples.slice(0,6)){
+      const cats=(s.categories||[]).map(c=>esc(c.replaceAll('_',' '))).join(', ');
+      const dots=s.color==='white'?'.':'…';
+      const move=(s.move_no||'?')+dots+esc(s.san||'');
+      h+='<tr class="click" onclick="openGame('+s.game_id+','+s.ply+')"><td>vs '+esc(s.opponent)+
+        '</td><td>'+move+'</td><td>'+esc(s.severity)+'</td><td>'+cats+
+        '</td><td>'+esc(s.best||'')+'</td></tr>';
+    }
+    h+='</table>';
+  }
   return h+'</div>';
 }
 function engineFindingsHtml(eng){
@@ -2513,7 +2692,8 @@ async function loadDino(){
     let h='<div class="card"><h2>&#11088; '+esc(d.hero.real_name)+' — own-game audit ('+
       d.record.n+' games)</h2><p>Overall <b>'+d.record.w+'-'+d.record.d+'-'+d.record.l+
       '</b> ('+d.record.score+'%) &middot; White '+d.white.score+'% ('+d.white.n+
-      ') &middot; Black '+d.black.score+'% ('+d.black.n+')</p></div>';
+      ') &middot; Black '+d.black.score+'% ('+d.black.n+')</p>'+
+      '<p><button class="primary" onclick="analyzePlayer('+d.hero.player_id+')">Analyze all Dino games</button></p></div>';
     h+='<div class="card"><h2>Needs improvement — priority list</h2>';
     h+= d.bullets.length? d.bullets.map(b=>'<div class="bullet">'+esc(b)+'</div>').join('')
                         : '<p class="muted">No findings.</p>';
@@ -2531,6 +2711,7 @@ async function loadDino(){
       for(const r of d.repeated_lines) h+='<div class="bullet">As '+r.color+': <code>'+
         esc(r.line)+'</code> — '+r.count+' losses ('+esc(r.opening)+')</div>'; }
     h+='</div></div>';
+    h+=playerProfileHtml(d.player_profile);
     h+=engineFindingsHtml(d.engine);
     h+='<div class="card"><h2>All losses — click to replay</h2>'+gamesTbl(d.losses)+'</div>';
     el.innerHTML=h;
@@ -2609,8 +2790,8 @@ function renderExportTab(){
    '<p class="muted">Writes one dossier per opponent plus '+
    '<b>Dino_Ballecer_Needs_Improvement.md</b> into the <code>manual_sections</code> folder. '+
    'Open them in any editor and paste into Tournament_Preparation_Manual.docx. '+
-   'Re-export any time after adding PGNs. Run <b>Analyze with Stockfish</b> first to include '+
-   'the engine fingerprint and critical-mistake sections.</p>'+
+   'Re-export any time after adding PGNs. Analyze each player first to include '+
+   'the engine fingerprint, player profile, and critical-mistake sections.</p>'+
    '<p><button class="primary" onclick="doExport()">Generate manual sections</button></p>'+
    '<div id="exportResult"></div></div>';
 }
@@ -2704,8 +2885,8 @@ def main():
                     help="probe Stockfish + opening DB, eval the start position, exit")
     ap.add_argument("--analyze", action="store_true",
                     help="run the engine analysis pass over stored games after scanning")
-    ap.add_argument("--scope", choices=["all", "losses", "player"], default="all",
-                    help="--analyze scope (default: all stored games)")
+    ap.add_argument("--scope", choices=["fast", "all", "losses", "player"], default="fast",
+                    help="--analyze scope (default: fast tournament pass)")
     ap.add_argument("--player", type=int, default=None,
                     help="player_id for --scope player")
     ap.add_argument("--depth", type=int, default=ENGINE_DEPTH,
@@ -2715,6 +2896,8 @@ def main():
     ap.add_argument("--online", action="store_true",
                     help="opt in to Lichess cloud-eval/explorer (off by default)")
     args = ap.parse_args()
+    if args.analyze and args.scope == "player" and args.player is None:
+        ap.error("--scope player requires --player PLAYER_ID")
 
     ONLINE_ENABLED = args.online
     ENGINE_DEPTH = args.depth

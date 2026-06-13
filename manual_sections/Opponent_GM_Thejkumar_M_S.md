@@ -56,7 +56,29 @@
 
 ## Engine fingerprint
 
-_Not analysed yet (102 games pending). Run `python prep_manual_app.py --analyze --scope all`, or click “Analyze with Stockfish” in the app._
+*From 1 analysed game(s) at depth 12. Average centipawn loss (ACPL) — lower is more accurate.*
+
+- **Overall ACPL:** 137.2 (opening 10.7, middlegame 26.1, endgame 281.0)
+- **Serious errors on file:** 7 blunders, 0 mistakes, 0 inaccuracies
+
+
+## Player Profile
+
+*From 1 analysed game(s) at depth 12. Overall ACPL 137.2 — opening 10.7, middlegame 26.1, endgame 281.0.*
+
+- **Mistakes on file:** 7 blunders, 0 mistakes, 0 inaccuracies
+- **Opening breadth:** 63 distinct openings
+- **Confidence lines:** Queen's Pawn Game: Accelerated London System (100.0% over 3 games), Queen's Gambit Declined: Ragozin Defense (75.0% over 6 games), Caro-Kann Defense: Advance Variation, Botvinnik-Carls Defense (66.7% over 3 games)
+- **Repair lines:** Benoni Defense: Classical Variation, Czerniak Defense, Tal Line (0.0% over 2 games), Queen's Indian Defense: Capablanca Variation (0.0% over 2 games), Caro-Kann Defense: Advance Variation, Short Variation (25.0% over 4 games)
+
+### Data-backed tendencies
+
+- **Opening breadth** (high confidence): Broad: 63 distinct openings across 102 games.
+- **Risk tendency** (low confidence): High tactical volatility: 7 blunders/mistakes in 1 analysed games.
+- **Phase stability** (low confidence): Least accurate phase: endgame ACPL 281.0; best phase: opening ACPL 10.7.
+- **Conversion reliability** (low confidence): 0 conversion-failure sample(s) among 0 classified endgame/late-simplified samples.
+- **Drawing-defense reliability** (low confidence): 0 drawing-defense failure sample(s) among 0 classified endgame/late-simplified samples.
+- **Confidence lines** (medium confidence): Queen's Pawn Game: Accelerated London System (100.0%/3g), Queen's Gambit Declined: Ragozin Defense (75.0%/6g), Caro-Kann Defense: Advance Variation, Botvinnik-Carls Defense (66.7%/3g)
 
 
 ## Prep pointers

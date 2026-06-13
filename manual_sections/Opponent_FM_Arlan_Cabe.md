@@ -33,6 +33,13 @@ _No games on file yet._
 _Not analysed yet (0 games pending). Run `python prep_manual_app.py --analyze --scope all`, or click “Analyze with Stockfish” in the app._
 
 
+## Player Profile
+
+_No cached engine profile yet (0 games pending). Run the fast Stockfish pass from the app or CLI._
+
+- **Opening breadth:** 0 distinct openings
+
+
 ## Prep pointers
 
 - Not enough games on file yet for reliable pointers — add their PGN database and re-export.

@@ -59,6 +59,20 @@
 _Not analysed yet (99 games pending). Run `python prep_manual_app.py --analyze --scope all`, or click “Analyze with Stockfish” in the app._
 
 
+## Player Profile
+
+_No cached engine profile yet (99 games pending). Run the fast Stockfish pass from the app or CLI._
+
+- **Opening breadth:** 97 distinct openings
+- **Confidence lines:** Pirc Defense: Kholmov System (100.0% over 3 games), Sicilian Defense: Nyezhmetdinov-Rossolimo Attack, Fianchetto Variation (100.0% over 3 games), Bogo-Indian Defense: Retreat Variation (83.3% over 3 games)
+- **Repair lines:** Caro-Kann Defense: Advance Variation (0.0% over 2 games), Catalan Opening: Open Defense (0.0% over 2 games), Petrov's Defense: Nimzowitsch Attack (0.0% over 2 games)
+
+### Data-backed tendencies
+
+- **Opening breadth** (high confidence): Broad: 97 distinct openings across 134 games.
+- **Confidence lines** (medium confidence): Pirc Defense: Kholmov System (100.0%/3g), Sicilian Defense: Nyezhmetdinov-Rossolimo Attack, Fianchetto Variation (100.0%/3g), Bogo-Indian Defense: Retreat Variation (83.3%/3g)
+
+
 ## Prep pointers
 
 - **Target:** steer into *Advance Caro-Kann* — they score only 42.9% there (7 games).

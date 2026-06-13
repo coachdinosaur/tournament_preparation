@@ -12,6 +12,39 @@
 4. No practical games in the "IQP / Panov Attack" family — a core manual structure with zero reps. Schedule training games in it.
 5. Confidence weapons to keep sharp (not change): Sicilian Defense: Moscow Variation, Main Line (100.0%), French Defense: King's Indian Attack (91.7%), Sicilian Defense: Moscow Variation (100.0%).
 
+## Player Profile
+
+*From 7 analysed game(s) at depth 12. Overall ACPL 26.7 — opening 13.7, middlegame 18.8, endgame 36.7.*
+
+- **Mistakes on file:** 3 blunders, 8 mistakes, 26 inaccuracies
+- **Opening breadth:** 35 distinct openings
+- **Confidence lines:** Sicilian Defense: Moscow Variation, Main Line (100.0% over 9 games), Sicilian Defense: Moscow Variation (100.0% over 5 games), Center Game: Paulsen Attack Variation (100.0% over 3 games)
+
+### Data-backed tendencies
+
+- **Opening breadth** (high confidence): Broad: 35 distinct openings across 64 games.
+- **Risk tendency** (medium confidence): High tactical volatility: 11 blunders/mistakes in 7 analysed games.
+- **Phase stability** (medium confidence): Least accurate phase: endgame ACPL 36.7; best phase: opening ACPL 13.7.
+- **Conversion reliability** (low confidence): 0 conversion-failure sample(s) among 4 classified endgame/late-simplified samples.
+- **Drawing-defense reliability** (low confidence): 4 drawing-defense failure sample(s) among 4 classified endgame/late-simplified samples.
+- **Confidence lines** (medium confidence): Sicilian Defense: Moscow Variation, Main Line (100.0%/9g), Sicilian Defense: Moscow Variation (100.0%/5g), Center Game: Paulsen Attack Variation (100.0%/3g)
+
+### Endgame / simplified-position weakness categories
+
+| Category | Samples | Evidence |
+|---|---:|---|
+| Drawing defense failure | 4 | The engine score changed from drawable to losing. |
+
+### Sample positions
+
+| Game | Move | Severity | Category | Engine prefers |
+|---|---|---|---|---|
+| vs Aaradhya, Suyog Bagul | 34...Qb6 | blunder | Drawing defense failure | Qa5-e5 |
+| vs Javanbakht, Nima | 28.Rxf5 | mistake | Drawing defense failure | Qc2-c4 |
+| vs Javanbakht, Nima | 33.Qc4 | mistake | Drawing defense failure | Ng3-f5 |
+| vs Lee, Tsuen Jin Aiesec | 23...Rc5 | mistake | Drawing defense failure | Kg7-f6 |
+
+
 ## Openings as White (34 games)
 
 | Opening | ECO | Games | W-D-L | Score |
@@ -77,13 +110,17 @@
 
 ## Engine-detected critical mistakes
 
-*From 3 analysed loss(es) at depth 12. Accuracy by phase (average centipawn loss): opening 17.1, middlegame 12.8, endgame 50.7 (overall 32.7).*
+*From 7 analysed loss(es) at depth 12. Accuracy by phase (average centipawn loss): opening 13.7, middlegame 18.8, endgame 36.7 (overall 26.7).*
 
 | Game | Opening | Critical move | Eval swing | Engine prefers |
 |---|---|---|---|---|
 | vs Aaradhya, Suyog Bagul | Sicilian Defense: Dragon Variation (B70) | 36...f3 (blunder) | -4.5 → -9.8 | Re8-e7 |
+| vs Looi, Xin Hao | Benoni Defense: Modern Variation (A60) | 17...Ne5 (blunder) | -0.3 → -2.7 | Nd7-b6 |
 | vs Javanbakht, Nima | Sicilian Defense: Nyezhmetdinov-Rossolimo Attack, Fianchetto Variation (B31) | 28.Rxf5 (mistake) | -1.0 → -2.9 | Qc2-c4 |
+| vs Paciencia, Enrique | English Opening: Anglo-Indian Defense, King's Indian Formation (A15) | 27...Rxf2 (mistake) | +2.3 → +0.8 | Bb7-c6 |
+| vs Wong, Zhenyong Jayden | Benoni Defense: Classical Variation, New York Variation (A70) | 21...c4 (mistake) | -2.6 → -3.8 | Rb8xb2 |
 | vs Lee, Tsuen Jin Aiesec | Sicilian Defense: Dragon Variation, Yugoslav Attack, Modern Line (B76) | 23...Rc5 (mistake) | -1.4 → -2.4 | Kg7-f6 |
+| vs Lee, Jing Xi Jonathan | Sicilian Defense: Dragon Variation, Yugoslav Attack, Modern Line (B76) | 15...Kg7 (inaccuracy) | +0.3 → -0.5 | Bf6xd4 |
 
 
 ## Repeated problem lines (2+ losses, same first moves)

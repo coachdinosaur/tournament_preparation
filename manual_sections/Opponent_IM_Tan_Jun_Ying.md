@@ -56,7 +56,49 @@
 
 ## Engine fingerprint
 
-_Not analysed yet (101 games pending). Run `python prep_manual_app.py --analyze --scope all`, or click “Analyze with Stockfish” in the app._
+*From 9 analysed game(s) at depth 16. Average centipawn loss (ACPL) — lower is more accurate.*
+
+- **Overall ACPL:** 36.1 (opening 10.1, middlegame 35.9, endgame 47.3)
+- **Serious errors on file:** 10 blunders, 6 mistakes, 23 inaccuracies
+- **Target structures (least accurate):** *Anti-Sicilian Counter-Package*, *Reversed-Sicilian / Flank Annexation*
+- **Avoid — they are solid here (most accurate):** *Catalan / Réti Squeeze*, *Anti-Sicilian Counter-Package*
+
+| Structure family | Moves | ACPL | Serious errors |
+|---|---:|---:|---:|
+| Anti-Sicilian Counter-Package | 24 | 143.1 | 5 |
+| Reversed-Sicilian / Flank Annexation | 24 | 143.1 | 5 |
+| Catalan / Réti Squeeze | 73 | 29.5 | 4 |
+
+
+## Player Profile
+
+*From 9 analysed game(s) at depth 16. Overall ACPL 36.1 — opening 10.1, middlegame 35.9, endgame 47.3.*
+
+- **Mistakes on file:** 10 blunders, 6 mistakes, 23 inaccuracies
+- **Opening breadth:** 77 distinct openings
+- **Confidence lines:** King's Indian Defense: Orthodox Variation, Positional Defense (75.0% over 4 games), Queen's Pawn Game: Modern Defense (66.7% over 3 games)
+- **Repair lines:** English Opening: Agincourt Defense, Neo-Catalan Declined (0.0% over 4 games), Modern Defense: Standard Defense (0.0% over 2 games), Nimzo-Larsen Attack: Classical Variation (0.0% over 2 games)
+
+### Data-backed tendencies
+
+- **Opening breadth** (high confidence): Broad: 77 distinct openings across 101 games.
+- **Risk tendency** (medium confidence): High tactical volatility: 16 blunders/mistakes in 9 analysed games.
+- **Phase stability** (medium confidence): Least accurate phase: endgame ACPL 47.3; best phase: opening ACPL 10.1.
+- **Conversion reliability** (low confidence): 0 conversion-failure sample(s) among 1 classified endgame/late-simplified samples.
+- **Drawing-defense reliability** (low confidence): 1 drawing-defense failure sample(s) among 1 classified endgame/late-simplified samples.
+- **Confidence lines** (medium confidence): King's Indian Defense: Orthodox Variation, Positional Defense (75.0%/4g), Queen's Pawn Game: Modern Defense (66.7%/3g)
+
+### Endgame / simplified-position weakness categories
+
+| Category | Samples | Evidence |
+|---|---:|---|
+| Drawing defense failure | 1 | The move turned a drawable position into a losing one. |
+
+### Sample positions
+
+| Game | Move | Severity | Category | Engine prefers |
+|---|---|---|---|---|
+| vs Salemgareev,Tagir | 33...Na4 | mistake | Drawing defense failure | Nc3xa2 |
 
 
 ## Prep pointers

@@ -56,10 +56,36 @@
 
 ## Engine fingerprint
 
-*From 2 analysed game(s) at depth 10. Average centipawn loss (ACPL) — lower is more accurate.*
+*From 7 analysed game(s) at depth 12. Average centipawn loss (ACPL) — lower is more accurate.*
 
-- **Overall ACPL:** 4.6 (opening 6.5, middlegame 5.3, endgame 3.3)
-- **Serious errors on file:** 0 blunders, 0 mistakes, 0 inaccuracies
+- **Overall ACPL:** 11.8 (opening 8.4, middlegame 10.9, endgame 13.7)
+- **Serious errors on file:** 0 blunders, 3 mistakes, 8 inaccuracies
+- **Target structures (least accurate):** *Catalan / Réti Squeeze*, *Fianchetto KID / Grünfeld Complexes*
+- **Avoid — they are solid here (most accurate):** *Fianchetto KID / Grünfeld Complexes*, *Catalan / Réti Squeeze*
+
+| Structure family | Moves | ACPL | Serious errors |
+|---|---:|---:|---:|
+| Catalan / Réti Squeeze | 36 | 20.0 | 0 |
+| Fianchetto KID / Grünfeld Complexes | 19 | 13.1 | 0 |
+
+
+## Player Profile
+
+*From 7 analysed game(s) at depth 12. Overall ACPL 11.8 — opening 8.4, middlegame 10.9, endgame 13.7.*
+
+- **Mistakes on file:** 0 blunders, 3 mistakes, 8 inaccuracies
+- **Opening breadth:** 79 distinct openings
+- **Confidence lines:** Zukertort Opening (100.0% over 4 games), King's Indian Attack, with e6 (100.0% over 3 games), King's Indian Attack (66.7% over 3 games)
+- **Repair lines:** King's Indian Attack: Symmetrical Defense (25.0% over 2 games), Sicilian Defense: Najdorf Variation (37.5% over 4 games)
+
+### Data-backed tendencies
+
+- **Opening breadth** (high confidence): Broad: 79 distinct openings across 101 games.
+- **Risk tendency** (medium confidence): Moderate tactical volatility: 3 blunders/mistakes in 7 analysed games.
+- **Phase stability** (medium confidence): Least accurate phase: endgame ACPL 13.7; best phase: opening ACPL 8.4.
+- **Conversion reliability** (low confidence): 0 conversion-failure sample(s) among 0 classified endgame/late-simplified samples.
+- **Drawing-defense reliability** (low confidence): 0 drawing-defense failure sample(s) among 0 classified endgame/late-simplified samples.
+- **Confidence lines** (medium confidence): Zukertort Opening (100.0%/4g), King's Indian Attack, with e6 (100.0%/3g), King's Indian Attack (66.7%/3g)
 
 
 ## Prep pointers

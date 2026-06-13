@@ -56,10 +56,41 @@
 
 ## Engine fingerprint
 
-*From 1 analysed game(s) at depth 10. Average centipawn loss (ACPL) — lower is more accurate.*
+*From 2 analysed game(s) at depth 16. Average centipawn loss (ACPL) — lower is more accurate.*
 
-- **Overall ACPL:** 14.1 (opening 14.5, middlegame 19.9, endgame 2.2)
-- **Serious errors on file:** 0 blunders, 0 mistakes, 1 inaccuracies
+- **Overall ACPL:** 12.1 (opening 7.9, middlegame 13.4, endgame 13.1)
+- **Serious errors on file:** 0 blunders, 0 mistakes, 2 inaccuracies
+
+
+## Player Profile
+
+*From 2 analysed game(s) at depth 16. Overall ACPL 12.1 — opening 7.9, middlegame 13.4, endgame 13.1.*
+
+- **Mistakes on file:** 0 blunders, 0 mistakes, 2 inaccuracies
+- **Opening breadth:** 79 distinct openings
+- **Confidence lines:** Caro-Kann Defense: Advance Variation, Tal Variation (75.0% over 4 games), Caro-Kann Defense: Exchange Variation (66.7% over 3 games), Rapport-Jobava System (60.0% over 5 games)
+- **Repair lines:** Slav Defense: Modern Line (25.0% over 2 games)
+
+### Data-backed tendencies
+
+- **Opening breadth** (high confidence): Broad: 79 distinct openings across 101 games.
+- **Risk tendency** (low confidence): Stable tactical profile: 0 blunders/mistakes in 2 analysed games.
+- **Phase stability** (low confidence): Least accurate phase: middlegame ACPL 13.4; best phase: opening ACPL 7.9.
+- **Conversion reliability** (low confidence): 1 conversion-failure sample(s) among 1 classified endgame/late-simplified samples.
+- **Drawing-defense reliability** (low confidence): 0 drawing-defense failure sample(s) among 1 classified endgame/late-simplified samples.
+- **Confidence lines** (medium confidence): Caro-Kann Defense: Advance Variation, Tal Variation (75.0%/4g), Caro-Kann Defense: Exchange Variation (66.7%/3g), Rapport-Jobava System (60.0%/5g)
+
+### Endgame / simplified-position weakness categories
+
+| Category | Samples | Evidence |
+|---|---:|---|
+| Conversion failure | 1 | The engine score changed from winning to non-winning. |
+
+### Sample positions
+
+| Game | Move | Severity | Category | Engine prefers |
+|---|---|---|---|---|
+| vs Paciencia,Enrique Rivas | 21.Qg3 | inaccuracy | Conversion failure | Re1-e2 |
 
 
 ## Prep pointers
