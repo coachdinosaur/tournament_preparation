@@ -48,11 +48,11 @@ import requests
 OPPONENTS: dict[str, dict] = {
     "GM Vignesh, N R":            {"federation": "IND", "title": "GM", "fide": 2515, "lichess": "Goodgoodchess"},
     "GM Shyaam, Nikhil P":        {"federation": "IND", "title": "GM", "fide": 2435, "lichess": None},
-    "IM Vignesh, Advaith Vemula": {"federation": "IND", "title": "IM", "fide": 2421, "lichess": None},
+    "IM Morris, James":          {"federation": "AUS", "title": "IM", "fide": 2423, "lichess": None},
     "IM Tan, Jun Ying":           {"federation": "MAS", "title": "IM", "fide": 2404, "lichess": None},
     "IM Chan, Kim Yew":           {"federation": "MAS", "title": "IM", "fide": 2360, "lichess": "Smirnov85"},
     "IM Susilodinata, Andrean":   {"federation": "INA", "title": "IM", "fide": 2360, "lichess": None},
-    "GM Thejkumar, M. S.":        {"federation": "IND", "title": "GM", "fide": 2358, "lichess": None},
+    "GM Thejkumar, M. S.":        {"federation": "IND", "title": "GM", "fide": 2352, "lichess": None},
     "FM Ang, Ern Jie Anderson":   {"federation": "MAS", "title": "FM", "fide": 2309, "lichess": None},
     "FM Arlan Cabe":              {"federation": "PHI", "title": "FM", "fide": 2298, "lichess": None},
 }

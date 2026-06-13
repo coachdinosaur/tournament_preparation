@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+*.log
+*.db-shm
+*.db-wal
+*.db-journal
+*.backup-*.docx
+Tournament_Preparation_Manual.backup-*.docx

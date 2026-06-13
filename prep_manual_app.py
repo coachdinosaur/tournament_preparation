@@ -1026,14 +1026,15 @@ CREATE TABLE IF NOT EXISTS PositionEval (
     PRIMARY KEY (fen, depth)
 );
 CREATE TABLE IF NOT EXISTS GameAnalysis (
-    dedup_hash  TEXT PRIMARY KEY,
-    depth       INTEGER,
+    dedup_hash  TEXT NOT NULL,
+    depth       INTEGER NOT NULL,
     engine      TEXT,
     analyzed_at TEXT,
     acpl_white  REAL, acpl_black REAL,
     moves_white INTEGER, moves_black INTEGER,
     phase_json  TEXT,            -- {white:{op:[sum,cnt],mid,end}, black:{...}}
-    blunders_json TEXT           -- [{ply,mover,move_no,san,sev,loss,before,after,best}]
+    blunders_json TEXT,          -- [{ply,mover,move_no,san,sev,loss,before,after,best}]
+    PRIMARY KEY (dedup_hash, depth)
 );
 CREATE TABLE IF NOT EXISTS ExplorerCache (
     fen TEXT NOT NULL, scope TEXT NOT NULL, json TEXT, fetched_at TEXT,
@@ -1057,6 +1058,27 @@ def init_db():
     if "lichess_id" not in cols:  # migrate pre-Lichess databases (scan() refills)
         conn.executescript("DROP TABLE IF EXISTS Tags; DROP TABLE IF EXISTS Games;")
         conn.executescript(SCHEMA)
+    ga_cols = list(conn.execute("PRAGMA table_info(GameAnalysis)"))
+    ga_pk = [r[1] for r in sorted((r for r in ga_cols if r[5]), key=lambda r: r[5])]
+    if ga_pk != ["dedup_hash", "depth"]:
+        # Older databases keyed GameAnalysis only by dedup_hash, so analysing the
+        # same game at a different depth overwrote the prior result. Rebuild the
+        # table with the composite key and keep whatever cached rows still exist.
+        conn.executescript("""
+            DROP TABLE IF EXISTS GameAnalysis_legacy;
+            ALTER TABLE GameAnalysis RENAME TO GameAnalysis_legacy;
+        """)
+        conn.executescript(SCHEMA)
+        conn.execute("""
+            INSERT OR IGNORE INTO GameAnalysis
+                (dedup_hash, depth, engine, analyzed_at, acpl_white, acpl_black,
+                 moves_white, moves_black, phase_json, blunders_json)
+            SELECT dedup_hash, depth, engine, analyzed_at, acpl_white, acpl_black,
+                   moves_white, moves_black, phase_json, blunders_json
+            FROM GameAnalysis_legacy
+            WHERE dedup_hash IS NOT NULL AND depth IS NOT NULL
+        """)
+        conn.execute("DROP TABLE GameAnalysis_legacy")
     for p in ROSTER:
         conn.execute(
             """INSERT INTO Roster (real_name, title, federation, fide, is_hero)
