@@ -277,19 +277,26 @@ Completed standalone reports:
 - Seed 3: `third_seed_report.md` / `third_seed_report.docx`
 - Seed 4: `fourth_seed_report.md` / `fourth_seed_report.docx`
 - Seed 5: `fifth_seed_report.md` / `fifth_seed_report.docx`
+- Seed 6: `sixth_seed_report.md` / `sixth_seed_report.docx` (player `7`; dossier had a stale 2-game
+  depth-16 cache — re-analysed at depth 12 first)
+- Seed 7: `seventh_seed_report.md` / `seventh_seed_report.docx` (player `8`; dossier had a stale
+  2-of-102 cache — re-analysed first)
+- Seed 8: `eighth_seed_report.md` / `eighth_seed_report.docx` (player `9`; dossier had a stale
+  15-of-100 cache at depth 16 — re-analysed at depth 12 first. Time-control split: **79 classical /
+  21 online** Titled Tuesday; classical-only verdicts. Headline read: a fresh, all-2023–2025 file for
+  a **b. 2010 FM** — recency caution *inverts* (likely stronger than the file); weaker as Black
+  (44.9%) than White (61.2%), so Dino-White meets his soft side and Dino's e4 weapons — Rossolimo vs
+  the Accelerated Dragon, Center Game vs 1...e5 — actually apply. Anti-Sicilian Counter-Package as
+  Black 0/2 / ACPL 38.3 is his worst sample and Dino's best domain.)
 
 Current next target:
 
-- Seed 6: **IM Susilodinata, Andrean**
-- Player ID: `7`
-- Dossier: `manual_sections/Opponent_IM_Susilodinata_Andrean.md`
-- Report files: `sixth_seed_report.md` / `sixth_seed_report.docx`
-
-Immediate next command:
-
-```powershell
-python prep_manual_app.py --analyze --scope player --player 7 --depth 12 --export
-```
+- Seed 9: **FM Arlan Cabe** — player ID `10`, dossier
+  `manual_sections/Opponent_FM_Arlan_Cabe.md`, report stem `ninth_seed_report`.
+- **Arlan Cabe exception (do not auto-generate).** Cabe is Dino's coaching partner; his combat file
+  is intentionally withheld (0 games on file) and the live scouting confirms it. **Do not create a
+  ninth-seed combat report unless the user explicitly asks for one.** With seed 8 done, the curated
+  per-seed report run is effectively complete for the eight combatants.
 
 ### Seed Queue
 
@@ -490,6 +497,111 @@ When a line has a bad result score but clean engine ACPL and few blunders (Chan'
 20% over 5, yet ACPL 15.0 with 0 blunders), the opponent is being **out-prepared / ground down**, not
 blundering it away. Frame it as an out-prep target that needs genuine understanding (and a check on
 Dino's own reps), not a surprise trap.
+
+### Patches Folded In From The Seventh-Seed Run (Thejkumar, player 8)
+
+Three things bit on the seventh seed that the earlier patches did not fully cover. Do them on every
+later seed.
+
+#### 1. `0 Lichess online` does NOT mean `classical-only` — always run the time-control split
+
+Thejkumar's dossier header read *"102 games (102 over-the-board PGN, 0 Lichess online)"*, which looks
+like a clean classical file. It is not: **54 of the 102 are online/rapid** (50 chess.com *Titled
+Tuesday* + 4 *Pune Rapid*) and only **48 are classical**. The online games hide inside the ChessBase
+PGN set, so they never show up in the Lichess count. Run the fifth-seed patch-1 `is_online()` split on
+**every** seed regardless of the Lichess number, and widen the regex to catch OTB rapid events too:
+
+```python
+def is_online(ev):
+    return bool(re.search(r'titled tuesday|blitz|rapid|online|lichess|chess\.com|bullet|arena', ev or "", re.I))
+```
+
+Proof of inflation on this seed: all 102 games read 57.4% with a wildly broken engine profile; the
+**48 classical** games read **21W 15D 12L (59.4%)** and are the only basis for accuracy/structure
+verdicts.
+
+#### 2. Watch for duplicate games imported under two event names
+
+The same OTB game can be stored twice with a different `dedup_hash` when two PGN files spell the
+headers differently. Thejkumar's single QID Capablanca loss to Ghosh appears as **both**
+`Bangalore op-A 1st (R4)` and `1st Bangalore Int Open (R4.7)` — same date `2024.01.20`, same opponent
+(name order flipped), same `0-1 in 56`. Counting both turns one result into a phantom `0/2`. Before
+treating any 2-game "target" as two data points, de-dup candidate samples on
+`(date, opponent, total_moves)`.
+
+#### 3. Actual DB schema in this workspace (the patch snippets above assume it; confirm if rebuilt)
+
+- Roster table is **`Roster(player_id, real_name, title, federation, fide, is_hero)`** — there is no
+  `Players` table and no `id` column. Look up a seed by `player_id`.
+- Engine cache is **`GameAnalysis`** keyed by `dedup_hash`: columns `depth, engine, analyzed_at,
+  acpl_white, acpl_black, moves_white, moves_black, phase_json, blunders_json`. Join to `Games` on
+  `dedup_hash`. The `phase_json` / `blunders_json` shapes are exactly as documented in fifth-seed
+  patch 2 (verified again here).
+- Structure families are **`Tags(game_id, family)`** — join on `Games.game_id`, not `dedup_hash`.
+  Note family strings can carry mojibake (`Gr�nfeld`, `R�ti`); match on a substring, not equality.
+  A game can carry **several** family tags; count it in **each** (the dossier convention), not just one.
+
+### Accuracy & Efficiency Upgrades (2026-06-14, from the seed 6–7 runs)
+
+These change *how* you run a seed, not just what to watch for. Adopt them from the eighth seed on.
+
+#### A. Run the evidence pack with one script — `seed_evidence.py`
+
+Every field the report needs — coverage, time-control split, recency histogram, color-split opening
+tables, classical phase ACPL, structure ACPL by family, late-blunder samples, classical model losses,
+and duplicate-game detection — now comes from a single read-only script:
+
+```powershell
+python seed_evidence.py <player_id> --depth 12
+```
+
+It encodes the real schema and the classical-only verdict rule, so you stop re-typing and re-adapting
+the snippets scattered through this file (those remain only as reference). It is **read-only**, so it
+is safe to run while a *different* player's `--analyze` is in flight. Validated against the seventh
+seed: its structure-ACPL table reproduces the hand-built numbers exactly.
+
+#### B. Overlap the slow engine pass — analyze first, gather in parallel
+
+The dossier almost always ships with a **stale/partial engine cache** (seed 5: 1/99; seed 7: 2/102 at
+depth 12; seed 6: 2/101 at depth **16**), so a full `--analyze` is effectively mandatory every seed and
+is the dominant wall-clock cost (~100 games × depth 12, single-threaded writer). Don't sit idle:
+
+1. Kick off `--analyze … --player N --depth 12 --export` **in the background first**.
+2. While it runs, read the opponent's **`Live_Scouting_*` entry** and run the **result-only** parts of
+   `seed_evidence.py` (coverage / TC-split / recency / openings / model-losses need no engine data).
+3. You may also **write report N's prose while seed N+1 analyses** — but **never run two `--analyze`
+   passes at once**: the DB is a single writer with only an 8 s `busy_timeout`, so concurrent passes
+   risk lock failures. Serialise the engine; pipeline the writing.
+
+#### C. Two new accuracy rules
+
+- **Recency weighting.** A career PGN file can span decades. Seed 6 (Susilodinata) includes **18
+  pre-2010 junior games** (W-ch U12/U14, 2002–2004 — even a loss to a 12-year-old Carlsen). Those say
+  nothing about a 2026 IM's prep. `seed_evidence.py` prints a by-year histogram and a pre-2010 flag;
+  base "what he'll actually play" and any freshness claim on the **last ~3–5 years**, and explicitly
+  down-weight or segregate the ancient games. Never average a 2002 result into a 2026 target.
+- **Read Live Scouting *first*; let activity override the PGN percentages.** The single most important
+  fact about seed 7 (Thejkumar inactive ~2 years, now coaching, OTB rust expected) exists **only** in
+  `Live_Scouting_*`, not the dossier. Make the scouting entry **Step 0**: an inactive/active flag, a
+  rating conflict, or a freshness note can reshape the whole plan before you read a single opening row.
+
+#### D. Dino-weapon applicability check (accuracy)
+
+Before recommending any of Dino's weapons, confirm it can **occur** given the opponent's actual
+repertoire. Seed 7 was a Caro-Kann / 1.d4 player, so Dino's headline weapons (Moscow/Rossolimo vs the
+Sicilian, KIA vs the French) were **all moot** — the White game was a Caro-Kann battle he is barely
+booked for. Cross the opponent's color-split openings against Dino's `Needs_Improvement` file and only
+recommend lines the pairing can actually reach.
+
+#### E. Engine throughput (optional; verify before committing)
+
+On this 4-core box the engine runs `ENGINE_THREADS = 2`, `ENGINE_HASH_MB = 128`; testing `Threads = 4`
+/ `Hash = 256` should cut wall-clock per pass. `ENGINE_DEPTH` also **defaults to 16** — which is why
+stale caches surface depth-16 rows — so always pass `--depth 12` explicitly (this workflow already
+does). The bigger win is a **code change**: `analyze_all` has no time-control filter and OTB `Games`
+rows carry no `time_control` column, so the engine analyses the online half it later discards (seed 7:
+54 of 102 games). Adding an event-regex *classical-only* filter to the player scope would roughly halve
+the pass on online-heavy files. Recommend, don't silently implement.
 
 ### Reusable Report Checklist
 

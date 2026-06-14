@@ -14,17 +14,17 @@
 
 ## Player Profile
 
-*From 7 analysed game(s) at depth 12. Overall ACPL 26.7 — opening 13.7, middlegame 18.8, endgame 36.7.*
+*From 8 analysed game(s) at depth 12. Overall ACPL 26.6 — opening 18.2, middlegame 18.7, endgame 34.6.*
 
-- **Mistakes on file:** 3 blunders, 8 mistakes, 26 inaccuracies
+- **Mistakes on file:** 3 blunders, 9 mistakes, 32 inaccuracies
 - **Opening breadth:** 35 distinct openings
 - **Confidence lines:** Sicilian Defense: Moscow Variation, Main Line (100.0% over 9 games), Sicilian Defense: Moscow Variation (100.0% over 5 games), Center Game: Paulsen Attack Variation (100.0% over 3 games)
 
 ### Data-backed tendencies
 
 - **Opening breadth** (high confidence): Broad: 35 distinct openings across 64 games.
-- **Risk tendency** (medium confidence): High tactical volatility: 11 blunders/mistakes in 7 analysed games.
-- **Phase stability** (medium confidence): Least accurate phase: endgame ACPL 36.7; best phase: opening ACPL 13.7.
+- **Risk tendency** (medium confidence): High tactical volatility: 12 blunders/mistakes in 8 analysed games.
+- **Phase stability** (medium confidence): Least accurate phase: endgame ACPL 34.6; best phase: opening ACPL 18.2.
 - **Conversion reliability** (low confidence): 0 conversion-failure sample(s) among 4 classified endgame/late-simplified samples.
 - **Drawing-defense reliability** (low confidence): 4 drawing-defense failure sample(s) among 4 classified endgame/late-simplified samples.
 - **Confidence lines** (medium confidence): Sicilian Defense: Moscow Variation, Main Line (100.0%/9g), Sicilian Defense: Moscow Variation (100.0%/5g), Center Game: Paulsen Attack Variation (100.0%/3g)

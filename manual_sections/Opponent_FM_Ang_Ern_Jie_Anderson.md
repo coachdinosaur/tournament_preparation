@@ -56,24 +56,27 @@
 
 ## Engine fingerprint
 
-*From 15 analysed game(s) at depth 16. Average centipawn loss (ACPL) — lower is more accurate.*
+*From 100 analysed game(s) at depth 12. Average centipawn loss (ACPL) — lower is more accurate.*
 
-- **Overall ACPL:** 14.3 (opening 4.8, middlegame 10.0, endgame 20.4)
-- **Serious errors on file:** 3 blunders, 8 mistakes, 14 inaccuracies
-- **Target structures (least accurate):** *Fianchetto KID / Grünfeld Complexes*, *Catalan / Réti Squeeze*
-- **Avoid — they are solid here (most accurate):** *Catalan / Réti Squeeze*, *Fianchetto KID / Grünfeld Complexes*
+- **Overall ACPL:** 23.0 (opening 8.7, middlegame 20.0, endgame 30.1)
+- **Serious errors on file:** 37 blunders, 94 mistakes, 223 inaccuracies
+- **Target structures (least accurate):** *Anti-Sicilian Counter-Package*, *Catalan / Réti Squeeze*
+- **Avoid — they are solid here (most accurate):** *IQP / Panov Attack*, *Reversed-Sicilian / Flank Annexation*
 
 | Structure family | Moves | ACPL | Serious errors |
 |---|---:|---:|---:|
-| Fianchetto KID / Grünfeld Complexes | 128 | 15.3 | 3 |
-| Catalan / Réti Squeeze | 133 | 13.2 | 4 |
+| Anti-Sicilian Counter-Package | 80 | 70.2 | 14 |
+| Catalan / Réti Squeeze | 1133 | 20.3 | 33 |
+| Fianchetto KID / Grünfeld Complexes | 524 | 19.3 | 22 |
+| Reversed-Sicilian / Flank Annexation | 334 | 17.0 | 8 |
+| IQP / Panov Attack | 64 | 12.5 | 0 |
 
 
 ## Player Profile
 
-*From 15 analysed game(s) at depth 16. Overall ACPL 14.3 — opening 4.8, middlegame 10.0, endgame 20.4.*
+*From 100 analysed game(s) at depth 12. Overall ACPL 23.0 — opening 8.7, middlegame 20.0, endgame 30.1.*
 
-- **Mistakes on file:** 3 blunders, 8 mistakes, 14 inaccuracies
+- **Mistakes on file:** 37 blunders, 94 mistakes, 223 inaccuracies
 - **Opening breadth:** 65 distinct openings
 - **Confidence lines:** King's Indian Defense: Fianchetto Variation, Uhlmann-Szabo System (100.0% over 3 games), Benoni Defense: Fianchetto Variation (66.7% over 3 games)
 - **Repair lines:** Ruy Lopez: Morphy Defense, Anderssen Variation (0.0% over 2 games), Slav Defense: Quiet Variation, Schallopp Defense (16.7% over 3 games), English Opening: Symmetrical Variation, Fianchetto Variation (25.0% over 2 games)
@@ -81,30 +84,31 @@
 ### Data-backed tendencies
 
 - **Opening breadth** (high confidence): Broad: 65 distinct openings across 100 games.
-- **Risk tendency** (medium confidence): Moderate tactical volatility: 11 blunders/mistakes in 15 analysed games.
-- **Phase stability** (medium confidence): Least accurate phase: endgame ACPL 20.4; best phase: opening ACPL 4.8.
-- **Conversion reliability** (medium confidence): 3 conversion-failure sample(s) among 7 classified endgame/late-simplified samples.
-- **Drawing-defense reliability** (medium confidence): 3 drawing-defense failure sample(s) among 7 classified endgame/late-simplified samples.
+- **Risk tendency** (high confidence): High tactical volatility: 131 blunders/mistakes in 100 analysed games.
+- **Phase stability** (high confidence): Least accurate phase: endgame ACPL 30.1; best phase: opening ACPL 8.7.
+- **Conversion reliability** (medium confidence): 1 conversion-failure sample(s) among 7 classified endgame/late-simplified samples.
+- **Drawing-defense reliability** (medium confidence): 2 drawing-defense failure sample(s) among 7 classified endgame/late-simplified samples.
 - **Confidence lines** (medium confidence): King's Indian Defense: Fianchetto Variation, Uhlmann-Szabo System (100.0%/3g), Benoni Defense: Fianchetto Variation (66.7%/3g)
 
 ### Endgame / simplified-position weakness categories
 
 | Category | Samples | Evidence |
 |---|---:|---|
-| Conversion failure | 3 | The engine score changed from winning to non-winning. |
-| Drawing defense failure | 3 | The engine score changed from drawable to losing. |
-| Philidor | 1 | The rook-and-pawn structure resembles a Philidor defense. |
+| Philidor | 3 | The rook-and-pawn structure resembles a Philidor defense.; The move turned a winning position into a non-winning one. |
+| Drawing defense failure | 2 | The move turned a drawable position into a losing one. |
+| Conversion failure | 1 | The rook-and-pawn structure resembles a Philidor defense.; The move turned a winning position into a non-winning one. |
+| Rook activity | 1 | The rook became passive after the move. |
 
 ### Sample positions
 
 | Game | Move | Severity | Category | Engine prefers |
 |---|---|---|---|---|
-| vs Polschikov,Alexey | 23.Rc2 | blunder | Drawing defense failure | Rc1xc6 |
-| vs Polschikov,Alexey | 26.Rc6 | blunder | Conversion failure | Qb6-b4 |
-| vs Mohammad,Nubairshah Shaikh | 29...a2 | blunder | Conversion failure | Nc5-e4 |
+| vs Zakhartsov,Vladimir | 34...Nc5+ | blunder | Philidor, Conversion failure | Nd3-b2 |
+| vs Liu,Casper Yukun | 31...Bd3 | blunder | Drawing defense failure | h7-h5 |
+| vs Jyotshnav,Talukdar | 30...Bc2 | mistake | Philidor | e6-e5 |
 | vs Chan,Kim Yew | 39...f6+ | mistake | Philidor | Be1-d2 |
-| vs Wagh,Suyog | 24...Nd6 | mistake | Drawing defense failure | Ra7-b7 |
-| vs Vijay,Rege | 22...e3 | inaccuracy | Conversion failure | Na4-c3 |
+| vs Piliposyan,Robert | 37...Rg8 | mistake | Rook activity | Nc8xb6 |
+| vs Azhar,Muhd Syakir Shazmee | 33...Ra6 | inaccuracy | Drawing defense failure | Ra8-f8 |
 
 
 ## Prep pointers
