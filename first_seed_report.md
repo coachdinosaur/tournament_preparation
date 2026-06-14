@@ -1,6 +1,6 @@
-# First Seed Scouting Report — GM Vignesh, N R
+# First Seed Scouting Report - GM Vignesh, N R
 
-*Prepared 2026-06-13 for FM Dino Ballecer ("Coach Dinosaur"). Roster player `2`.*
+*Prepared 2026-06-14 for FM Dino Ballecer ("Coach Dinosaur"). Roster player `2`.*
 
 **Title:** GM | **Federation:** IND | **FIDE (standard):** 2515 *(rapid 2381 / blitz 2453)*
 
@@ -9,198 +9,209 @@
 Dino's self-audit [Dino_Ballecer_Needs_Improvement.md](manual_sections/Dino_Ballecer_Needs_Improvement.md)
 and the web-sourced [Live_Scouting_2026-06-13.md](manual_sections/Live_Scouting_2026-06-13.md).
 
-- **187 games on file** = **104 over-the-board PGN** + **83 Lichess online metadata rows**.
-- **Engine claims below are from the 104 OTB games, all analysed by Stockfish at depth 12.** The 83
-  Lichess rows are metadata only (no move lists), so they feed opening/result statistics but **not**
-  centipawn analysis. Where a "recent loss" is a Lichess blitz/rapid game it is labelled as such and
-  treated as weak evidence for classical prep.
+- **187 games on file** = **99 classical PGN games**, **5 ChessBase online/rapid PGN games**, and
+  **83 Lichess online metadata rows**.
+- **Primary engine claims below use the 99 classical PGN games analysed by Stockfish at depth 12.**
+  The 5 online/rapid PGNs are shown only as a caution check, and the 83 Lichess rows have no local
+  move lists for engine analysis.
+- This replaces the older all-104-PGN read. The headline numbers barely move, but two old "targets"
+  become weaker: the Advance Caro-Kann Tal losses are Lichess blitz metadata, and one rook-ending
+  sample in the dossier is from Titled Tuesday rather than classical play.
 
 ---
 
 ## 1. Executive Summary
 
 Vignesh is the **strongest player in the pool and currently match-sharp** (7/9 at the 51st Ciudad de
-Sevilla Open 2026, plus 6/7 in the side blitz). On file he is **122W 44D 21L (77.0%)** with a broad,
-accurate repertoire (**128 distinct openings**, opening ACPL just **7.7** over 104 games at depth 12).
+Sevilla Open 2026, plus 6/7 in the side blitz). Across all 187 rows he scores **122W 44D 21L
+(77.0%)**; in the classical subset that should drive tournament prep, he scores **49W 40D 10L
+(69.7%)**. His opening phase is still the cleanest part of his engine profile: **opening ACPL 7.6**
+over 99 classical games at depth 12.
 
-- **Do not plan around an opening trap.** His opening phase is his *cleanest* phase; a 128-opening
-  spread means surprise value is low.
-- **Do not plan to out-clock him.** His blitz (2453) is higher than his rapid (2381); the live read
-  is that he is dangerous in time scrambles. Keep the game on Dino's preparation, not on the clock.
-- **Best candidate targets are specific, not broad.** The sample shows two concrete soft spots — the
-  **Advance Caro-Kann, Tal Variation** as Black (0/2) and the **Caro-Kann Tartakower** when he is
-  White (0/2) — plus a relative dip in **endgame** accuracy (ACPL 18.0, the worst of his four phases).
-- **One-sentence game plan:** *As White, steer toward the Advance Caro-Kann (Tal Variation) — which
-  doubles as a structure Dino's own audit says he must train — keep the game classical and unbalanced
-  rather than a clock race, and if it simplifies, press a rook ending with an active rook, because the
-  sample shows repeated drawing-defence and active-rook lapses there.*
+- **Do not plan around an opening trap.** His opening accuracy is strong, and the all-file repertoire
+  still spans **128 distinct openings**.
+- **Do not plan to out-clock him.** His blitz rating (2453) is higher than his rapid rating (2381);
+  the live read is that he is dangerous in time scrambles. Keep the game on preparation, not on the
+  clock.
+- **The old Advance Caro-Kann Tal target is demoted.** The 0/2 Tal line evidence comes from Lichess
+  blitz metadata, while his classical Advance Caro-Kann structure sample is **2/2 with ACPL 7.9 and
+  zero serious errors**. Train the structure because Dino needs it, but do not sell it as Vignesh's
+  classical weakness.
+- **Best practical targets are now structural and conditional.** The cleanest classical evidence is
+  his Black-side **Catalan / Reti Squeeze** result profile (**2W 4D 4L, 40.0%, ACPL 14.7**) and the
+  small but high-ACPL **IQP / Panov** sample (**ACPL 17.6 over 3 classical tagged games**). Both need
+  concrete prep; neither is a cheap trick.
+- **One-sentence game plan:** *As White, do not assume Dino's stock anti-Sicilian will be enough
+  because Vignesh scores well against Moscow systems; prepare either a concrete improvement in that
+  line or a trained route into Catalan/Reti or IQP pressure, and if the game simplifies, press rook
+  activity and defensive-resource decisions without pretending the endgame is a broad weakness.*
 
-> ⚠️ **Freshness caveat (from live scouting):** the Caro-Kann targets predate his Sevilla 2026 games.
-> Mine his Sevilla scores before committing — he may have patched the Tal line. See §6.
+> **Evidence caveat:** online/rapid rows are useful scouting context, not the basis for classical
+> verdicts. Any target built only from Lichess or Titled Tuesday results must be treated as weak
+> evidence until a classical game confirms it.
 
 ---
 
 ## 2. Opening Repertoire
 
-**As White — 91 games, 80.8%.** Mainly 1.e4 (Rossolimo/Moscow-style anti-Sicilians, open Sicilians)
-plus English/Catalan setups. Accurate and high-scoring; little to exploit head-on.
+**All-file view:** 91 games as White (80.8%) and 96 as Black (73.4%), including Lichess metadata.
+**Classical view:** 50 games as White (**27-18-5, 72.0%**) and 49 as Black (**22-22-5, 67.3%**).
+The Black side is still the slightly softer practical side, but not because of the old Tal-line
+claim.
 
-**As Black — 96 games, 73.4%.** Broader and slightly more porous than his White results — this is the
-side where the two clean targets live.
-
-### Confidence lines — do **not** walk into these
-
-| Line | ECO | Games | Score | Suggested action |
-|---|---|---:|---:|---|
-| Sicilian Defense: Nyezhmetdinov-Rossolimo Attack | B30 | 6 | 100.0% | Avoid — pet anti-Sicilian as White |
-| Rapport-Jobava System | D01 | 5 | 100.0% | Avoid — he neutralises the Jobava/London cleanly as Black; don't try it |
-| English Opening: Agincourt, Neo-Catalan Declined | A14 | 4 | 100.0% | Avoid — comfortable as White |
-| Sicilian Defense: Najdorf, English Attack | B90 | 3 | 100.0% | Avoid — well prepared as Black |
-
-### Repair / target lines — candidate targets only
+### Classical confidence lines - do not enter casually
 
 | Line | ECO | Games | Score | Suggested action |
 |---|---|---:|---:|---|
-| Caro-Kann Defense: Advance Variation, **Tal Variation** (he is **Black**) | B12 | 2 | 0.0% | **Target as White** — fits a structure Dino must build anyway (see fit note) |
-| Caro-Kann Defense: **Tartakower Variation** (he is **White**) | B15 | 2 | 0.0% | Target as Black **only if** Dino adds the Caro-Kann — not in his current repertoire |
-| Queen's Gambit Declined: Ragozin, Alekhine Variation | D38 | 2 | 25.0% | Weak flag — tiny sample, one source is a Lichess blitz loss; candidate only |
+| Sicilian Defense: Moscow Variation (he is Black) | B51 | 4 | 87.5% | Prepare a neutralizer; this overlaps Dino's comfort zone |
+| Sicilian Defense: Chekhover Variation (he is White) | B53 | 3 | 83.3% | If Dino plays a Sicilian, be ready for this practical sideline |
+| Queen's Gambit Declined: Exchange, Reshevsky Variation (he is White) | D36 | 2 | 100.0% | Avoid drifting into a dry comfort line |
+| Sicilian Defense: Najdorf Variation (he is Black) | B90 | 3 | 66.7% | Play only with concrete preparation, not a memory contest |
 
-### Repertoire-fit check (the decisive filter)
+### Candidate targets - classical evidence only
 
-The workflow rule is *don't recommend a line Dino doesn't already understand*. Applying it:
+| Target | Classical evidence | Read | Suggested action |
+|---|---:|---|---|
+| Catalan / Reti Squeeze when he is Black | 10 tagged games, 40.0%, ACPL 14.7 | Best result-side target, but still a known comfort family | Candidate White plan if Dino has a concrete setup |
+| IQP / Panov structures | 3 tagged games, ACPL 17.6 | Engine target, tiny sample, result score still good for him | Train as a pressure structure, not as a guaranteed weakness |
+| Catalan Opening: Open Defense as Black | 2 games, 50.0% | Small opening-level echo of the Catalan/Reti structure read | Build model lines only if it fits Dino's White repertoire |
 
-- **Advance Caro-Kann, Tal Variation (Dino as White): KEEP — high value, needs reps.** This is a
-  genuine convergence: it is one of Vignesh's two 0/2 lines **and** Dino's own audit flags the
-  *Advance Caro-Kann* core family as a **zero-rep gap** ("schedule training games in it"). The target
-  is real, but Dino must put in practice games on the Tal Variation before the event — he cannot
-  improvise it cold against a 2515.
-- **Caro-Kann Tartakower (Dino as Black): DROP for this event.** Vignesh's 0/2 as White is tempting,
-  but Dino does **not** play the Caro-Kann as Black (his Black book is Sicilian/Benoni-based).
-  Learning a new defence for one game against an in-form GM is the wrong trade. File it as "future
-  repertoire," not event prep.
+### Demoted or dropped targets
+
+- **Caro-Kann Advance, Tal Variation as Black:** the 0/2 line is from Lichess blitz metadata, not
+  classical PGN engine evidence. Do not make it the main Vignesh target.
+- **Caro-Kann Tartakower as White:** classical evidence is only split 1-0-1, and Dino does not play
+  the Caro-Kann as Black. Drop it for this event.
+- **Rapport-Jobava System:** the 5/5 confidence line is online-only in this file. Do not use it as a
+  classical avoid/target claim.
+
+### Repertoire-fit check
+
+- **Dino's Moscow systems need a real update.** Dino's self-audit lists Moscow/Rossolimo structures
+  as confidence weapons, but Vignesh's classical Black sample against the Moscow Variation is strong
+  (3-1-0 over 4). Dino can still use the line; he just needs a specific prepared idea instead of
+  relying on the line name.
+- **IQP / Panov is the best training convergence.** Dino has zero practical games in the family, and
+  Vignesh's classical engine fingerprint is least clean there. Treat it as a prep project that can
+  generate pressure, not as a forced route to advantage.
+- **Advance Caro-Kann remains a Dino training gap, not a Vignesh target.** Keep the structure in the
+  training schedule, but the classical evidence says Vignesh handled the family cleanly.
 
 ---
 
 ## 3. Phase Accuracy
 
-*From 104 analysed OTB games at depth 12. Lower ACPL = cleaner play.*
+*Primary line: 99 classical PGN games analysed at Stockfish depth 12. Lower ACPL = cleaner play.*
 
-| Phase | ACPL |
-|---|---:|
-| Overall | 13.9 |
-| Opening | 7.7 |
-| Middlegame | 11.7 |
-| **Endgame** | **18.0** |
+| Sample | Games | Overall | Open | Mid | End | Errors |
+|---|---:|---:|---:|---:|---:|---:|
+| Classical PGN | 99 | **13.6** | **7.6** | **11.3** | **17.6** | 9 blunders / 41 mistakes |
+| Online/rapid PGN check | 5 | 19.4 | 7.8 | 19.9 | 22.9 | 1 blunder / 5 mistakes |
 
-Serious errors on file: **10 blunders, 46 mistakes, 151 inaccuracies**.
+The old all-analysed-PGN line was 104 games, overall ACPL 13.9, opening 7.7, middlegame 11.7,
+endgame 18.0, with 10 blunders / 46 mistakes. It is close to the classical line, but the classical
+line is the right one for event prep.
 
-**Interpretation (within-player only).** He is most accurate in the opening and **least accurate in
-the endgame** — but 18.0 is still a strong number in absolute terms. Read this as a *relative
-tendency*: as the game simplifies, the gap between his best and his actual move widens. It is not a
+**Interpretation (within-player only).** He is most accurate in the opening and least accurate in
+the endgame, but **17.6 classical endgame ACPL is still strong**. This is a relative tendency, not a
 licence to call a 2515 "bad at endgames."
 
 > **Cross-player caution.** Dino's own profile shows overall ACPL 26.7 (endgame 36.7), but that came
-> from only **7** analysed games versus Vignesh's **104**. Depth matches (both 12); sample sizes do
-> not. Do not lean on a head-to-head ACPL comparison — see the two-edged endgame note in §6.
+> from only **7** analysed games versus Vignesh's **99 classical analysed games**. Depth matches
+> (both 12); sample sizes do not. Do not lean on a head-to-head ACPL comparison.
 
 ---
 
 ## 4. Middlegame and Structure Notes
 
-*Engine fingerprint over the six core structure families (depth 12). The key discipline here is to
-keep **result-score** evidence and **engine-accuracy** evidence separate — they don't always agree.*
+*Classical-only engine fingerprint over the six core structure families (depth 12). Keep
+**result-score** evidence and **engine-accuracy** evidence separate; they do not always agree.*
 
-| Structure family | Games (result) | Result % | Moves | ACPL | Serious err | Read |
+| Structure family | Games (W-D-L) | Score | Moves | ACPL | Err | Read |
 |---|---:|---:|---:|---:|---:|---|
-| IQP / Panov Attack | 7 | 71.4% | 96 | **17.6** | 2 | **Engine target** — least accurate, high error density. Dino zero-rep family → train + target |
-| Catalan / Réti Squeeze | 32 | 70.3% | 535 | 13.0 | 5 | Engine target **but his most-played comfort zone** — steer here only with concrete prep |
-| Anti-Sicilian Counter-Package | 23 | 87.0% | 477 | 11.8 | 9 | **Avoid** — his strongest family by result |
-| Reversed-Sicilian / Flank Annexation | 14 | 82.1% | 225 | 10.7 | 1 | Avoid — strong and accurate |
-| Fianchetto KID / Grünfeld Complexes | 7 | 71.4% | 123 | 8.7 | 0 | Avoid — accurate, no serious errors |
-| Advance Caro-Kann | 4 | **50.0%** | 69 | 7.9 | 0 | **Paradox — read carefully below** |
+| Catalan / Reti Squeeze | 19 (6-9-4) | 55.3% | 499 | 13.0 | 5 | Split sample; Black side is the real target |
+| Anti-Sicilian Counter-Package | 15 (10-5-0) | 83.3% | 477 | 11.8 | 9 | High result score despite errors; avoid loose anti-Sicilian play |
+| Reversed-Sicilian / Flank Annexation | 8 (4-3-1) | 68.8% | 225 | 10.7 | 1 | Comfortable enough; no easy edge |
+| Fianchetto KID / Grunfeld Complexes | 5 (1-4-0) | 60.0% | 123 | 8.7 | 0 | Accurate; do not expect gifts |
+| IQP / Panov Attack | 3 (2-1-0) | 83.3% | 96 | **17.6** | 2 | Engine target only; tiny sample |
+| Advance Caro-Kann | 2 (2-0-0) | 100.0% | 69 | **7.9** | 0 | Clean classical handling; not a target |
 
-**The Advance Caro-Kann paradox (don't mis-target it).** By *engine accuracy* this is his **cleanest**
-family (ACPL 7.9, zero serious errors) — so the raw fingerprint says "avoid." By *result* it is his
-**worst** family (50%, 2-0-2), and the specific **Tal Variation sub-line is 0/2**. The reconciliation:
-he doesn't play the Advance Caro sloppily move-to-move; he has simply **lost concrete games in one
-named line**. So the target is the **precise Tal Variation**, prepared deeply — not a vague hope that
-he'll drift in Advance Caro structures generally. Steer toward the *line*, not the *family average*.
+**Color split matters.** The combined Catalan/Reti row is only mildly soft, but the Black-side split
+is more actionable: **10 classical games, 2-4-4, 40.0%, ACPL 14.7, 1 blunder / 2 mistakes**. If Dino
+can reach this family with preparation, it is a better classical target than the online-only Tal
+claim. The White-side Catalan/Reti split is much stronger for Vignesh (9 games, 4-5-0, 72.2%, ACPL
+11.0), so do not treat the family as globally weak.
 
 **Practical structure verdicts:**
 
-- **Steer toward (with prep):** IQP / Panov positions — his least-accurate structure, and a family
-  Dino's audit also lists as a zero-rep gap to build. Best single convergence on the White side.
-- **Steer toward only with a concrete idea:** Catalan / Réti — engine flags occasional errors, but
-  it's his most-played family (32 games, 70%); entering it blind means entering his comfort zone.
-- **Avoid:** Anti-Sicilian Counter-Package, Reversed-Sicilian/Flank, Fianchetto KID/Grünfeld — strong
-  results *and* clean engine numbers. No edge here.
-- **Model-game review for Dino:** IQP/Panov and Advance Caro-Kann Tal — the two structures he must
-  both learn and target, so build them together.
+- **Steer toward with prep:** Catalan/Reti structures where Vignesh is Black, especially Open
+  Catalan-type positions. Use model-game work, not vague pressure.
+- **Train as a secondary pressure family:** IQP / Panov. The ACPL is the highest in the classical
+  fingerprint, and Dino has zero reps, but the sample is only 3 games and Vignesh's results are good.
+- **Avoid loose anti-Sicilian autopilot:** Dino's Moscow/Rossolimo weapons are legitimate, but
+  Vignesh scores well in the Moscow Variation as Black. Bring a prepared improvement.
+- **Do not target:** Advance Caro-Kann as a family. The online Tal losses are not enough to override
+  the clean classical structure numbers.
 
 ---
 
 ## 5. Endgame and Simplified Positions
 
-The endgame is his least-accurate phase (ACPL 18.0). Classified weakness categories from the OTB
-sample (12 classified late-position samples): **drawing-defence failure ×4, Philidor ×3, conversion
-failure ×2, rook activity ×2, rook-behind-pawn ×1** — i.e. the cluster is almost entirely
-**rook-and-pawn technique**. The five clearest samples (all OTB):
+The endgame remains his least-accurate classical phase (**ACPL 17.6**). In the classical subset, the
+profile has **6 classified late/simplified samples**; the category counts are **Philidor x3,
+drawing-defence failure x2, conversion failure x2, rook activity x2, rook-behind-pawn x1**. The
+cluster is still mostly rook-and-pawn technique, but the old Boci examples are Titled Tuesday and are
+excluded from the classical verdict.
 
 | Game | Move | Severity | Category | Engine prefers | Training theme |
 |---|---|---|---|---|---|
-| vs Aaditya, Dhingra | 37...Bg5 | blunder | Drawing-defence failure | h5–h4 | Hold the draw with the pawn break, not a passing bishop move |
-| vs Boci, Mateo | 38...Kg5 | blunder | Drawing-defence failure | Rc2–c1 | Keep the rook active on defence rather than walking the king |
-| vs Sukovic, Andrej | 39.Rd2 | mistake | Philidor / rook activity / conversion | Rf2–f4 | Activate the rook to convert; passive Rd2 lets the win slip |
-| vs Anand, Batsukh | 36.Bd3 | mistake | Philidor / rook behind pawn | Rc1–c5 | Rook to the 5th / behind the passer instead of a quiet bishop move |
-| vs Ruzhansky, Elias | 38.Rxc6 | mistake | Rook activity | a5–a6 | Push the passed pawn instead of grabbing material |
+| vs Aaditya, Dhingra | 37...Bg5 | blunder | Drawing-defence failure | h5-h4 | Find the pawn-break defensive resource |
+| vs Anand, Batsukh | 36.Bd3 | mistake | Philidor / rook behind pawn | Rc1-c5 | Rook to the 5th / behind the passer instead of a quiet bishop move |
+| vs Sukovic, Andrej | 39.Rd2 | mistake | Philidor / rook activity / conversion | Rf2-f4 | Activate the rook to convert; passive Rd2 lets the win slip |
+| vs Ruzhansky, Elias | 38.Rxc6 | mistake | Rook activity | a5-a6 | Push the passed pawn instead of grabbing material |
 
-**The honest phrasing for the manual:** *In the analysed sample, his least accurate phase is the
-endgame, with several classified rook-ending and drawing-defence lapses. If Dino reaches a simplified
-rook ending, treating active-rook play (rook behind passers, rook to the 5th), accurate Philidor /
-second-rank defence, and clean conversion as real practical chances is justified.* It is **not** a
-claim that the endgame is a general weakness.
+**The honest phrasing for the manual:** *In the classical analysed sample, his least accurate phase
+is the endgame, with a small cluster of rook-ending and drawing/conversion samples. If Dino reaches a
+simplified rook ending, active-rook play, rook-behind-passer rules, Philidor/second-rank defence, and
+clean conversion are practical chances.* It is **not** a claim that the endgame is a broad weakness.
 
 ---
 
 ## 6. Practical Game Plan for Dino
 
-1. **No opening surprise.** His opening ACPL is 7.7 over 128 openings — don't build the game around
-   a one-move trap. Aim for a sound line that produces an unbalanced, *playable* middlegame.
-2. **No clock race.** Live scouting: blitz 2453 > rapid 2381, "dangerous in time scrambles." Manage
-   the clock conservatively; don't bank on outplaying him fast.
-3. **As White — primary plan:** prepare the **Advance Caro-Kann, Tal Variation (B12)** where he is
-   0/2 as Black. This is the best convergence in the file: a real target line *and* a core structure
-   Dino's audit flags as a zero-rep must-build. **Action: play training games in it before the
-   event** — the edge is the prepared line, not improvisation.
-4. **As White — secondary plan:** prepare a **Panov / IQP** try (his least-accurate structure, ACPL
-   17.6, and Dino's other zero-rep core family). Train it alongside the Advance Caro so the two
-   White structures reinforce each other.
-5. **As Black — do not chase the Caro-Kann Tartakower target.** It's a real Vignesh soft spot (0/2 as
-   White) but it's outside Dino's repertoire; adopting a new defence for one game is the wrong risk.
-   **Instead, fix Dino's own Black liability first:** his audit shows **3 losses** in the exact
-   Sicilian Dragon sequence `e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6` (B70/B76). Against an in-form 2515, do
-   **not** walk a leaky Dragon into his preparation — choose a solid, well-rehearsed Black setup.
-6. **Endgames — press, but mind the two-edged sword.** If the game simplifies into a rook ending,
-   keep the rook active (behind passers, to the 5th) and know the Philidor / second-rank draw — the
-   sample shows him lapsing exactly there. **Caveat:** Dino's *own* endgame is his weakest phase too
-   (ACPL 36.7; 4/4 drawing-defence failures in his small sample). "Grind him in the endgame" only
-   works if Dino sharpens his own rook-ending technique first — otherwise the plan backfires.
-7. **Build 3 model games — from the right source.** Use the **OTB endgame samples** above (vs
-   Aaditya, Boci, Sukovic, Anand) as the model games, **not** the "recent losses" list in the
-   dossier — those are all **Lichess blitz/rapid** games and are weak evidence for classical prep.
-8. **Validate before committing (live-scouting to-do).** His Sevilla 2026 games post-date this PGN
-   drop. Pull his Sevilla scores and check whether the Advance Caro-Kann Tal line has been patched
-   before locking it in as the main White plan.
+1. **No opening trap.** His classical opening ACPL is 7.6, so build the game around a sound structure
+   and a concrete move-order idea, not a one-move surprise.
+2. **No clock race.** Live scouting says he is dangerous in time scrambles. Keep the game on known
+   plans and avoid unnecessary blitz decisions.
+3. **As White - first check Dino's anti-Sicilian plan.** Dino's Moscow/Rossolimo systems are his
+   confidence weapons, but Vignesh is 3-1-0 in the classical Moscow Variation as Black. If Dino uses
+   this route, he needs a specific improvement or sideline ready.
+4. **As White - candidate pressure plan:** investigate Catalan/Reti structures where Vignesh is
+   Black. The Black-side classical split (40.0%, ACPL 14.7) is the best evidence-backed target, but
+   only if Dino can reach it without entering a sterile comfort line.
+5. **As White - secondary training plan:** build IQP/Panov reps. This is both Dino's zero-rep family
+   and Vignesh's highest-ACPL classical structure, but the sample is tiny, so treat it as a pressure
+   tool rather than the whole match plan.
+6. **As Black - fix Dino's own liability first.** Dino's audit shows **3 losses** in the exact
+   Sicilian Dragon sequence `e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6` (B70/B76). Against an in-form GM, do not
+   walk a leaky Dragon into preparation. Choose a solid, rehearsed Black setup and prepare for
+   Chekhover/Rossolimo-style sidelines.
+7. **Endgames - press, but stay honest.** If the game simplifies into a rook ending, keep the rook
+   active and know the Philidor / second-rank defensive resources. Dino's own endgame sample is also
+   his weakest phase, so this plan only works if he sharpens the technique first.
+8. **Model games to study:** use the classical losses and endgame samples, especially Aaditya
+   Dhingra 2026, Goh Zi Han 2026, Shahil Dey 2026, Kazakouski 2025, Anand Batsukh 2025, and Sukovic
+   2025. Do **not** use the Lichess blitz "recent losses" as the main classical model-game set.
 
 ---
 
 ## Method & Caveats
 
 - **Command that produced the underlying analysis:** `python prep_manual_app.py --analyze --scope
-  player --player 2 --depth 12 --export` (per the workflow).
-- **Evidence discipline applied:** game counts shown next to repertoire claims; depth (12) and sample
-  size (104 OTB) shown next to engine claims; Lichess metadata kept separate from OTB engine
-  analysis; result-score targets and engine-accuracy targets reconciled explicitly (the Advance Caro
-  paradox); every target filtered against Dino's actual repertoire before being recommended.
-- **Known limitations:** depth 12 is a screening depth, not deep verification; some target lines rest
-  on 2-game samples (flagged inline); the freshest evidence (Sevilla 2026) is not yet in the PGN set.
+  player --player 2 --depth 12 --export`.
+- **Evidence discipline applied:** game counts shown next to repertoire claims; depth (12) and
+  sample size shown next to engine claims; classical PGN, online/rapid PGN, and Lichess metadata kept
+  separate; result-score targets and engine-accuracy targets reconciled explicitly.
+- **Known limitations:** depth 12 is a screening depth, not deep verification; some target structures
+  rest on very small samples; the freshest external evidence should still be checked before locking
+  the final one-game repertoire.
