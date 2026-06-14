@@ -44,6 +44,7 @@ import csv
 import datetime as dt
 import hashlib
 import json
+import math
 import os
 import random
 import re
@@ -118,6 +119,9 @@ ANALYZE_TO_PLY = 80          # cap work at ~move 40
 CP_INACCURACY = 50
 CP_MISTAKE = 100
 CP_BLUNDER = 200
+EP_INACCURACY = 0.03       # expected-score loss; filters already-lost noise
+EP_MISTAKE = 0.08
+EP_BLUNDER = 0.18
 MATE_CP = 10000             # internal score used to stand in for a forced mate
 
 # Interactive play-bot tunables. The play engine is deliberately rating-limited
@@ -1781,13 +1785,50 @@ def _mean(sum_cnt: list) -> float | None:
     return round(sum_cnt[0] / sum_cnt[1], 1) if sum_cnt[1] else None
 
 
+def _score_impact(before_cp: int | float | None,
+                  after_cp: int | float | None) -> float:
+    """Expected-score loss from the mover's point of view, rounded for display."""
+    return round(profile_engine.expected_points_drop(before_cp, after_cp), 3)
+
+
+def _impact_pct(impact: int | float | None) -> float:
+    return round(100.0 * float(impact or 0), 1)
+
+
+def _practical_severity(loss_cp: int | float | None,
+                        impact: int | float | None) -> str:
+    """Prefer practical outcome damage over raw cp loss for training labels."""
+    cp_loss = float(loss_cp or 0)
+    ep_loss = float(impact or 0)
+    if ep_loss >= EP_BLUNDER:
+        return "blunder"
+    if ep_loss >= EP_MISTAKE:
+        return "mistake"
+    if ep_loss >= EP_INACCURACY or cp_loss >= CP_INACCURACY:
+        return "inaccuracy"
+    return "good"
+
+
+def _normalize_analysis_moves(moves: list[dict]) -> list[dict]:
+    """Add current practical-impact fields to cached analysis rows."""
+    out = []
+    for move in moves:
+        m = dict(move)
+        impact = _score_impact(m.get("before"), m.get("after"))
+        m["impact"] = impact
+        m["impact_pct"] = _impact_pct(impact)
+        m["sev"] = _practical_severity(m.get("loss"), impact)
+        out.append(m)
+    return out
+
+
 def _rollup_from_row(row) -> dict:
     return {
         "depth": row["depth"], "engine": row["engine"],
         "acpl_white": row["acpl_white"], "acpl_black": row["acpl_black"],
         "moves_white": row["moves_white"], "moves_black": row["moves_black"],
         "phases": json.loads(row["phase_json"] or "{}"),
-        "moves": json.loads(row["blunders_json"] or "[]"),
+        "moves": _normalize_analysis_moves(json.loads(row["blunders_json"] or "[]")),
     }
 
 
@@ -1833,22 +1874,24 @@ def analyze_game(conn, dedup_hash: str, moves: list[str], depth: int = ENGINE_DE
         phases[side][ph][1] += 1
         sums[side][0] += loss
         sums[side][1] += 1
-        if loss >= CP_INACCURACY:
-            sev = ("blunder" if loss >= CP_BLUNDER else
-                   "mistake" if loss >= CP_MISTAKE else "inaccuracy")
+        before_cp = eb_cp if white_moved else -eb_cp
+        after_cp = ea_cp if white_moved else -ea_cp
+        impact = _score_impact(before_cp, after_cp)
+        if loss >= CP_INACCURACY or impact >= EP_INACCURACY:
+            sev = _practical_severity(loss, impact)
             sig.append({
                 "ply": k, "mover": side, "move_no": k // 2 + 1,
                 "san": moves[k] if k < len(moves) else "",
-                "sev": sev, "loss": loss,
-                "before": (eb_cp if white_moved else -eb_cp),
-                "after": (ea_cp if white_moved else -ea_cp),
+                "sev": sev, "loss": loss, "impact": impact,
+                "impact_pct": _impact_pct(impact),
+                "before": before_cp, "after": after_cp,
                 "fen_before": fens[k],
                 "fen_after": fens[k + 1],
                 "move_uci": profile_engine.infer_move_uci(fens[k], fens[k + 1]) or "",
                 "best_uci": eb[1] or "",
                 "best": uci_to_long(fens[k], eb[1]),
             })
-    sig.sort(key=lambda m: -m["loss"])
+    sig.sort(key=lambda m: (-m.get("impact", 0), -m["loss"]))
     conn.execute(
         "INSERT OR REPLACE INTO GameAnalysis (dedup_hash, depth, engine, analyzed_at,"
         " acpl_white, acpl_black, moves_white, moves_black, phase_json, blunders_json)"
@@ -1959,15 +2002,17 @@ def hero_blunder_findings(conn, depth: int | None = None,
             tot[1] += c
         hero_moves = [m for m in roll["moves"] if m["mover"] == color]
         if hero_moves:
-            crit = max(hero_moves, key=lambda m: m["loss"])
+            crit = max(hero_moves, key=lambda m: (m.get("impact", 0), m.get("loss", 0)))
             out["findings"].append({
                 "game_id": r["game_id"],
                 "opponent": r["black"] if color == "white" else r["white"],
                 "color": color, "opening": r["opening"], "eco": r["eco"],
                 "date": r["date"], "event": r["event"], "ply": crit["ply"],
                 "move_no": crit["move_no"], "san": crit["san"], "sev": crit["sev"],
+                "loss": crit.get("loss", 0), "impact": crit.get("impact", 0),
+                "impact_pct": crit.get("impact_pct", _impact_pct(crit.get("impact", 0))),
                 "before": crit["before"], "after": crit["after"], "best": crit["best"]})
-    out["findings"].sort(key=lambda f: f["after"] - f["before"])  # biggest drop first
+    out["findings"].sort(key=lambda f: (-f.get("impact", 0), -f.get("loss", 0)))
     out["phase_acpl"] = {k: _mean(phase_sum[k]) for k in PHASE_KEYS}
     out["acpl"] = _mean(tot)
     if depths:
@@ -2066,16 +2111,43 @@ def build_player_profile(conn, player_id: int, *, depth: int | None = None,
 # ===========================================================================
 # ANALYSIS
 # ===========================================================================
+def confidence_label(n: int) -> str:
+    if n >= 12:
+        return "high"
+    if n >= 4:
+        return "medium"
+    return "low"
+
+
 def score_pct(w: int, d: int, l: int) -> float:
     n = w + d + l
     return round(100.0 * (w + 0.5 * d) / n, 1) if n else 0.0
+
+
+def reliable_score_pct(w: int, d: int, l: int) -> float:
+    """Conservative lower-bound score for ranking small samples."""
+    n = w + d + l
+    if not n:
+        return 0.0
+    p = (w + 0.5 * d) / n
+    z = 1.0
+    denom = 1 + z * z / n
+    center = p + z * z / (2 * n)
+    spread = z * math.sqrt((p * (1 - p) + z * z / (4 * n)) / n)
+    return round(100.0 * max(0.0, (center - spread) / denom), 1)
 
 
 def wdl(games: list[dict]) -> dict:
     w = sum(1 for g in games if g["presult"] == "win")
     d = sum(1 for g in games if g["presult"] == "draw")
     l = sum(1 for g in games if g["presult"] == "loss")
-    return {"n": len(games), "w": w, "d": d, "l": l, "score": score_pct(w, d, l)}
+    result_n = w + d + l
+    return {
+        "n": len(games), "w": w, "d": d, "l": l,
+        "score": score_pct(w, d, l),
+        "reliable_score": reliable_score_pct(w, d, l),
+        "confidence": confidence_label(result_n),
+    }
 
 
 def opening_table(games: list[dict]) -> list[dict]:
@@ -2119,6 +2191,38 @@ def family_table(games: list[dict]) -> list[dict]:
     return rows
 
 
+def repeated_loss_lines(loss_rows: list, min_count: int = 2) -> list[dict]:
+    """Find repeated losing prefixes, preferring the most specific useful line."""
+    candidates = []
+    for plies in (14, 12, 10, 8, 6):
+        groups: dict[tuple[str, str], list] = {}
+        for r in loss_rows:
+            moves = json.loads(r["moves_json"] or "[]")
+            if len(moves) < plies:
+                continue
+            key = (r["color"], " ".join(moves[:plies]))
+            groups.setdefault(key, []).append(r)
+        for (color, line), rows in groups.items():
+            if len(rows) < min_count:
+                continue
+            openings = Counter((x["opening"] or "(unclassified)") for x in rows)
+            candidates.append({
+                "color": color, "line": line, "count": len(rows),
+                "opening": openings.most_common(1)[0][0],
+                "plies": plies,
+                "game_ids": sorted(x["game_id"] for x in rows),
+            })
+    candidates.sort(key=lambda x: (-x["count"], -x["plies"], x["line"]))
+    selected = []
+    for cand in candidates:
+        cand_ids = set(cand["game_ids"])
+        if any(cand_ids == set(prev["game_ids"]) and prev["plies"] >= cand["plies"]
+               for prev in selected):
+            continue
+        selected.append(cand)
+    return selected
+
+
 def player_dossier(conn, pid: int) -> dict:
     prof = conn.execute("SELECT * FROM Roster WHERE player_id=?", (pid,)).fetchone()
     games = player_games(conn, pid)
@@ -2150,6 +2254,8 @@ def hero_improvement(conn) -> dict:
     rec_w, rec_b, rec = wdl(wg), wdl(bg), wdl(games)
     op_w, op_b = opening_table(wg), opening_table(bg)
     fams = family_table(games)
+    engine = hero_blunder_findings(conn, allow_engine=False)
+    player_profile = build_player_profile(conn, pid, allow_engine=False)
 
     losses = [g for g in games if g["presult"] == "loss"]
     phases = {
@@ -2162,15 +2268,7 @@ def hero_improvement(conn) -> dict:
     loss_rows = conn.execute(
         """SELECT game_id, moves_json, color, opening FROM Games
            WHERE player_id=? AND presult='loss'""", (pid,)).fetchall()
-    line_groups: dict[tuple, list] = {}
-    for r in loss_rows:
-        mv = json.loads(r["moves_json"])[:8]
-        if len(mv) >= 6:
-            line_groups.setdefault((r["color"], " ".join(mv)), []).append(r)
-    repeated = [{"color": k[0], "line": k[1], "count": len(v),
-                 "opening": v[0]["opening"], "game_ids": [x["game_id"] for x in v]}
-                for k, v in line_groups.items() if len(v) >= 2]
-    repeated.sort(key=lambda x: -x["count"])
+    repeated = repeated_loss_lines(loss_rows)
 
     bullets: list[str] = []
     if not games:
@@ -2182,14 +2280,17 @@ def hero_improvement(conn) -> dict:
             ws, bs = rec_w["score"], rec_b["score"]
             bullets.append(
                 f"Colour imbalance: {ws}% with White vs {bs}% with Black "
-                f"({abs(ws-bs):.0f}-point gap). The {weaker} repertoire is the top priority.")
+                f"({abs(ws-bs):.0f}-point gap; conservative scores "
+                f"{rec_w['reliable_score']}% vs {rec_b['reliable_score']}%). "
+                f"The {weaker} repertoire is the top priority.")
         for color, table in (("White", op_w), ("Black", op_b)):
-            weak = [r for r in table if r["n"] >= 2 and r["score"] < 50]
-            weak.sort(key=lambda r: (r["score"], -r["n"]))
+            weak = [r for r in table if r["n"] >= 2 and r["reliable_score"] < 45]
+            weak.sort(key=lambda r: (r["reliable_score"], r["score"], -r["n"]))
             for r in weak[:3]:
                 bullets.append(
                     f"As {color} — {r['opening']} ({r['eco']}): scoring only "
                     f"{r['score']}% over {r['n']} games "
+                    f"(confidence-adjusted {r['reliable_score']}%, {r['confidence']} confidence) "
                     f"({r['w']}W {r['d']}D {r['l']}L). Needs dedicated repair work.")
         if losses:
             nl = len(losses)
@@ -2204,20 +2305,39 @@ def hero_improvement(conn) -> dict:
         for rl in repeated[:3]:
             bullets.append(
                 f"Repeated problem line as {rl['color'].capitalize()} "
-                f"({rl['opening']}): lost {rl['count']} games starting "
+                f"({rl['opening']}): lost {rl['count']} games sharing the first "
+                f"{rl['plies']} plies "
                 f"{rl['line']} — fix this exact sequence before the event.")
+        if engine.get("analyzed"):
+            usable = {k: v for k, v in (engine.get("phase_acpl") or {}).items() if v is not None}
+            if usable:
+                worst = max(usable, key=lambda k: usable[k])
+                bullets.append(
+                    f"Engine phase priority: {PHASE_LABEL[worst]} has the highest ACPL "
+                    f"({usable[worst]}). Build training positions from the engine-flagged games.")
+            if engine.get("findings"):
+                top = engine["findings"][0]
+                dots = "." if top["color"] == "white" else "..."
+                bullets.append(
+                    f"Highest practical mistake cost: {top['move_no']}{dots}{top['san']} "
+                    f"vs {top['opponent']} in {top['opening']} lost "
+                    f"{top.get('impact_pct', 0)} expected-score points; engine preferred {top['best']}.")
         for f in fams:
             if f["n"] == 0:
                 bullets.append(
                     f"No practical games in the \"{f['family']}\" family — a core manual "
-                    "structure with zero reps. Schedule training games in it.")
-            elif f["n"] >= 2 and f["score"] < 50:
+                    "structure with zero reps. Schedule focused training games in it.")
+            elif f["n"] >= 2 and f["reliable_score"] < 45:
                 bullets.append(
                     f"Underperforming in the \"{f['family']}\" family: "
-                    f"{f['score']}% over {f['n']} games.")
-        strong = [r for r in op_w + op_b if r["n"] >= 3 and r["score"] >= 70]
+                    f"{f['score']}% over {f['n']} games "
+                    f"(confidence-adjusted {f['reliable_score']}%).")
+        strong = [r for r in op_w + op_b if r["n"] >= 3 and r["reliable_score"] >= 65]
+        strong.sort(key=lambda r: (-r["reliable_score"], -r["score"], -r["n"], r["opening"]))
         if strong:
-            names = ", ".join(f"{r['opening']} ({r['score']}%)" for r in strong[:3])
+            names = ", ".join(
+                f"{r['opening']} ({r['score']}%, reliable {r['reliable_score']}%)"
+                for r in strong[:3])
             bullets.append(f"Confidence weapons to keep sharp (not change): {names}.")
 
     return {
@@ -2228,8 +2348,8 @@ def hero_improvement(conn) -> dict:
         "repeated_lines": repeated, "bullets": bullets,
         "losses": [g for g in games if g["presult"] == "loss"],
         # Engine-pinpointed critical mistakes + accuracy-by-phase (cached only).
-        "engine": hero_blunder_findings(conn, allow_engine=False),
-        "player_profile": build_player_profile(conn, pid, allow_engine=False),
+        "engine": engine,
+        "player_profile": player_profile,
     }
 
 
@@ -2237,26 +2357,31 @@ def hero_improvement(conn) -> dict:
 # MARKDOWN EXPORT
 # ===========================================================================
 def md_wdl(r: dict) -> str:
-    return f"{r['w']}W {r['d']}D {r['l']}L ({r['score']}%)"
+    extra = f", reliable {r['reliable_score']}%" if r.get("n", 0) >= 2 else ""
+    return f"{r['w']}W {r['d']}D {r['l']}L ({r['score']}%{extra})"
 
 
 def md_opening_table(rows: list[dict], limit: int = 12) -> str:
     if not rows:
         return "_No games on file yet._\n"
-    out = ["| Opening | ECO | Games | W-D-L | Score |",
-           "|---|---|---:|---|---:|"]
+    out = ["| Opening | ECO | Games | W-D-L | Score | Reliable | Confidence |",
+           "|---|---|---:|---|---:|---:|---|"]
     for r in rows[:limit]:
         out.append(f"| {r['opening']} | {r['eco']} | {r['n']} | "
-                   f"{r['w']}-{r['d']}-{r['l']} | {r['score']}% |")
+                   f"{r['w']}-{r['d']}-{r['l']} | {r['score']}% | "
+                   f"{r.get('reliable_score', 0)}% | {r.get('confidence', 'low')} |")
     return "\n".join(out) + "\n"
 
 
 def md_family_table(rows: list[dict]) -> str:
-    out = ["| Core Structure Family | Games | W-D-L | Score |",
-           "|---|---:|---|---:|"]
+    out = ["| Core Structure Family | Games | W-D-L | Score | Reliable | Confidence |",
+           "|---|---:|---|---:|---:|---|"]
     for r in rows:
-        out.append(f"| {r['family']} | {r['n']} | {r['w']}-{r['d']}-{r['l']} | "
-                   f"{r['score']}% |" if r["n"] else f"| {r['family']} | 0 | — | — |")
+        out.append(
+            f"| {r['family']} | {r['n']} | {r['w']}-{r['d']}-{r['l']} | "
+            f"{r['score']}% | {r.get('reliable_score', 0)}% | "
+            f"{r.get('confidence', 'low')} |"
+            if r["n"] else f"| {r['family']} | 0 | — | — | — | — |")
     return "\n".join(out) + "\n"
 
 
@@ -2308,14 +2433,14 @@ def md_engine_findings(eng: dict | None) -> str:
            f"middlegame {ph.get('mid')}, endgame {ph.get('end')} "
            f"(overall {eng['acpl']}).*", ""]
     if eng["findings"]:
-        out += ["| Game | Opening | Critical move | Eval swing | Engine prefers |",
-                "|---|---|---|---|---|"]
+        out += ["| Game | Opening | Critical move | Eval swing | Practical loss | Engine prefers |",
+                "|---|---|---|---|---:|---|"]
         for f in eng["findings"]:
             dots = "." if f["color"] == "white" else "..."
             mv = f"{f['move_no']}{dots}{f['san']} ({f['sev']})"
             swing = f"{cp_to_pawns(f['before'])} → {cp_to_pawns(f['after'])}"
             out.append(f"| vs {f['opponent']} | {f['opening']} ({f['eco']}) | "
-                       f"{mv} | {swing} | {f['best']} |")
+                       f"{mv} | {swing} | {f.get('impact_pct', 0)} pts | {f['best']} |")
     return "\n".join(out) + "\n"
 
 
@@ -2346,12 +2471,14 @@ def md_player_profile(pp: dict | None) -> str:
     out.append(f"- **Opening breadth:** {opening.get('distinct_openings', 0)} distinct openings")
     if opening.get("strongest_lines"):
         lines = ", ".join(
-            f"{r['opening']} ({r['score']}% over {r['n']} games)"
+            f"{r['opening']} ({r['score']}%, reliable {r.get('reliable_score', 0)}% "
+            f"over {r['n']} games)"
             for r in opening["strongest_lines"][:3])
         out.append(f"- **Confidence lines:** {lines}")
     if opening.get("weak_lines"):
         lines = ", ".join(
-            f"{r['opening']} ({r['score']}% over {r['n']} games)"
+            f"{r['opening']} ({r['score']}%, reliable {r.get('reliable_score', 0)}% "
+            f"over {r['n']} games)"
             for r in opening["weak_lines"][:3])
         out.append(f"- **Repair lines:** {lines}")
     if pp.get("tendencies"):
@@ -2367,15 +2494,15 @@ def md_player_profile(pp: dict | None) -> str:
             out.append(f"| {c['title']} | {c['count']} | {reason or 'Classified from engine samples.'} |")
     if pp.get("samples"):
         out += ["", "### Sample positions", "",
-                "| Game | Move | Severity | Category | Engine prefers |",
-                "|---|---|---|---|---|"]
+                "| Game | Move | Severity | Practical loss | Category | Engine prefers |",
+                "|---|---|---|---:|---|---|"]
         for s in pp["samples"][:6]:
             cats = ", ".join(profile_engine.WEAKNESS_TITLES.get(c, c)
                              for c in s.get("categories", []))
             dots = "." if s.get("color") == "white" else "..."
             move = f"{s.get('move_no')}{dots}{s.get('san')}"
             out.append(f"| vs {s.get('opponent', '')} | {move} | {s.get('severity')} | "
-                       f"{cats} | {s.get('best', '')} |")
+                       f"{s.get('impact_pct', 0)} pts | {cats} | {s.get('best', '')} |")
     return "\n".join(out) + "\n"
 
 
@@ -3102,16 +3229,19 @@ async function selectPlayer(pid){
 
 function openingTbl(rows){
   if(!rows.length) return '<p class="muted">No games.</p>';
-  let h='<table><tr><th>Opening</th><th>ECO</th><th>N</th><th>W-D-L</th><th>Score</th></tr>';
+  let h='<table><tr><th>Opening</th><th>ECO</th><th>N</th><th>W-D-L</th><th>Score</th><th>Reliable</th><th>Conf.</th></tr>';
   for(const r of rows) h+='<tr><td>'+esc(r.opening)+'</td><td>'+esc(r.eco)+'</td><td>'+r.n+
-    '</td><td>'+r.w+'-'+r.d+'-'+r.l+'</td><td class="'+scoreCls(r.score,r.n)+'">'+r.score+'%</td></tr>';
+    '</td><td>'+r.w+'-'+r.d+'-'+r.l+'</td><td class="'+scoreCls(r.score,r.n)+'">'+r.score+
+    '%</td><td class="'+scoreCls(r.reliable_score||0,r.n)+'">'+(r.reliable_score||0)+
+    '%</td><td>'+esc(r.confidence||'low')+'</td></tr>';
   return h+'</table>';
 }
 function famTbl(rows){
-  let h='<table><tr><th>Core Structure Family</th><th>N</th><th>W-D-L</th><th>Score</th></tr>';
+  let h='<table><tr><th>Core Structure Family</th><th>N</th><th>W-D-L</th><th>Score</th><th>Reliable</th><th>Conf.</th></tr>';
   for(const r of rows) h+='<tr><td>'+esc(r.family)+'</td><td>'+r.n+'</td><td>'+
     (r.n?(r.w+'-'+r.d+'-'+r.l):'—')+'</td><td class="'+scoreCls(r.score,r.n)+'">'+
-    (r.n?r.score+'%':'—')+'</td></tr>';
+    (r.n?r.score+'%':'—')+'</td><td class="'+scoreCls(r.reliable_score||0,r.n)+'">'+
+    (r.n?(r.reliable_score||0)+'%':'—')+'</td><td>'+(r.n?esc(r.confidence||'low'):'—')+'</td></tr>';
   return h+'</table>';
 }
 function gamesTbl(games){
@@ -3187,11 +3317,11 @@ function playerProfileHtml(pp){
   h+='<p><b>Opening breadth:</b> '+(op.distinct_openings||0)+' distinct openings.</p>';
   if(op.strongest_lines&&op.strongest_lines.length){
     h+='<p><b>Confidence lines:</b> '+op.strongest_lines.slice(0,3).map(r=>
-      esc(r.opening)+' ('+r.score+'% / '+r.n+'g)').join(', ')+'</p>';
+      esc(r.opening)+' ('+r.score+'%, reliable '+(r.reliable_score||0)+'% / '+r.n+'g)').join(', ')+'</p>';
   }
   if(op.weak_lines&&op.weak_lines.length){
     h+='<p><b>Repair lines:</b> '+op.weak_lines.slice(0,3).map(r=>
-      esc(r.opening)+' ('+r.score+'% / '+r.n+'g)').join(', ')+'</p>';
+      esc(r.opening)+' ('+r.score+'%, reliable '+(r.reliable_score||0)+'% / '+r.n+'g)').join(', ')+'</p>';
   }
   if(pp.tendencies&&pp.tendencies.length){
     h+='<h3>Data-backed tendencies</h3><table><tr><th>Label</th><th>Evidence</th><th>Confidence</th></tr>';
@@ -3208,13 +3338,14 @@ function playerProfileHtml(pp){
   }
   if(pp.samples&&pp.samples.length){
     h+='<h3>Sample positions</h3><table><tr><th>Game</th><th>Move</th><th>Severity</th>'+
-       '<th>Category</th><th>Engine prefers</th></tr>';
+       '<th>Practical loss</th><th>Category</th><th>Engine prefers</th></tr>';
     for(const s of pp.samples.slice(0,6)){
       const cats=(s.categories||[]).map(c=>esc(c.replaceAll('_',' '))).join(', ');
       const dots=s.color==='white'?'.':'…';
       const move=(s.move_no||'?')+dots+esc(s.san||'');
       h+='<tr class="click" onclick="openGame('+s.game_id+','+s.ply+')"><td>vs '+esc(s.opponent)+
-        '</td><td>'+move+'</td><td>'+esc(s.severity)+'</td><td>'+cats+
+        '</td><td>'+move+'</td><td>'+esc(s.severity)+'</td><td>'+
+        Number(s.impact_pct||0).toFixed(1)+' pts</td><td>'+cats+
         '</td><td>'+esc(s.best||'')+'</td></tr>';
     }
     h+='</table>';
@@ -3235,13 +3366,14 @@ function engineFindingsHtml(eng){
     ph.mid+' · endgame '+ph.end+' · overall '+eng.acpl+'</p>';
   if(eng.findings.length){
     h+='<table><tr><th>Game</th><th>Opening</th><th>Critical move</th><th>Eval swing</th>'+
-       '<th>Engine prefers</th></tr>';
+       '<th>Practical loss</th><th>Engine prefers</th></tr>';
     for(const f of eng.findings){
       const mv=f.move_no+(f.color==='white'?'.':'…')+esc(f.san)+
         ' <span class="pill l">'+esc(f.sev)+'</span>';
       h+='<tr class="click" onclick="openGame('+f.game_id+','+f.ply+')"><td>vs '+esc(f.opponent)+
         '</td><td>'+esc(f.opening)+' ('+esc(f.eco)+')</td><td>'+mv+'</td><td>'+fmtCp(f.before)+
-        ' &rarr; '+fmtCp(f.after)+'</td><td>'+esc(f.best)+'</td></tr>'; }
+        ' &rarr; '+fmtCp(f.after)+'</td><td>'+Number(f.impact_pct||0).toFixed(1)+
+        ' pts</td><td>'+esc(f.best)+'</td></tr>'; }
     h+='</table>'; }
   return h+'</div>';
 }

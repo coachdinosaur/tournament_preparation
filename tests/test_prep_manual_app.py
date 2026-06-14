@@ -248,6 +248,62 @@ class PrepManualCoreTests(unittest.TestCase):
             self.assertEqual(bad["uci"], "d2d4")
             self.assertEqual(bad["basis"], "engine")
 
+    def test_practical_severity_downranks_already_lost_cp_blunder(self):
+        impact = pm._score_impact(-446, -976)
+
+        self.assertEqual(pm._practical_severity(530, impact), "mistake")
+        self.assertGreater(impact, pm.EP_MISTAKE)
+        self.assertLess(impact, pm.EP_BLUNDER)
+
+    def test_wdl_includes_confidence_adjusted_score(self):
+        rec = pm.wdl([
+            {"presult": "win"},
+            {"presult": "win"},
+            {"presult": "win"},
+        ])
+
+        self.assertEqual(rec["score"], 100.0)
+        self.assertEqual(rec["reliable_score"], 75.0)
+        self.assertEqual(rec["confidence"], "low")
+
+    def test_repeated_loss_lines_prefers_deeper_shared_prefixes(self):
+        rows = [
+            {
+                "game_id": 1,
+                "color": "black",
+                "opening": "Sicilian Dragon",
+                "moves_json": json_dumps(
+                    ["e4", "c5", "Nf3", "d6", "d4", "cxd4", "Nxd4", "Nf6",
+                     "Nc3", "g6", "Be3", "Bg7"]
+                ),
+            },
+            {
+                "game_id": 2,
+                "color": "black",
+                "opening": "Sicilian Dragon",
+                "moves_json": json_dumps(
+                    ["e4", "c5", "Nf3", "d6", "d4", "cxd4", "Nxd4", "Nf6",
+                     "Nc3", "g6", "Be3", "Bg7"]
+                ),
+            },
+            {
+                "game_id": 3,
+                "color": "black",
+                "opening": "Sicilian Dragon",
+                "moves_json": json_dumps(
+                    ["e4", "c5", "Nf3", "d6", "d4", "cxd4", "Nxd4", "Nf6",
+                     "Nc3", "g6", "Bg5", "Bg7"]
+                ),
+            },
+        ]
+
+        repeated = pm.repeated_loss_lines(rows)
+
+        self.assertEqual(repeated[0]["count"], 3)
+        self.assertEqual(repeated[0]["plies"], 10)
+        self.assertEqual(repeated[1]["count"], 2)
+        self.assertEqual(repeated[1]["plies"], 12)
+
     def test_play_endpoints(self):
         original_db = pm.DB_PATH
         with tempfile.TemporaryDirectory() as td:

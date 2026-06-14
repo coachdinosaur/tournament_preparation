@@ -400,7 +400,10 @@ def build_player_profile(
     profile["phase_profile"]["acpl"] = _mean(total_sum)
     if depths:
         profile["phase_profile"]["depth"] = max(depths)
-    profile["samples"].sort(key=lambda s: s.get("loss_cp", 0), reverse=True)
+    profile["samples"].sort(
+        key=lambda s: (s.get("impact", 0), s.get("loss_cp", 0)),
+        reverse=True,
+    )
     profile["samples"] = profile["samples"][:10]
     profile["weakness_categories"] = _summarize_categories(
         category_samples, category_reasons
@@ -439,10 +442,10 @@ def _opening_profile(games: list[dict]) -> dict:
     all_rows = _opening_rows(games)
     white_rows = _opening_rows([g for g in games if g.get("color") == "white"])
     black_rows = _opening_rows([g for g in games if g.get("color") == "black"])
-    strong = [r for r in all_rows if r["n"] >= 3 and r["score"] >= 60]
-    weak = [r for r in all_rows if r["n"] >= 2 and r["score"] < 50]
-    strong.sort(key=lambda r: (-r["score"], -r["n"], r["opening"]))
-    weak.sort(key=lambda r: (r["score"], -r["n"], r["opening"]))
+    strong = [r for r in all_rows if r["n"] >= 3 and r["reliable_score"] >= 55]
+    weak = [r for r in all_rows if r["n"] >= 2 and r["reliable_score"] < 45]
+    strong.sort(key=lambda r: (-r["reliable_score"], -r["score"], -r["n"], r["opening"]))
+    weak.sort(key=lambda r: (r["reliable_score"], r["score"], -r["n"], r["opening"]))
     return {
         "distinct_openings": len(all_rows),
         "strongest_lines": strong[:5],
@@ -477,8 +480,25 @@ def _record(games: list[dict]) -> dict:
     d = sum(1 for g in games if g.get("presult") == "draw")
     l = sum(1 for g in games if g.get("presult") == "loss")
     n = len(games)
-    score = round(100.0 * (w + 0.5 * d) / n, 1) if n else 0.0
-    return {"n": n, "w": w, "d": d, "l": l, "score": score}
+    result_n = w + d + l
+    score = round(100.0 * (w + 0.5 * d) / result_n, 1) if result_n else 0.0
+    return {
+        "n": n, "w": w, "d": d, "l": l, "score": score,
+        "reliable_score": _reliable_score_pct(w, d, l),
+        "confidence": _confidence(result_n),
+    }
+
+
+def _reliable_score_pct(w: int, d: int, l: int) -> float:
+    n = w + d + l
+    if not n:
+        return 0.0
+    p = (w + 0.5 * d) / n
+    z = 1.0
+    denom = 1 + z * z / n
+    center = p + z * z / (2 * n)
+    spread = z * math.sqrt((p * (1 - p) + z * z / (4 * n)) / n)
+    return round(100.0 * max(0.0, (center - spread) / denom), 1)
 
 
 def _sample_from_move(game: dict, move: dict) -> dict:
@@ -495,6 +515,10 @@ def _sample_from_move(game: dict, move: dict) -> dict:
         "san": move.get("san") or "",
         "severity": move.get("sev") or "inaccuracy",
         "loss_cp": move.get("loss") or 0,
+        "impact": move.get("impact") or expected_points_drop(move.get("before"), move.get("after")),
+        "impact_pct": move.get("impact_pct") or round(
+            100.0 * expected_points_drop(move.get("before"), move.get("after")), 1
+        ),
         "before_cp": move.get("before"),
         "after_cp": move.get("after"),
         "best": move.get("best") or "",
@@ -525,7 +549,11 @@ def _summarize_categories(
             "id": cat,
             "title": WEAKNESS_TITLES.get(cat, cat.replace("_", " ").title()),
             "count": len(samples),
-            "sample_moves": sorted(samples, key=lambda s: s.get("loss_cp", 0), reverse=True)[:3],
+            "sample_moves": sorted(
+                samples,
+                key=lambda s: (s.get("impact", 0), s.get("loss_cp", 0)),
+                reverse=True,
+            )[:3],
             "reasons": [r for r, _ in reasons_by_category[cat].most_common(3)],
         })
     rows.sort(key=lambda r: (-r["count"], r["title"]))
@@ -596,7 +624,9 @@ def _tendencies(profile: dict, games: list[dict]) -> list[dict]:
 
     strong = opening.get("strongest_lines") or []
     if strong:
-        labels = ", ".join(f"{r['opening']} ({r['score']}%/{r['n']}g)" for r in strong[:3])
+        labels = ", ".join(
+            f"{r['opening']} ({r['score']}%, reliable {r['reliable_score']}%/{r['n']}g)"
+            for r in strong[:3])
         tendencies.append({
             "label": "Confidence lines",
             "evidence": labels,
