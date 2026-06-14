@@ -56,17 +56,27 @@
 
 ## Engine fingerprint
 
-*From 2 analysed game(s) at depth 16. Average centipawn loss (ACPL) — lower is more accurate.*
+*From 100 analysed game(s) at depth 12. Average centipawn loss (ACPL) — lower is more accurate.*
 
-- **Overall ACPL:** 26.0 (opening 25.8, middlegame 34.2, endgame 20.1)
-- **Serious errors on file:** 2 blunders, 2 mistakes, 6 inaccuracies
+- **Overall ACPL:** 25.8 (opening 11.1, middlegame 19.1, endgame 36.2)
+- **Serious errors on file:** 53 blunders, 100 mistakes, 237 inaccuracies
+- **Target structures (least accurate):** *Reversed-Sicilian / Flank Annexation*, *Fianchetto KID / Grünfeld Complexes*
+- **Avoid — they are solid here (most accurate):** *IQP / Panov Attack*, *Anti-Sicilian Counter-Package*
+
+| Structure family | Moves | ACPL | Serious errors |
+|---|---:|---:|---:|
+| Reversed-Sicilian / Flank Annexation | 381 | 29.3 | 23 |
+| Fianchetto KID / Grünfeld Complexes | 134 | 29.0 | 3 |
+| Catalan / Réti Squeeze | 296 | 25.7 | 15 |
+| Anti-Sicilian Counter-Package | 328 | 20.1 | 15 |
+| IQP / Panov Attack | 106 | 19.9 | 4 |
 
 
 ## Player Profile
 
-*From 2 analysed game(s) at depth 16. Overall ACPL 26.0 — opening 25.8, middlegame 34.2, endgame 20.1.*
+*From 100 analysed game(s) at depth 12. Overall ACPL 25.8 — opening 11.1, middlegame 19.1, endgame 36.2.*
 
-- **Mistakes on file:** 2 blunders, 2 mistakes, 6 inaccuracies
+- **Mistakes on file:** 53 blunders, 100 mistakes, 237 inaccuracies
 - **Opening breadth:** 62 distinct openings
 - **Confidence lines:** Pseudo Queen's Indian Defense (100.0% over 4 games), Sicilian Defense: Closed (100.0% over 4 games), Zukertort Opening: Nimzo-Larsen Variation (100.0% over 3 games)
 - **Repair lines:** Nimzowitsch Defense: Williams Variation (21.4% over 7 games), Sicilian Defense: Najdorf Variation (25.0% over 2 games), Caro-Kann Defense: Exchange Variation (33.3% over 3 games)
@@ -74,23 +84,32 @@
 ### Data-backed tendencies
 
 - **Opening breadth** (high confidence): Broad: 62 distinct openings across 100 games.
-- **Risk tendency** (low confidence): High tactical volatility: 4 blunders/mistakes in 2 analysed games.
-- **Phase stability** (low confidence): Least accurate phase: middlegame ACPL 34.2; best phase: endgame ACPL 20.1.
-- **Conversion reliability** (low confidence): 0 conversion-failure sample(s) among 1 classified endgame/late-simplified samples.
-- **Drawing-defense reliability** (low confidence): 1 drawing-defense failure sample(s) among 1 classified endgame/late-simplified samples.
+- **Risk tendency** (high confidence): High tactical volatility: 153 blunders/mistakes in 100 analysed games.
+- **Phase stability** (high confidence): Least accurate phase: endgame ACPL 36.2; best phase: opening ACPL 11.1.
+- **Conversion reliability** (high confidence): 4 conversion-failure sample(s) among 29 classified endgame/late-simplified samples.
+- **Drawing-defense reliability** (high confidence): 2 drawing-defense failure sample(s) among 29 classified endgame/late-simplified samples.
 - **Confidence lines** (medium confidence): Pseudo Queen's Indian Defense (100.0%/4g), Sicilian Defense: Closed (100.0%/4g), Zukertort Opening: Nimzo-Larsen Variation (100.0%/3g)
 
 ### Endgame / simplified-position weakness categories
 
 | Category | Samples | Evidence |
 |---|---:|---|
-| Drawing defense failure | 1 | The engine score changed from drawable to losing. |
+| Rook behind pawn | 10 | A passed pawn was present but the rook was not behind it.; The rook-and-pawn structure resembles a Philidor defense.; The rook became passive after the move. |
+| Philidor | 9 | The rook-and-pawn structure resembles a Philidor defense.; A passed pawn was present but the rook was not behind it.; The move turned a winning position into a non-winning one. |
+| Conversion failure | 4 | The move turned a winning position into a non-winning one.; A passed pawn was present but the rook was not behind it.; The rook-and-pawn structure resembles a Philidor defense. |
+| Rook activity | 4 | The rook became passive after the move.; A passed pawn was present but the rook was not behind it.; The move turned a winning position into a non-winning one. |
+| Drawing defense failure | 2 | The move turned a drawable position into a losing one.; A passed pawn was present but the rook was not behind it.; The rook-and-pawn structure resembles a Philidor defense. |
 
 ### Sample positions
 
 | Game | Move | Severity | Category | Engine prefers |
 |---|---|---|---|---|
-| vs Porozhniak,Maya | 26...Nb2 | blunder | Drawing defense failure | Rd8xd5 |
+| vs Gavilan Diaz,Mario | 40.Rg1 | blunder | Rook activity, Rook behind pawn | Rb7-b6 |
+| vs Al Hosani,Omran | 34.Nxf5 | blunder | Rook behind pawn, Conversion failure | Rf1-c1 |
+| vs Bortnyk,Olexandr | 31...Rxe5 | blunder | Philidor, Drawing defense failure | Re8-e6 |
+| vs Gavilan Diaz,Mario | 36.Rxd7 | blunder | Rook activity, Rook behind pawn, Conversion failure | Ra7-b7 |
+| vs Vokhidov,Shamsiddin | 38.Rg4 | blunder | Philidor, Rook behind pawn | Rf4-f3 |
+| vs Akobian,Varuzhan | 40.b3 | blunder | Philidor | Ng5-e6 |
 
 
 ## Prep pointers

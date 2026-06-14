@@ -1508,10 +1508,12 @@ def analyze_all(conn, depth: int = ENGINE_DEPTH, scope: str = "all",
     return {"analyzed": done, "total": len(games)}
 
 
-def hero_blunder_findings(conn, depth: int = ENGINE_DEPTH,
+def hero_blunder_findings(conn, depth: int | None = None,
                           allow_engine: bool = False) -> dict:
     """Engine-pinpointed critical mistakes across Dino's losses + accuracy-by-phase.
     Reads cached analysis only by default (cheap on GET)."""
+    if depth is None:
+        depth = ENGINE_DEPTH
     out = {"available": engine_info()["available"] or ONLINE_ENABLED,
            "analyzed": 0, "pending": 0, "total": 0, "depth": depth,
            "findings": [], "phase_acpl": {}, "acpl": None}
@@ -1558,11 +1560,13 @@ def hero_blunder_findings(conn, depth: int = ENGINE_DEPTH,
     return out
 
 
-def opponent_fingerprint(conn, pid: int, depth: int = ENGINE_DEPTH,
+def opponent_fingerprint(conn, pid: int, depth: int | None = None,
                          allow_engine: bool = False) -> dict:
     """An opponent's engine accuracy profile: overall/by-phase ACPL, blunder
     counts, and which openings/structure families they err in (target) vs play
     solidly (avoid). Cached-only on GET."""
+    if depth is None:
+        depth = ENGINE_DEPTH
     out = {"available": engine_info()["available"] or ONLINE_ENABLED,
            "analyzed": 0, "pending": 0, "total": 0, "depth": depth, "acpl": None,
            "phase_acpl": {}, "counts": {"blunder": 0, "mistake": 0, "inaccuracy": 0},
@@ -1629,10 +1633,12 @@ def opponent_fingerprint(conn, pid: int, depth: int = ENGINE_DEPTH,
     return out
 
 
-def build_player_profile(conn, player_id: int, *, depth: int = ENGINE_DEPTH,
+def build_player_profile(conn, player_id: int, *, depth: int | None = None,
                          allow_engine: bool = False) -> dict:
     """Reusable player profile. Normal GET/export callers keep allow_engine=False
     so this reads cached GameAnalysis rows only and never blocks on Stockfish."""
+    if depth is None:
+        depth = ENGINE_DEPTH
     return profile_engine.build_player_profile(
         conn,
         player_id,

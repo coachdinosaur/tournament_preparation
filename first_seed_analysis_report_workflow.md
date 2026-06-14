@@ -264,6 +264,28 @@ Avoid:
 Use this first-seed workflow as the structure for later seeds, not as a source of copied conclusions.
 Each seed needs a fresh evidence pass from his own games.
 
+### Current Progress
+
+Completed standalone reports:
+
+- Seed 1: `first_seed_report.md` / `first_seed_report.docx`
+- Seed 2: `second_seed_report.md` / `second_seed_report.docx`
+- Seed 3: `third_seed_report.md` / `third_seed_report.docx`
+- Seed 4: `fourth_seed_report.md` / `fourth_seed_report.docx`
+
+Current next target:
+
+- Seed 5: **IM Chan, Kim Yew**
+- Player ID: `6`
+- Dossier: `manual_sections/Opponent_IM_Chan_Kim_Yew.md`
+- Report files: `fifth_seed_report.md` / `fifth_seed_report.docx`
+
+Immediate next command:
+
+```powershell
+python prep_manual_app.py --analyze --scope player --player 6 --depth 12 --export
+```
+
 ### Seed Queue
 
 Use the app/export order, which is sorted by current roster FIDE rating. In this workspace the
@@ -300,6 +322,9 @@ python prep_manual_app.py --analyze --scope player --player 104 --depth 12 --exp
 
 # Fourth seed
 python prep_manual_app.py --analyze --scope player --player 5 --depth 12 --export
+
+# Fifth seed
+python prep_manual_app.py --analyze --scope player --player 6 --depth 12 --export
 ```
 
 After the command finishes, verify that the selected player's dossier reports:
@@ -315,6 +340,59 @@ After the command finishes, verify that the selected player's dossier reports:
 - Top weakness categories
 
 If pending games remain, do not hide that in the report. State the coverage directly.
+
+### Depth / Export Consistency Note
+
+The app now resolves engine-depth defaults at call time, so a command such as:
+
+```powershell
+python prep_manual_app.py --analyze --scope player --player 6 --depth 12 --export
+```
+
+should export dossier text that cites the active depth-12 profile. This matters because older cache
+rows at another depth can remain in `GameAnalysis`. If a future dossier prints a depth that does not
+match the current run, verify the cache directly before writing the report:
+
+```powershell
+@'
+import sqlite3
+conn = sqlite3.connect("prep_manual.db")
+cur = conn.cursor()
+player_id = 5  # change for current seed
+for row in cur.execute("""
+select ga.depth, count(*)
+from GameAnalysis ga
+join Games g on g.dedup_hash = ga.dedup_hash
+where g.player_id = ?
+group by ga.depth
+order by ga.depth
+""", (player_id,)):
+    print(row)
+'@ | python -
+```
+
+Use the complete current-depth run for the curated report, and note any partial older-depth cache
+only if it affects interpretation.
+
+### Direct SQLite Query Gotcha
+
+If you query `prep_manual.db` directly for color splits or opening scores, `Games.presult` is stored
+from the roster player's perspective as text values:
+
+- `win`
+- `draw`
+- `loss`
+
+Do **not** query it as PGN-style numeric results such as `presult='1'`, `presult='1/2'`, or
+`presult='0'`; that returns zeroed W-D-L counts. Use this scoring expression instead:
+
+```sql
+sum(case when presult='win' then 1 when presult='draw' then 0.5 else 0 end)
+```
+
+For color-split structure tables, join `Games`, `Tags`, and `GameAnalysis`, then count serious
+errors from `blunders_json` only for the roster player's mover (`white` if `Games.color='white'`,
+`black` if `Games.color='black'`).
 
 ### Reusable Report Checklist
 
@@ -340,16 +418,17 @@ For each seed, collect the same fixed evidence fields before writing prose:
 
 ### DOCX Reuse
 
-Use the reusable root builder:
+Use the reusable root builder only. Do not copy the embedded Python block later in this file:
 
 ```powershell
 python -X utf8 build_standalone_report.py second_seed_report.md second_seed_report.docx --title "Second Seed Report: GM Shyaam, Nikhil P"
 python -X utf8 build_standalone_report.py third_seed_report.md third_seed_report.docx --title "Third Seed Report: IM Morris, James"
 python -X utf8 build_standalone_report.py fourth_seed_report.md fourth_seed_report.docx --title "Fourth Seed Report: IM Tan, Jun Ying"
+python -X utf8 build_standalone_report.py fifth_seed_report.md fifth_seed_report.docx --title "Fifth Seed Report: IM Chan, Kim Yew"
 ```
 
-The embedded DOCX builder below is kept as implementation reference only. Prefer
-`build_standalone_report.py` so each seed report can be regenerated without copying code.
+The embedded DOCX builder below is stale historical reference only. Do not copy from it. Run
+`build_standalone_report.py` so each seed report uses the maintained implementation.
 
 ## Producing the Report Files (Markdown + Standalone DOCX)
 
@@ -383,14 +462,15 @@ For the first seed, run:
 python -X utf8 build_standalone_report.py first_seed_report.md first_seed_report.docx --title "First Seed Report: GM Vignesh, N R"
 ```
 
-For the next seed after Shyaam, run:
+For the current next seed after Tan, run:
 
 ```powershell
-python -X utf8 build_standalone_report.py third_seed_report.md third_seed_report.docx --title "Third Seed Report: IM Morris, James"
+python -X utf8 build_standalone_report.py fifth_seed_report.md fifth_seed_report.docx --title "Fifth Seed Report: IM Chan, Kim Yew"
 ```
 
-The original embedded builder is kept below as implementation reference. Prefer the root script for
-new seed reports so each report can be regenerated without copying code.
+The original embedded builder is kept below as a historical snapshot only. Do not copy from it for
+new seed reports; the authoritative implementation is `build_standalone_report.py` at the project
+root.
 
 ### Step 3 — Render-check the DOCX on Windows
 
@@ -399,6 +479,20 @@ The final DOCX should be visually checked by rendering it to page PNGs. On Windo
 - LibreOffice (`soffice.com` / `soffice.exe`)
 - Poppler (`pdftoppm.exe`, and usually `pdfinfo.exe`)
 - Python package `pdf2image` if using the bundled renderer
+
+**Current workspace render rule from the fourth-seed run:** use the explicit `soffice.com` +
+`pdftoppm.exe` manual path below. The packaged Documents `render_docx.py` path did not work reliably
+in this chat:
+
+- First attempt failed because `soffice` / `pdftoppm` were not on `PATH`, even though they were
+  installed.
+- Prepending `C:\Program Files\LibreOffice\program` to `PATH` before running plain `python` caused
+  `python` to resolve to LibreOffice's bundled Python, which then failed with
+  `ModuleNotFoundError: No module named 'pdf2image'`.
+- Running the packaged renderer with explicit CPython 3.11 found `pdf2image`, but LibreOffice exited
+  with `Failed to produce PDF for rasterization (direct and ODT fallback)`.
+- The direct Windows command using `soffice.com` converted the DOCX successfully, and Poppler
+  generated all page PNGs. Prefer that path for later seed reports.
 
 Install checks:
 
@@ -440,7 +534,7 @@ If a newly installed tool is still not visible, use explicit paths for the curre
 the Windows-safe manual render path. Change `$report` for the current seed:
 
 ```powershell
-$report = "third_seed_report"   # change to the current report stem
+$report = "fifth_seed_report"   # change to the current report stem
 $out = Join-Path (Get-Location) "${report}_render"
 New-Item -ItemType Directory -Force -Path $out | Out-Null
 
@@ -451,10 +545,29 @@ $popplerBin = Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\Packages" -Recur
 & (Join-Path $popplerBin "pdftoppm.exe") -png -r 144 (Join-Path $out "${report}.pdf") (Join-Path $out "page")
 ```
 
+LibreOffice may print `Could not find platform independent libraries <prefix>` after a successful
+manual conversion. Treat that as harmless if `${report}.pdf` and all expected `page-*.png` files
+exist and the PNGs pass visual inspection.
+
 Then inspect every generated `page-*.png`. Do not ship the DOCX if a table row is split awkwardly,
 text is clipped, page headers/footers are misplaced, or a table starts with only a stranded header
 row at the bottom of a page. Render artifacts are QA scratch files; delete them unless they are
 explicitly needed.
+
+> **Stale snapshot warning:** The embedded Python block below is an outdated snapshot kept for
+> historical reference only. The authoritative implementation is `build_standalone_report.py` at the
+> project root: always run that script, and never copy from the block below.
+>
+> Known divergences from the live script:
+>
+> - The embedded block has hardcoded `MD` / `OUT` / `HEADER_NEW` config lines; the live script uses
+>   argparse positional paths plus `--title`, and can infer the title from the Markdown H1.
+> - The embedded block has a `bullet_is_real()` branch and literal bullet fallback; the live script
+>   always emits real Word bullets.
+> - The embedded block's `style_table` only sets borders and a bold header; the live script adds
+>   per-column widths, cell margins, `cantSplit` rows, repeating header rows, and 9pt table text.
+> - The embedded block only sets `run.font.name` for monospace text; the live script also sets
+>   `w:rFonts` `ascii` and `hAnsi` to keep the rendered font stable.
 
 ```python
 #!/usr/bin/env python
@@ -686,6 +799,11 @@ print("saved ->", OUT.name)
 
 ### How it works (and the gotchas that matter when duplicating)
 
+> These bullets describe the embedded historical snapshot, not the current script. For current
+> behavior, see `build_standalone_report.py`: it always uses real Word bullets and does substantially
+> more table work, including per-column widths, cell margins, `cantSplit`, repeating header rows,
+> and 9pt table text, which is what satisfies the render-QA requirements above.
+
 - **Manual as a read-only template.** Opens the manual, clears its body in memory (removing every
   paragraph/table but keeping the trailing `w:sectPr`, so page setup + header/footer survive), then
   renders the report before that `sectPr`. The output inherits the manual's fonts, heading styles,
@@ -704,7 +822,7 @@ print("saved ->", OUT.name)
 Do not edit copied CONFIG lines anymore. Use the root builder with explicit arguments:
 
 ```powershell
-python -X utf8 build_standalone_report.py fourth_seed_report.md fourth_seed_report.docx --title "Fourth Seed Report: IM Tan, Jun Ying"
+python -X utf8 build_standalone_report.py fifth_seed_report.md fifth_seed_report.docx --title "Fifth Seed Report: IM Chan, Kim Yew"
 ```
 
 ## Next Player Workflow
@@ -722,20 +840,20 @@ rendered `page-*.png` files pass visual QA, advance to the next row in the queue
 | Seventh seed, Thejkumar | Eighth seed, Ang | `python prep_manual_app.py --analyze --scope player --player 9 --depth 12 --export` | `eighth_seed_report.md` / `eighth_seed_report.docx` |
 | Eighth seed, Ang | Ninth seed, Arlan Cabe | `python prep_manual_app.py --analyze --scope player --player 10 --depth 12 --export` | `ninth_seed_report.md` / `ninth_seed_report.docx` |
 
-For the immediate next seed after Shyaam, run:
+For the immediate next seed after Tan, run:
 
 ```powershell
-python prep_manual_app.py --analyze --scope player --player 104 --depth 12 --export
+python prep_manual_app.py --analyze --scope player --player 6 --depth 12 --export
 ```
 
 Then review:
 
 ```text
-manual_sections/Opponent_IM_Morris_James.md
+manual_sections/Opponent_IM_Chan_Kim_Yew.md
 ```
 
 Repeat one player at a time so each dossier becomes complete and easy to verify. Then produce that
-seed's two report files (`third_seed_report.md` + `third_seed_report.docx`) with the steps in
+seed's two report files (`fifth_seed_report.md` + `fifth_seed_report.docx`) with the steps in
 *Producing the Report Files* above.
 
 **Arlan Cabe exception:** the app keeps FM Arlan Cabe in the roster for completeness, but the manual

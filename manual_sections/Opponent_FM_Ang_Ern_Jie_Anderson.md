@@ -56,24 +56,24 @@
 
 ## Engine fingerprint
 
-*From 13 analysed game(s) at depth 16. Average centipawn loss (ACPL) — lower is more accurate.*
+*From 14 analysed game(s) at depth 16. Average centipawn loss (ACPL) — lower is more accurate.*
 
-- **Overall ACPL:** 13.7 (opening 4.3, middlegame 10.1, endgame 19.3)
-- **Serious errors on file:** 3 blunders, 4 mistakes, 10 inaccuracies
+- **Overall ACPL:** 14.6 (opening 4.6, middlegame 10.2, endgame 20.9)
+- **Serious errors on file:** 3 blunders, 7 mistakes, 14 inaccuracies
 - **Target structures (least accurate):** *Fianchetto KID / Grünfeld Complexes*, *Catalan / Réti Squeeze*
 - **Avoid — they are solid here (most accurate):** *Catalan / Réti Squeeze*, *Fianchetto KID / Grünfeld Complexes*
 
 | Structure family | Moves | ACPL | Serious errors |
 |---|---:|---:|---:|
 | Fianchetto KID / Grünfeld Complexes | 128 | 15.3 | 3 |
-| Catalan / Réti Squeeze | 97 | 8.6 | 1 |
+| Catalan / Réti Squeeze | 133 | 13.2 | 4 |
 
 
 ## Player Profile
 
-*From 13 analysed game(s) at depth 16. Overall ACPL 13.7 — opening 4.3, middlegame 10.1, endgame 19.3.*
+*From 14 analysed game(s) at depth 16. Overall ACPL 14.6 — opening 4.6, middlegame 10.2, endgame 20.9.*
 
-- **Mistakes on file:** 3 blunders, 4 mistakes, 10 inaccuracies
+- **Mistakes on file:** 3 blunders, 7 mistakes, 14 inaccuracies
 - **Opening breadth:** 65 distinct openings
 - **Confidence lines:** King's Indian Defense: Fianchetto Variation, Uhlmann-Szabo System (100.0% over 3 games), Benoni Defense: Fianchetto Variation (66.7% over 3 games)
 - **Repair lines:** Ruy Lopez: Morphy Defense, Anderssen Variation (0.0% over 2 games), Slav Defense: Quiet Variation, Schallopp Defense (16.7% over 3 games), English Opening: Symmetrical Variation, Fianchetto Variation (25.0% over 2 games)
@@ -81,8 +81,8 @@
 ### Data-backed tendencies
 
 - **Opening breadth** (high confidence): Broad: 65 distinct openings across 100 games.
-- **Risk tendency** (medium confidence): Moderate tactical volatility: 7 blunders/mistakes in 13 analysed games.
-- **Phase stability** (medium confidence): Least accurate phase: endgame ACPL 19.3; best phase: opening ACPL 4.3.
+- **Risk tendency** (medium confidence): Moderate tactical volatility: 10 blunders/mistakes in 14 analysed games.
+- **Phase stability** (medium confidence): Least accurate phase: endgame ACPL 20.9; best phase: opening ACPL 4.6.
 - **Conversion reliability** (medium confidence): 3 conversion-failure sample(s) among 6 classified endgame/late-simplified samples.
 - **Drawing-defense reliability** (medium confidence): 3 drawing-defense failure sample(s) among 6 classified endgame/late-simplified samples.
 - **Confidence lines** (medium confidence): King's Indian Defense: Fianchetto Variation, Uhlmann-Szabo System (100.0%/3g), Benoni Defense: Fianchetto Variation (66.7%/3g)
