@@ -1,4 +1,8 @@
-# First Seed Analysis and Report Workflow
+# Seed Analysis and Report Workflow
+
+*Originally written for the first seed (GM Vignesh); now the general per-seed workflow. The
+first-seed specifics below are kept as the worked example. Lessons from later seeds are folded in as
+dated, attributed patches.*
 
 ## Subject
 
@@ -272,18 +276,19 @@ Completed standalone reports:
 - Seed 2: `second_seed_report.md` / `second_seed_report.docx`
 - Seed 3: `third_seed_report.md` / `third_seed_report.docx`
 - Seed 4: `fourth_seed_report.md` / `fourth_seed_report.docx`
+- Seed 5: `fifth_seed_report.md` / `fifth_seed_report.docx`
 
 Current next target:
 
-- Seed 5: **IM Chan, Kim Yew**
-- Player ID: `6`
-- Dossier: `manual_sections/Opponent_IM_Chan_Kim_Yew.md`
-- Report files: `fifth_seed_report.md` / `fifth_seed_report.docx`
+- Seed 6: **IM Susilodinata, Andrean**
+- Player ID: `7`
+- Dossier: `manual_sections/Opponent_IM_Susilodinata_Andrean.md`
+- Report files: `sixth_seed_report.md` / `sixth_seed_report.docx`
 
 Immediate next command:
 
 ```powershell
-python prep_manual_app.py --analyze --scope player --player 6 --depth 12 --export
+python prep_manual_app.py --analyze --scope player --player 7 --depth 12 --export
 ```
 
 ### Seed Queue
@@ -394,13 +399,108 @@ For color-split structure tables, join `Games`, `Tags`, and `GameAnalysis`, then
 errors from `blunders_json` only for the roster player's mover (`white` if `Games.color='white'`,
 `black` if `Games.color='black'`).
 
+### Patches Folded In From The Fifth-Seed Run (Chan, player 6)
+
+These three things cost real time on the fifth seed because the earlier workflow did not mention
+them. Do them up front on every later seed.
+
+#### 1. Split the engine sample by time control — this is mandatory, not optional
+
+The analysed PGN set silently mixes **classical opens** with **online rapid/blitz** events
+(ChessBase "Titled Tuesday" PGNs, Lichess blitz). Online error rates run roughly **2x** the
+classical rate for the same player, so the all-games ACPL, blunder count, and endgame profile are
+inflated and can invent weaknesses that do not exist in classical play. Because the target event is
+classical, **base every accuracy and structure verdict on the classical-only subset**, and show the
+all-games numbers only to expose the inflation.
+
+Fifth-seed proof: all 99 Chan games read overall ACPL 23.1 / endgame 29.9 / 41 blunders; but 39 were
+online Titled Tuesday. The **60 classical** games read overall ACPL **16.1** / endgame **20.8** / **8
+blunders** — the correct picture, and it killed two false targets (an "endgame weakness" and a
+"Catalan-as-Black volatility" that were both online-only artifacts).
+
+Reusable classifier + split (change `PLAYER`):
+
+```python
+import sqlite3, json, re
+conn = sqlite3.connect("prep_manual.db"); cur = conn.cursor()
+PLAYER = 6
+def is_online(ev):
+    return bool(re.search(r'titled tuesday|blitz|rapid|online|lichess|chess\.com', ev or "", re.I))
+rows = cur.execute("""
+  select g.color, g.presult, g.event, ga.phase_json, ga.blunders_json
+  from GameAnalysis ga join Games g on g.dedup_hash = ga.dedup_hash
+  where g.player_id = ? and ga.depth = 12""", (PLAYER,)).fetchall()
+agg = {k: {"g":0,"w":0,"d":0,"l":0,"cp":0.0,"mv":0,"ecp":0.0,"emv":0,"b":0,"m":0}
+       for k in ("classical","online")}
+for color, res, event, pj, bj in rows:
+    a = agg["online" if is_online(event) else "classical"]
+    a["g"] += 1; a["w"] += res=="win"; a["d"] += res=="draw"; a["l"] += res=="loss"
+    s = (json.loads(pj) if pj else {}).get(color, {})
+    for ph in ("op","mid","end"):
+        a["cp"] += s.get(ph,[0,0])[0]; a["mv"] += s.get(ph,[0,0])[1]
+    a["ecp"] += s.get("end",[0,0])[0]; a["emv"] += s.get("end",[0,0])[1]
+    for x in (json.loads(bj) if bj else []):
+        if x.get("mover") == color:
+            if x["sev"] == "blunder": a["b"] += 1
+            elif x["sev"] == "mistake": a["m"] += 1
+for k, a in agg.items():
+    score = 100.0*(a["w"]+0.5*a["d"])/a["g"] if a["g"] else 0
+    acpl  = a["cp"]/a["mv"] if a["mv"] else 0
+    eacpl = a["ecp"]/a["emv"] if a["emv"] else 0
+    print(f'{k:9} | {a["g"]:2} games ({a["w"]}-{a["d"]}-{a["l"]}, {score:.1f}%) '
+          f'| overall ACPL {acpl:.1f} | endgame ACPL {eacpl:.1f} | {a["b"]}b {a["m"]}m')
+```
+
+Reuse the same `is_online()` filter when you build the color-split structure table so the structure
+verdicts are classical-only too.
+
+#### 2. `GameAnalysis` JSON shapes (so you don't have to inspect them first)
+
+- `phase_json`: `{"white": {"op": [cp_loss, n_moves], "mid": [...], "end": [...]}, "black": {...}}`.
+  Phase ACPL for a side = `cp_loss / n_moves`. Overall ACPL = sum of the three `cp_loss` over sum of
+  the three `n_moves`, for the roster player's color only.
+- `blunders_json`: a list of one dict per flagged move: keys `ply`, `move_no`, `mover`
+  (`"white"`/`"black"`), `san`, `sev` (`"blunder"`/`"mistake"`/`"inaccuracy"`), `loss`, `before`,
+  `after`, `fen_before`, `fen_after`, `move_uci`, `best_uci`, `best`. Count the roster player's
+  serious errors with `mover == <player color>` and `sev in ("blunder","mistake")`. **`loss` is
+  centipawns capped at 1500** — mate/huge swings all show as 1500, so do not read a 1500 as an exact
+  magnitude or sort model games purely by it.
+
+#### 3. Check the dossier's analysed count before trusting it
+
+The dossier prints `From N analysed game(s) at depth 12`. If `N` is far below the OTB PGN count, the
+cache is partial/stale and the profile is garbage — the fifth-seed dossier arrived showing **1 of
+99** analysed. Re-run the full `--analyze` pass, then re-read the dossier, before writing anything.
+
+Quick precheck (change `PLAYER`):
+
+```python
+import sqlite3
+conn = sqlite3.connect("prep_manual.db"); cur = conn.cursor()
+PLAYER = 6
+otb = cur.execute("select count(*) from Games where player_id=? and (source is null or source not like '%lichess%')",(PLAYER,)).fetchone()[0]
+ana = cur.execute("""select count(*) from GameAnalysis ga join Games g on g.dedup_hash=ga.dedup_hash
+                     where g.player_id=? and ga.depth=12""",(PLAYER,)).fetchone()[0]
+print(f"OTB PGNs: {otb}  analysed@12: {ana}  -> {'RUN ANALYSIS' if ana < otb else 'ok'}")
+```
+
+#### 4. Reconcile a poor result against clean engine accuracy
+
+When a line has a bad result score but clean engine ACPL and few blunders (Chan's Advance Caro-Kann:
+20% over 5, yet ACPL 15.0 with 0 blunders), the opponent is being **out-prepared / ground down**, not
+blundering it away. Frame it as an out-prep target that needs genuine understanding (and a check on
+Dino's own reps), not a surprise trap.
+
 ### Reusable Report Checklist
 
 For each seed, collect the same fixed evidence fields before writing prose:
 
-- Game coverage: total games, OTB PGNs, Lichess metadata, analyzed count, pending count.
+- Game coverage: total games, OTB PGNs, Lichess metadata, analyzed count, pending count. Confirm the
+  analysed count matches the OTB count before trusting the dossier (see fifth-seed patch 3).
+- Time-control split: classical vs online (Titled Tuesday / blitz). Base verdicts on the classical
+  subset; show all-games numbers only to expose inflation (see fifth-seed patch 1).
 - Opening profile: strongest lines, candidate weak lines, color split, and sample counts.
-- Phase profile: opening, middlegame, and endgame ACPL with mistake counts.
+- Phase profile: opening, middlegame, and endgame ACPL with mistake counts (classical subset).
 - Practical repair lines: what Dino should review or avoid before the game.
 - Structure targets: structures Dino can realistically reach from his current repertoire.
 - Structure avoids: lines where the opponent's sample looks too clean or too comfortable.
