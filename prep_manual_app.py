@@ -45,6 +45,7 @@ import datetime as dt
 import hashlib
 import json
 import os
+import random
 import re
 import shutil
 import sqlite3
@@ -118,6 +119,17 @@ CP_INACCURACY = 50
 CP_MISTAKE = 100
 CP_BLUNDER = 200
 MATE_CP = 10000             # internal score used to stand in for a forced mate
+
+# Interactive play-bot tunables. The play engine is deliberately rating-limited
+# and separate from the analysis engine so background analysis cannot stall games.
+PLAY_ELO_MIN = 1320
+PLAY_ELO_MAX = 3190
+PLAY_DEFAULT_ELO = 2400
+PLAY_MOVETIME_MS = 700
+PLAY_MULTIPV = 4
+PLAY_BLUNDER_CP = 300
+PLAY_OPENING_PLY_LIMIT = 16
+PLAY_CLOCK_PRESETS = ["60+30", "25+10", "15+10", "5+5"]
 
 # Online opt-in (Lichess). OFF by default to preserve offline-by-default design.
 ONLINE_ENABLED = False
@@ -195,6 +207,7 @@ class MiniBoard:
         self.castle = set("KQkq")
         self.ep: int | None = None
         self.full = 1
+        self.last_uci: str | None = None
 
     def fen(self) -> str:
         rows = []
@@ -316,6 +329,7 @@ class MiniBoard:
 
     def push_san(self, san: str):
         san = san.rstrip("+#!?").strip()
+        self.last_uci = None
         if san in ("O-O", "0-0", "O-O-O", "0-0-0"):
             home = 0 if self.white else 56
             k = home + 4
@@ -331,6 +345,7 @@ class MiniBoard:
             if not self.white:
                 self.full += 1
             self.white = not self.white
+            self.last_uci = _sq_name(k) + _sq_name(kt)
             return
         m = SAN_RE.match(san)
         if not m:
@@ -364,7 +379,9 @@ class MiniBoard:
                 cands = legal
         if not cands:
             raise ValueError(f"no candidate for {san}")
-        self._make(cands[0], to, (promo if self.white else promo.lower()) if promo else None)
+        frm = cands[0]
+        self.last_uci = _sq_name(frm) + _sq_name(to) + (promo.lower() if promo else "")
+        self._make(frm, to, (promo if self.white else promo.lower()) if promo else None)
 
 
 def fens_for(moves: list[str]) -> tuple[list[str], str | None]:
@@ -378,6 +395,22 @@ def fens_for(moves: list[str]) -> tuple[list[str], str | None]:
             return fens, f"replay stopped at '{mv}': {exc}"
         fens.append(bd.fen())
     return fens, None
+
+
+def moves_uci_for(moves: list[str]) -> tuple[list[tuple[str, str, str]], str | None]:
+    """Return [(fen_before, uci, fen_after), ...] replayed from SAN moves."""
+    bd = MiniBoard()
+    out: list[tuple[str, str, str]] = []
+    for mv in moves:
+        before = bd.fen()
+        try:
+            bd.push_san(mv)
+        except Exception as exc:
+            return out, f"replay stopped at '{mv}': {exc}"
+        if not bd.last_uci:
+            return out, f"replay stopped at '{mv}': no UCI move produced"
+        out.append((before, bd.last_uci, bd.fen()))
+    return out, None
 
 
 # ===========================================================================
@@ -456,6 +489,21 @@ def fold_score(cp: int | None, mate: int | None, white_to_move: bool) -> int:
     return val if white_to_move else -val
 
 
+def _uci_score_to_cp(cp: int | None, mate: int | None) -> int:
+    """Convert a UCI side-to-move score into a comparable centipawn scalar."""
+    if mate is not None:
+        return (MATE_CP - abs(mate)) * (1 if mate > 0 else -1)
+    return int(cp or 0)
+
+
+def clamp_play_elo(elo: int | None) -> int:
+    try:
+        val = int(elo if elo is not None else PLAY_DEFAULT_ELO)
+    except (TypeError, ValueError):
+        val = PLAY_DEFAULT_ELO
+    return max(PLAY_ELO_MIN, min(PLAY_ELO_MAX, val))
+
+
 class Engine:
     """Minimal persistent UCI client around a Stockfish binary."""
 
@@ -505,6 +553,100 @@ class Engine:
                 break
         return cp, mate, best
 
+    @staticmethod
+    def _score_from_tokens(tokens: list[str]) -> tuple[int | None, int | None]:
+        cp = mate = None
+        if "cp" in tokens:
+            try:
+                cp = int(tokens[tokens.index("cp") + 1])
+            except (IndexError, ValueError):
+                cp = None
+        if "mate" in tokens:
+            try:
+                mate = int(tokens[tokens.index("mate") + 1])
+                cp = None
+            except (IndexError, ValueError):
+                mate = None
+        return cp, mate
+
+    def _set_play_options(self, elo: int, multipv: int) -> None:
+        self._send("setoption name UCI_LimitStrength value true")
+        self._send(f"setoption name UCI_Elo value {clamp_play_elo(elo)}")
+        self._send(f"setoption name MultiPV value {max(1, int(multipv))}")
+        self._ready()
+
+    def _restore_play_options(self) -> None:
+        try:
+            self._send("setoption name MultiPV value 1")
+            self._send("setoption name UCI_LimitStrength value false")
+            self._ready()
+        except Exception:
+            pass
+
+    def top_moves(self, fen_full: str, multipv: int, movetime_ms: int,
+                  elo: int) -> list[dict]:
+        """Return ranked UCI moves with side-to-move scores from a timed search."""
+        found: dict[int, dict] = {}
+        best = None
+        try:
+            self._set_play_options(elo, multipv)
+            self._send(f"position fen {fen_full}")
+            self._send(f"go movetime {max(1, int(movetime_ms))}")
+            for line in self.proc.stdout:                   # type: ignore[union-attr]
+                line = line.strip()
+                if line.startswith("info") and " pv " in line and " score " in line:
+                    t = line.split()
+                    try:
+                        idx = int(t[t.index("multipv") + 1]) if "multipv" in t else 1
+                    except (IndexError, ValueError):
+                        idx = 1
+                    try:
+                        uci = t[t.index("pv") + 1]
+                    except (IndexError, ValueError):
+                        continue
+                    cp, mate = self._score_from_tokens(t)
+                    found[idx] = {
+                        "uci": uci,
+                        "cp": cp,
+                        "mate": mate,
+                        "score": _uci_score_to_cp(cp, mate),
+                        "multipv": idx,
+                    }
+                elif line.startswith("bestmove"):
+                    parts = line.split()
+                    best = parts[1] if len(parts) > 1 and parts[1] != "(none)" else None
+                    break
+        finally:
+            self._restore_play_options()
+        out = [found[k] for k in sorted(found)]
+        if not out and best:
+            out = [{"uci": best, "cp": None, "mate": None, "score": 0, "multipv": 1}]
+        return out
+
+    def score_move(self, fen_full: str, uci: str, movetime_ms: int,
+                   elo: int) -> int | None:
+        """Return a side-to-move score for one candidate UCI move."""
+        cp = mate = None
+        best = None
+        try:
+            self._set_play_options(elo, 1)
+            self._send(f"position fen {fen_full}")
+            self._send(f"go searchmoves {uci} movetime {max(1, int(movetime_ms))}")
+            for line in self.proc.stdout:                   # type: ignore[union-attr]
+                line = line.strip()
+                if line.startswith("info") and " score " in line:
+                    t = line.split()
+                    cp, mate = self._score_from_tokens(t)
+                elif line.startswith("bestmove"):
+                    parts = line.split()
+                    best = parts[1] if len(parts) > 1 and parts[1] != "(none)" else None
+                    break
+        finally:
+            self._restore_play_options()
+        if best != uci:
+            return None
+        return _uci_score_to_cp(cp, mate)
+
     def close(self) -> None:
         try:
             self._send("quit")
@@ -519,6 +661,11 @@ class Engine:
 _ENGINE: Engine | None = None
 _ENGINE_TRIED = False
 _ENGINE_LOCK = threading.Lock()
+_PLAY_ENGINE: Engine | None = None
+_PLAY_ENGINE_TRIED = False
+_PLAY_ENGINE_LOCK = threading.Lock()
+_PLAYER_DATASET_CACHE: dict[int, dict] = {}
+_PLAYER_DATASET_LOCK = threading.Lock()
 
 
 def get_engine() -> Engine | None:
@@ -538,10 +685,276 @@ def get_engine() -> Engine | None:
         return _ENGINE
 
 
+def get_play_engine() -> Engine | None:
+    """Lazily start the dedicated Stockfish process used for interactive play."""
+    global _PLAY_ENGINE, _PLAY_ENGINE_TRIED
+    with _PLAY_ENGINE_LOCK:
+        if _PLAY_ENGINE is not None or _PLAY_ENGINE_TRIED:
+            return _PLAY_ENGINE
+        _PLAY_ENGINE_TRIED = True
+        path = find_stockfish()
+        if not path:
+            return None
+        try:
+            _PLAY_ENGINE = Engine(path)
+        except Exception:
+            _PLAY_ENGINE = None
+        return _PLAY_ENGINE
+
+
 def engine_info() -> dict:
     path = find_stockfish()
     return {"available": bool(path), "path": path or "",
             "name": _ENGINE.name if _ENGINE else ""}
+
+
+def play_engine_info() -> dict:
+    path = find_stockfish()
+    return {"available": bool(path), "path": path or "",
+            "name": _PLAY_ENGINE.name if _PLAY_ENGINE else ""}
+
+
+def _presult_score(presult: str | None) -> float:
+    return {"win": 1.0, "draw": 0.5, "loss": 0.0}.get(presult or "", 0.5)
+
+
+def build_player_dataset(conn, player_id: int) -> dict:
+    """Build exact-position persona move stats from this player's PGN rows."""
+    with _PLAYER_DATASET_LOCK:
+        cached = _PLAYER_DATASET_CACHE.get(player_id)
+    if cached is not None:
+        return cached
+
+    positions: dict[str, dict] = {}
+    replay_errors = []
+    rows = conn.execute(
+        """SELECT game_id, color, presult, moves_json
+           FROM Games WHERE player_id=? AND source='pgn'
+           ORDER BY game_id""", (player_id,)).fetchall()
+    for r in rows:
+        try:
+            moves = json.loads(r["moves_json"] or "[]")
+        except ValueError:
+            replay_errors.append({"game_id": r["game_id"], "error": "bad moves_json"})
+            continue
+        replay, err = moves_uci_for(moves)
+        if err:
+            replay_errors.append({"game_id": r["game_id"], "error": err})
+        want_even = r["color"] == "white"
+        if r["color"] not in ("white", "black"):
+            continue
+        game_score = _presult_score(r["presult"])
+        for ply_index, (fen_before, uci, _fen_after) in enumerate(replay):
+            if (ply_index % 2 == 0) != want_even:
+                continue
+            ply_num = ply_index + 1
+            key = epd_key(fen_before)
+            entry = positions.setdefault(key, {
+                "moves": {},
+                "total": 0,
+                "games": set(),
+                "min_ply": ply_num,
+            })
+            entry["total"] += 1
+            entry["games"].add(r["game_id"])
+            entry["min_ply"] = min(entry["min_ply"], ply_num)
+            mv = entry["moves"].setdefault(uci, {
+                "count": 0,
+                "score_sum": 0.0,
+                "game_ids": set(),
+                "min_ply": ply_num,
+            })
+            mv["count"] += 1
+            mv["score_sum"] += game_score
+            mv["game_ids"].add(r["game_id"])
+            mv["min_ply"] = min(mv["min_ply"], ply_num)
+
+    opening = {
+        key: entry for key, entry in positions.items()
+        if entry["min_ply"] <= PLAY_OPENING_PLY_LIMIT
+    }
+    dataset = {
+        "player_id": player_id,
+        "games": len(rows),
+        "positions": positions,
+        "opening": opening,
+        "replay_errors": replay_errors,
+    }
+    with _PLAYER_DATASET_LOCK:
+        _PLAYER_DATASET_CACHE[player_id] = dataset
+    return dataset
+
+
+def _persona_candidates(entry: dict) -> list[dict]:
+    candidates = []
+    total = max(1, int(entry.get("total") or 0))
+    for uci, stats in entry.get("moves", {}).items():
+        count = int(stats.get("count") or 0)
+        if not count:
+            continue
+        score_rate = float(stats.get("score_sum") or 0.0) / count
+        weight = count * (0.25 + score_rate)
+        candidates.append({
+            "uci": uci,
+            "weight": max(0.01, weight),
+            "count": count,
+            "score_rate": score_rate,
+            "source_games": len(stats.get("game_ids") or []),
+            "matched_samples": total,
+            "matched_share": count / total,
+        })
+    candidates.sort(key=lambda c: (-c["weight"], c["uci"]))
+    return candidates
+
+
+def _weighted_choice(candidates: list[dict]) -> dict | None:
+    if not candidates:
+        return None
+    total = sum(float(c["weight"]) for c in candidates)
+    if total <= 0:
+        return candidates[0]
+    pick = random.random() * total
+    acc = 0.0
+    for c in candidates:
+        acc += float(c["weight"])
+        if pick <= acc:
+            return c
+    return candidates[-1]
+
+
+def _engine_choice(top_moves: list[dict]) -> dict | None:
+    if not top_moves:
+        return None
+    choices = top_moves[:max(1, min(PLAY_MULTIPV, len(top_moves)))]
+    weights = [max(1, len(choices) - i) for i, _ in enumerate(choices)]
+    pick = random.random() * sum(weights)
+    acc = 0
+    for move, weight in zip(choices, weights):
+        acc += weight
+        if pick <= acc:
+            return move
+    return choices[0]
+
+
+def _normalize_fen_full(fen: str) -> str:
+    parts = (fen or "").split()
+    if len(parts) == 4:
+        return " ".join(parts + ["0", "1"])
+    if len(parts) == 6 and parts[1] in ("w", "b"):
+        return " ".join(parts)
+    raise ValueError("valid FEN required")
+
+
+def _fen_color_to_move(fen: str) -> str:
+    parts = fen.split()
+    if len(parts) < 2 or parts[1] not in ("w", "b"):
+        raise ValueError("valid FEN required")
+    return "white" if parts[1] == "w" else "black"
+
+
+def _best_score(top_moves: list[dict]) -> int | None:
+    vals = [int(m.get("score") or 0) for m in top_moves if m.get("uci")]
+    return max(vals) if vals else None
+
+
+def _candidate_passes_blunder_guard(engine: Engine, fen_full: str, candidate_uci: str,
+                                    top_moves: list[dict], elo: int,
+                                    movetime_ms: int) -> bool:
+    best = _best_score(top_moves)
+    if best is None:
+        return False
+    matching = next((m for m in top_moves if m.get("uci") == candidate_uci), None)
+    if matching is not None:
+        cand_score = int(matching.get("score") or 0)
+    else:
+        cand_score = engine.score_move(fen_full, candidate_uci, movetime_ms, elo)
+        if cand_score is None:
+            return False
+    return best - cand_score <= PLAY_BLUNDER_CP
+
+
+def select_bot_move(conn, player_id: int, fen: str, *, elo: int | None = None,
+                    movetime_ms: int = PLAY_MOVETIME_MS,
+                    dataset: dict | None = None,
+                    engine: Engine | None = None) -> dict:
+    """Choose a v1 exact-persona move or rating-limited engine fallback."""
+    fen_full = _normalize_fen_full(fen)
+    elo = clamp_play_elo(elo)
+    dataset = dataset or build_player_dataset(conn, player_id)
+    engine = engine or get_play_engine()
+    if engine is None:
+        raise RuntimeError("No engine available — drop a Stockfish binary in ./stockfish/ "
+                           "(or set PREP_STOCKFISH).")
+
+    key = epd_key(fen_full)
+    source = None
+    if key in dataset.get("opening", {}):
+        source = ("opening", dataset["opening"][key])
+    elif key in dataset.get("positions", {}):
+        source = ("exact", dataset["positions"][key])
+
+    with _PLAY_ENGINE_LOCK:
+        top = engine.top_moves(fen_full, PLAY_MULTIPV, movetime_ms, elo)
+        if source is not None:
+            basis, entry = source
+            candidate = _weighted_choice(_persona_candidates(entry))
+            if candidate and _candidate_passes_blunder_guard(
+                    engine, fen_full, candidate["uci"], top, elo, movetime_ms):
+                return {
+                    "uci": candidate["uci"],
+                    "basis": basis,
+                    "confidence": round(float(candidate["matched_share"]), 3),
+                    "source_games": int(candidate["source_games"]),
+                    "matched_samples": int(candidate["matched_samples"]),
+                    "matched_share": round(float(candidate["matched_share"]), 3),
+                    "elo": elo,
+                }
+
+        chosen = _engine_choice(top)
+        if not chosen:
+            raise RuntimeError("engine returned no legal move")
+        return {
+            "uci": chosen["uci"],
+            "basis": "engine",
+            "confidence": 0.0,
+            "source_games": 0,
+            "matched_samples": 0,
+            "matched_share": 0.0,
+            "elo": elo,
+        }
+
+
+def play_players_payload(conn) -> dict:
+    rows = conn.execute(
+        """SELECT r.player_id, r.real_name, r.title, r.federation, r.fide, r.is_hero,
+                  COUNT(g.game_id) AS pgn_games
+           FROM Roster r JOIN Games g ON g.player_id=r.player_id AND g.source='pgn'
+           GROUP BY r.player_id
+           HAVING pgn_games > 0
+           ORDER BY r.is_hero DESC, r.fide DESC, r.real_name"""
+    ).fetchall()
+    players = []
+    for r in rows:
+        fide = r["fide"] if r["fide"] is not None else PLAY_DEFAULT_ELO
+        players.append({
+            "player_id": r["player_id"],
+            "real_name": r["real_name"],
+            "title": r["title"],
+            "federation": r["federation"],
+            "fide": r["fide"],
+            "is_hero": bool(r["is_hero"]),
+            "pgn_games": r["pgn_games"],
+            "default_elo": clamp_play_elo(fide),
+        })
+    return {
+        "players": players,
+        "engine": play_engine_info(),
+        "clock_presets": PLAY_CLOCK_PRESETS,
+        "default_clock": PLAY_CLOCK_PRESETS[0],
+        "elo_min": PLAY_ELO_MIN,
+        "elo_max": PLAY_ELO_MAX,
+        "movetime_ms": PLAY_MOVETIME_MS,
+    }
 
 
 def eval_position(conn, fen_full: str, depth: int = ENGINE_DEPTH,
@@ -1264,6 +1677,8 @@ def ingest_lichess_pool(conn, summary: dict):
 
 def scan(conn) -> dict:
     """Full rebuild: re-ingest every *.pgn in the folder (aliases are kept)."""
+    with _PLAYER_DATASET_LOCK:
+        _PLAYER_DATASET_CACHE.clear()
     conn.execute("DELETE FROM Games")
     conn.execute("DELETE FROM Files")
     conn.execute("DELETE FROM UnmatchedNames")
@@ -2090,6 +2505,13 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _bytes(self, body: bytes, content_type: str, status=200):
+        self.send_response(status)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def _body_json(self) -> dict:
         n = int(self.headers.get("Content-Length") or 0)
         if not n:
@@ -2106,8 +2528,30 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if u.path == "/":
                 self._html(HTML_PAGE)
+            elif u.path.startswith("/static/"):
+                static_root = (BASE_DIR / "static").resolve()
+                rel = urllib.parse.unquote(u.path[len("/static/"):])
+                path = (static_root / rel).resolve()
+                # Path-traversal guard: resolved path must stay under static/.
+                if static_root not in path.parents or not path.is_file():
+                    self._json({"error": "not found"}, 404)
+                    return
+                mime = {
+                    ".js": "text/javascript; charset=utf-8",
+                    ".svg": "image/svg+xml",
+                    ".png": "image/png",
+                    ".css": "text/css; charset=utf-8",
+                    ".json": "application/json; charset=utf-8",
+                }.get(path.suffix.lower(), "application/octet-stream")
+                self._bytes(path.read_bytes(), mime)
             elif u.path == "/api/state":
                 self._json(self.state())
+            elif u.path == "/api/play/players":
+                conn = db()
+                try:
+                    self._json(play_players_payload(conn))
+                finally:
+                    conn.close()
             elif u.path == "/api/player":
                 conn = db()
                 try:
@@ -2206,6 +2650,34 @@ class Handler(BaseHTTPRequestHandler):
             elif u.path == "/api/export":
                 files = export_markdown(conn)
                 self._json({"ok": True, "dir": str(EXPORT_DIR), "files": files})
+            elif u.path == "/api/play/move":
+                if get_play_engine() is None:
+                    self._json({"error": "No engine available — drop a Stockfish binary "
+                                "in ./stockfish/ (or set PREP_STOCKFISH)."}, 400)
+                    return
+                try:
+                    pid = int(body.get("player_id") or 0)
+                    fen = _normalize_fen_full(body.get("fen") or "")
+                    bot_color = (body.get("bot_color") or "").strip().lower()
+                    if bot_color not in ("white", "black"):
+                        raise ValueError("bot_color must be white or black")
+                    if _fen_color_to_move(fen) != bot_color:
+                        raise ValueError("bot_color must match the FEN side to move")
+                    row = conn.execute(
+                        """SELECT r.fide, COUNT(g.game_id) AS pgn_games
+                           FROM Roster r LEFT JOIN Games g
+                                ON g.player_id=r.player_id AND g.source='pgn'
+                           WHERE r.player_id=?
+                           GROUP BY r.player_id""", (pid,)).fetchone()
+                    if not row or not row["pgn_games"]:
+                        raise ValueError("eligible PGN-backed player_id required")
+                    default_elo = row["fide"] if row["fide"] is not None else PLAY_DEFAULT_ELO
+                    elo = clamp_play_elo(body.get("elo") if body.get("elo") is not None else default_elo)
+                    self._json(select_bot_move(conn, pid, fen, elo=elo,
+                                               engine=get_play_engine()))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
+                    return
             elif u.path == "/api/analyze":
                 # Kick off the heavy engine pass in the background; the UI polls
                 # /api/state for progress. Results land in GameAnalysis and then
@@ -2290,35 +2762,54 @@ HTML_PAGE = r"""<!DOCTYPE html>
 <title>Tournament Prep Manual — Dino Ballecer 2026</title>
 <style>
 :root { --bg:#11151c; --panel:#1a2029; --panel2:#222a36; --text:#dde4ee; --dim:#8a97a8;
-        --acc:#4da3ff; --good:#4ec77a; --bad:#e2645a; --warn:#e2b75a; --line:#2c3645; }
+        --acc:#4da3ff; --good:#4ec77a; --bad:#e2645a; --warn:#e2b75a; --line:#2c3645;
+        --shadow:0 2px 6px rgba(0,0,0,.3); --shadow-md:0 6px 20px rgba(0,0,0,.4); }
 * { box-sizing:border-box; }
 body { margin:0; background:var(--bg); color:var(--text);
        font:14px/1.45 "Segoe UI", system-ui, sans-serif; }
-header { padding:14px 22px; background:var(--panel); border-bottom:1px solid var(--line);
-         display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
-header h1 { font-size:17px; margin:0; }
+header { padding:10px 22px; background:var(--panel); border-bottom:1px solid var(--line);
+         display:flex; flex-direction:column; gap:6px; }
+header h1 { font-size:17px; margin:0; white-space:nowrap; }
+.headerTop { display:flex; align-items:center; gap:16px; }
+.headerActions { display:flex; gap:8px; margin-left:auto; flex-wrap:wrap; }
+@media (max-width:760px){ .headerTop { flex-wrap:wrap; } .headerActions { margin-left:0; } }
+.headerStatus { display:flex; gap:16px; flex-wrap:wrap; }
+.headerStatus .sub { min-width:0; }
 header .sub { color:var(--dim); font-size:12px; }
+#folder { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:min(60vw, 600px); }
 button { background:var(--panel2); color:var(--text); border:1px solid var(--line);
-         border-radius:6px; padding:6px 12px; cursor:pointer; font-size:13px; }
+         border-radius:6px; padding:6px 12px; cursor:pointer; font-size:13px;
+         transition:background .15s ease, border-color .15s ease, transform .05s ease, opacity .15s ease; }
 button:hover { border-color:var(--acc); }
+button:active { transform:translateY(1px); }
+button:disabled { opacity:.45; cursor:not-allowed; }
+button:disabled:hover { border-color:var(--line); }
 button.primary { background:var(--acc); color:#08121f; border-color:var(--acc); font-weight:600; }
+button.primary:hover { background:#6db4ff; }
+button.danger { background:#3a201d; color:var(--bad); border-color:#5a2e29; }
+button.danger:hover { background:#4a2622; border-color:var(--bad); }
 nav { display:flex; gap:4px; padding:10px 22px 0; background:var(--panel);
-      border-bottom:1px solid var(--line); flex-wrap:wrap; }
+      border-bottom:1px solid var(--line); flex-wrap:wrap; position:sticky; top:0; z-index:5; }
 nav button { border-radius:8px 8px 0 0; border-bottom:none; padding:8px 16px; }
-nav button.on { background:var(--bg); color:var(--acc); font-weight:600; }
+nav button.on { background:var(--bg); color:var(--acc); font-weight:600; box-shadow:inset 0 2px 0 0 var(--acc); }
 main { padding:18px 22px 60px; max-width:1280px; margin:0 auto; }
 .card { background:var(--panel); border:1px solid var(--line); border-radius:10px;
-        padding:14px 16px; margin-bottom:16px; }
-.card h2 { margin:0 0 10px; font-size:15px; color:var(--acc); }
+        padding:14px 16px; margin-bottom:16px; box-shadow:var(--shadow); }
+.card h2 { margin:0 0 12px; font-size:15px; color:var(--acc); padding-bottom:8px;
+           border-bottom:1px solid var(--line); display:flex; align-items:center; gap:8px; }
 .card h3 { margin:14px 0 6px; font-size:13.5px; }
 table { border-collapse:collapse; width:100%; font-size:13px; }
-th { text-align:left; color:var(--dim); font-weight:600; padding:5px 8px;
+th { text-align:left; color:var(--dim); font-weight:600; padding:6px 8px;
      border-bottom:1px solid var(--line); white-space:nowrap; }
-td { padding:5px 8px; border-bottom:1px solid var(--line); }
-tr.click:hover { background:var(--panel2); cursor:pointer; }
-.score-hi { color:var(--good); font-weight:600; }
-.score-lo { color:var(--bad); font-weight:600; }
-.score-md { color:var(--warn); }
+td { padding:6px 8px; border-bottom:1px solid var(--line); }
+table tr:nth-child(even) td { background:rgba(255,255,255,.025); }
+table tr:hover td { background:rgba(255,255,255,.05); }
+tr.click { cursor:pointer; }
+tr.click:hover td { background:var(--panel2); }
+.score-hi, .score-lo, .score-md { display:inline-block; padding:1px 8px; border-radius:10px; font-weight:600; }
+.score-hi { background:#1d3a26; color:var(--good); }
+.score-lo { background:#3a201d; color:var(--bad); }
+.score-md { background:#37321d; color:var(--warn); }
 .tag { display:inline-block; background:var(--panel2); border:1px solid var(--line);
        border-radius:10px; font-size:11px; padding:1px 8px; margin:1px 2px; color:var(--dim); }
 .muted { color:var(--dim); }
@@ -2339,39 +2830,84 @@ textarea { width:100%; font-family:Consolas, monospace; }
          align-items:center; justify-content:center; z-index:50; }
 #modal.open { display:flex; }
 .viewer { background:var(--panel); border:1px solid var(--line); border-radius:12px;
-          padding:18px; display:flex; gap:18px; max-width:92vw; max-height:92vh; }
-.board { display:grid; grid-template-columns:repeat(8, 52px); grid-template-rows:repeat(8, 52px);
-         border:2px solid var(--line); }
-.sqL { background:#e9d7b7; } .sqD { background:#a87e58; }
-.board span { display:flex; align-items:center; justify-content:center;
-              font-size:38px; line-height:1; user-select:none; }
-.vside { width:330px; display:flex; flex-direction:column; min-height:0; }
-.vmoves { flex:1; overflow:auto; background:var(--panel2); border-radius:8px;
-          padding:8px; font-size:13px; margin:10px 0; }
-.vmoves span.mv { cursor:pointer; padding:1px 4px; border-radius:4px; }
-.vmoves span.mv.cur { background:var(--acc); color:#08121f; }
+          padding:18px; display:grid; grid-template-columns:auto 1fr; gap:18px; max-width:92vw; max-height:92vh;
+          position:relative; box-shadow:var(--shadow-md); }
+.modal-x { position:absolute; top:10px; right:10px; width:28px; height:28px; padding:0;
+           border-radius:50%; font-size:18px; line-height:1; display:flex; align-items:center;
+           justify-content:center; }
+.board { display:grid; grid-template-columns:repeat(8, 58px); grid-template-rows:repeat(8, 58px);
+         border:2px solid var(--line); border-radius:6px; overflow:hidden; box-shadow:var(--shadow-md); }
+.sqL { background:#eeeed2; } .sqD { background:#769656; }
+.board span { position:relative; display:flex; align-items:center; justify-content:center;
+              background-size:88%; background-position:center; background-repeat:no-repeat;
+              line-height:1; user-select:none; }
+.coord { position:absolute; font-size:9px; font-weight:600; line-height:1; pointer-events:none;
+         font-style:normal; opacity:.9; }
+.coord.rank { top:2px; left:2px; } .coord.file { bottom:1px; right:3px; }
+.coord.light { color:#eeeed2; } .coord.dark { color:#769656; }
+.vside { display:flex; flex-direction:column; min-height:0; flex:1; }
+.vmoves { display:flex; flex-wrap:wrap; gap:4px; overflow:auto; background:var(--panel2); border-radius:8px;
+          padding:8px; font-size:13px; align-content:flex-start; }
+.vmoves span.mv { cursor:pointer; padding:2px 6px; border-radius:4px; white-space:nowrap; }
+.vmoves span.mv.cur { background:var(--acc); color:#08121f; font-weight:600; }
 .vbtns { display:flex; gap:6px; }
+.play-layout { display:grid; grid-template-columns:minmax(360px, 440px) auto minmax(220px, 1fr); gap:16px; align-items:start; }
+@media (max-width:1024px){ .play-layout { grid-template-columns:1fr; } }
+.play-board { display:grid; grid-template-columns:repeat(8, minmax(36px, 52px));
+              grid-template-rows:repeat(8, minmax(36px, 52px)); border:2px solid var(--line);
+              border-radius:6px; overflow:hidden; box-shadow:var(--shadow-md);
+              width:min(100%, 420px); aspect-ratio:1; }
+.play-board span { position:relative; display:flex; align-items:center; justify-content:center;
+                   background-size:88%; background-position:center; background-repeat:no-repeat;
+                   line-height:1; user-select:none; cursor:pointer; }
+.play-board span.sel { outline:3px solid var(--acc); outline-offset:-3px; }
+.play-board span.legal::after { content:""; width:28%; height:28%; border-radius:50%;
+                                background:rgba(77,163,255,.55); }
+.play-board span.last { box-shadow:inset 0 0 0 999px rgba(226,183,90,.22); }
+.play-controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:10px; }
+.play-controls label { display:flex; align-items:center; gap:5px; }
+.clock-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0; }
+.clock { background:var(--panel2); border:1px solid var(--line); border-radius:8px;
+         padding:8px 10px; font-size:18px; font-weight:600; }
+.clock .small { display:block; font-weight:400; }
+.play-moves { max-height:220px; overflow:auto; background:var(--panel2); border-radius:8px;
+              padding:8px; font-size:13px; }
 .pill { font-size:11px; border-radius:10px; padding:2px 8px; }
 .pill.w { background:#1d3a26; color:var(--good);} .pill.l { background:#3a201d; color:var(--bad);}
 .pill.d { background:#37321d; color:var(--warn);} .pill.u { background:var(--panel2); color:var(--dim);}
 #toast { position:fixed; bottom:18px; right:18px; background:var(--panel2);
-         border:1px solid var(--acc); color:var(--text); padding:10px 16px;
-         border-radius:8px; display:none; z-index:60; max-width:420px; }
+         border:1px solid var(--line); border-left:3px solid var(--acc); color:var(--text); padding:10px 16px;
+         border-radius:8px; z-index:60; max-width:420px; box-shadow:var(--shadow-md);
+         opacity:0; transform:translateY(8px); pointer-events:none;
+         transition:opacity .2s ease, transform .2s ease; }
+#toast.show { opacity:1; transform:translateY(0); }
+#toast.error { border-left-color:var(--bad); }
+#toast.success { border-left-color:var(--good); }
 .small { font-size:12px; }
+.spinner { display:inline-block; width:14px; height:14px; border:2px solid var(--line);
+           border-top-color:var(--acc); border-radius:50%; animation:spin .7s linear infinite;
+           vertical-align:-2px; margin-right:6px; }
+@keyframes spin { to { transform:rotate(360deg); } }
 </style>
 </head>
 <body>
 <header>
-  <h1>Tournament Prep Manual — Dino Ballecer 2026</h1>
-  <span class="sub" id="folder"></span>
-  <span style="flex:1"></span>
-  <span class="sub" id="engineStatus" title="Engine analysis powers the dossiers, the self-audit and the export — it is not an interactive board."></span>
-  <button id="analyzeBtn" onclick="runAnalyze()">⚙ Analyze selected player</button>
-  <button class="primary" onclick="rescan()">⟳ Rescan PGN folder</button>
+  <div class="headerTop">
+    <h1>Tournament Prep Manual — Dino Ballecer 2026</h1>
+    <div class="headerActions">
+      <button id="analyzeBtn" onclick="runAnalyze()">⚙ Analyze selected player</button>
+      <button class="primary" onclick="rescan()">⟳ Rescan PGN folder</button>
+    </div>
+  </div>
+  <div class="headerStatus">
+    <span class="sub" id="folder"></span>
+    <span class="sub" id="engineStatus" title="Engine analysis powers the dossiers, the self-audit and the export — it is not an interactive board."></span>
+  </div>
 </header>
 <nav>
   <button id="tb-overview" class="on" onclick="tab('overview')">Overview</button>
   <button id="tb-opponents" onclick="tab('opponents')">Opponents</button>
+  <button id="tb-play" onclick="tab('play')">Play Bot</button>
   <button id="tb-dino" onclick="tab('dino')">Dino — Needs Improvement</button>
   <button id="tb-files" onclick="tab('files')">Files &amp; Names</button>
   <button id="tb-export" onclick="tab('export')">Export Manual Sections</button>
@@ -2379,6 +2915,7 @@ textarea { width:100%; font-family:Consolas, monospace; }
 <main>
   <div id="pg-overview"></div>
   <div id="pg-opponents" style="display:none"></div>
+  <div id="pg-play" style="display:none"></div>
   <div id="pg-dino" style="display:none"></div>
   <div id="pg-files" style="display:none"></div>
   <div id="pg-export" style="display:none"></div>
@@ -2386,6 +2923,7 @@ textarea { width:100%; font-family:Consolas, monospace; }
 
 <div id="modal" onclick="if(event.target===this) closeModal()">
   <div class="viewer">
+    <button class="modal-x" onclick="closeModal()" aria-label="Close" title="Close">&times;</button>
     <div>
       <div class="board" id="board"></div>
       <div class="vbtns" style="margin-top:10px">
@@ -2408,13 +2946,28 @@ textarea { width:100%; font-family:Consolas, monospace; }
 </div>
 <div id="toast"></div>
 
+<script type="module">
+import { Chess } from '/static/chess.js';
+window.Chess = Chess;
+window.dispatchEvent(new Event('chessjs-ready'));
+</script>
 <script>
 let STATE=null, curTab='overview', curPlayer=null, viewer=null, curPly=0, orient='white';
-const PIECES={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',
-              k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
+// cburnett SVG pieces, bundled offline under /static/pieces/ (e.g. wN.svg, bQ.svg).
+function pieceUrl(c){ return '/static/pieces/'+(c===c.toUpperCase()?'w':'b')+c.toUpperCase()+'.svg'; }
+function pieceStyle(c){ return c?' style="background-image:url('+pieceUrl(c)+')"':''; }
+// Subtle lichess-style coordinates: files (a-h) on the bottom displayed rank,
+// ranks (1-8) on the left displayed file. Colored to contrast the square.
+function coordLabels(ri,ci,rIdx,cIdx){
+  const dark=(ri+ci)%2===1, tone=dark?'light':'dark'; let h='';
+  if(ci===cIdx[0]) h+='<i class="coord rank '+tone+'">'+(8-ri)+'</i>';
+  if(ri===rIdx[rIdx.length-1]) h+='<i class="coord file '+tone+'">'+FILES_STR_JS[ci]+'</i>';
+  return h;
+}
 
-function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg;
-  t.style.display='block'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none',4000); }
+function toast(msg, type){ const t=document.getElementById('toast'); t.textContent=msg;
+  t.className = 'show' + (type ? ' '+type : '');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),4000); }
 async function api(path,opts){ const r=await fetch(path,opts);
   const j=await r.json(); if(j.error) throw new Error(j.error); return j; }
 async function post(path,body){ return api(path,{method:'POST',
@@ -2426,15 +2979,18 @@ function pill(p){ const m={win:'w',loss:'l',draw:'d'}; const c=m[p]||'u';
   return '<span class="pill '+c+'">'+esc(p)+'</span>'; }
 
 function tab(name){ curTab=name;
-  for(const t of ['overview','opponents','dino','files','export']){
+  for(const t of ['overview','opponents','play','dino','files','export']){
     document.getElementById('pg-'+t).style.display = t===name?'':'none';
     document.getElementById('tb-'+t).classList.toggle('on', t===name); }
+  if(name==='play') loadPlay();
   if(name==='dino') loadDino();
   if(name==='opponents') renderOpponents();
 }
 
 async function refresh(){ STATE=await api('/api/state');
-  document.getElementById('folder').textContent='watching: '+STATE.folder+'\\*.pgn';
+  const folderEl=document.getElementById('folder');
+  folderEl.textContent='watching: '+STATE.folder+'\\*.pgn';
+  folderEl.title=folderEl.textContent;
   updateEngineStatus();
   renderOverview(); renderFiles(); renderExportTab();
   if(curTab==='opponents') renderOpponents(); }
@@ -2474,10 +3030,10 @@ function playerName(pid){
 }
 async function analyzePlayer(pid){
   try{ const r=await post('/api/analyze',{scope:'player', player_id:pid});
-    if(r.error){ toast(r.error); return; }
+    if(r.error){ toast(r.error, 'error'); return; }
     toast('Engine analysis started for '+playerName(pid)+' — all PGN games for this player.');
     pollAnalyze();
-  }catch(e){ toast('Analyze failed: '+e.message); }
+  }catch(e){ toast('Analyze failed: '+e.message, 'error'); }
 }
 function pollAnalyze(){ clearTimeout(window._ap);
   window._ap=setTimeout(async()=>{
@@ -2492,7 +3048,8 @@ function pollAnalyze(){ clearTimeout(window._ap);
 async function rescan(){ try{ const r=await post('/api/scan');
   toast('Scanned '+r.summary.files+' files — '+r.summary.games_stored+' games stored.');
   await refresh(); if(curTab==='dino') loadDino(); if(curPlayer) selectPlayer(curPlayer);
- }catch(e){ toast('Scan failed: '+e.message); } }
+  if(curTab==='play'){ PLAY.loaded=false; loadPlay(); }
+ }catch(e){ toast('Scan failed: '+e.message, 'error'); } }
 
 /* ---------------- Overview ---------------- */
 function renderOverview(){
@@ -2536,7 +3093,7 @@ async function selectPlayer(pid){
   curPlayer=pid;
   document.querySelectorAll('.plist div').forEach(d=>d.classList.toggle('on', d.id==='pl-'+pid));
   const el=document.getElementById('dossier'); if(!el) return;
-  el.innerHTML='<div class="card muted">Loading…</div>';
+  el.innerHTML='<div class="card muted"><span class="spinner"></span> Loading…</div>';
   try{
     const d=await api('/api/player?id='+pid);
     el.innerHTML=dossierHtml(d);
@@ -2692,7 +3249,7 @@ function engineFindingsHtml(eng){
 /* ---------------- Dino tab ---------------- */
 async function loadDino(){
   const el=document.getElementById('pg-dino');
-  el.innerHTML='<div class="card muted">Analysing…</div>';
+  el.innerHTML='<div class="card muted"><span class="spinner"></span> Analysing…</div>';
   try{
     const d=await api('/api/improvement');
     let h='<div class="card"><h2>&#11088; '+esc(d.hero.real_name)+' — own-game audit ('+
@@ -2740,13 +3297,15 @@ function renderFiles(){
   h+='<div class="card"><h2>Unmatched player names ('+STATE.unmatched.length+')</h2>';
   if(STATE.unmatched.length){
     const opts=STATE.roster.map(r=>'<option value="'+r.player_id+'">'+esc(r.real_name)+'</option>').join('');
-    h+='<table><tr><th>Name in PGN</th><th>Games</th><th>Map to roster player</th><th></th></tr>';
+    h+='<p><input type="text" id="unmatchedFilter" placeholder="Filter by name…" oninput="filterUnmatched()" '+
+       'style="width:240px"> <span class="muted small" id="unmatchedCount"></span></p>';
+    h+='<table><tr><th>Name in PGN</th><th>Games</th><th>Map to roster player</th><th></th></tr><tbody id="unmatchedBody">';
     STATE.unmatched.forEach((u,i)=>{
-      h+='<tr><td>'+esc(u.name)+'</td><td>'+u.games+'</td>'+
+      h+='<tr data-name="'+esc(u.name.toLowerCase())+'"><td>'+esc(u.name)+'</td><td>'+u.games+'</td>'+
          '<td><select id="map-'+i+'"><option value="">— choose —</option>'+opts+'</select> '+
          '<button onclick="mapName('+i+')">Map</button></td>'+
          '<td><button onclick="ignoreName('+i+')">Ignore</button></td></tr>'; });
-    h+='</table>';
+    h+='</tbody></table>';
   } else h+='<p class="muted">Every name in the PGN files is either mapped or ignored.</p>';
   h+='</div>';
 
@@ -2764,21 +3323,28 @@ function renderFiles(){
      '<textarea id="pasteText" rows="8" placeholder="[Event &quot;...&quot;] ..."></textarea>'+
      '<p><button class="primary" onclick="pastePgn()">Save &amp; scan</button></p></div>';
   document.getElementById('pg-files').innerHTML=h;
+  if(STATE.unmatched.length) filterUnmatched();
+}
+function filterUnmatched(){
+  const q=(document.getElementById('unmatchedFilter').value||'').toLowerCase();
+  const rows=document.querySelectorAll('#unmatchedBody tr'); let shown=0;
+  rows.forEach(r=>{ const match=r.dataset.name.includes(q); r.style.display=match?'':'none'; if(match) shown++; });
+  document.getElementById('unmatchedCount').textContent='Showing '+shown+' of '+rows.length;
 }
 async function mapName(i){
   const u=STATE.unmatched[i]; const pid=document.getElementById('map-'+i).value;
-  if(!pid){ toast('Choose a roster player first.'); return; }
+  if(!pid){ toast('Choose a roster player first.', 'error'); return; }
   try{ await post('/api/map',{name:u.name, player_id:+pid});
        toast('Mapped "'+u.name+'" — rescanned.'); await refresh(); }
-  catch(e){ toast('Failed: '+e.message); }
+  catch(e){ toast('Failed: '+e.message, 'error'); }
 }
 async function ignoreName(i){
   try{ await post('/api/ignore',{name:STATE.unmatched[i].name}); await refresh(); }
-  catch(e){ toast('Failed: '+e.message); }
+  catch(e){ toast('Failed: '+e.message, 'error'); }
 }
 async function unmap(alias){
   try{ await post('/api/unmap',{alias}); toast('Removed mapping — rescanned.'); await refresh(); }
-  catch(e){ toast('Failed: '+e.message); }
+  catch(e){ toast('Failed: '+e.message, 'error'); }
 }
 async function pastePgn(){
   const text=document.getElementById('pasteText').value;
@@ -2786,7 +3352,7 @@ async function pastePgn(){
   try{ const r=await post('/api/paste',{text, filename:name});
        toast('Saved as '+r.saved_as+' and scanned.');
        document.getElementById('pasteText').value=''; await refresh(); }
-  catch(e){ toast('Failed: '+e.message); }
+  catch(e){ toast('Failed: '+e.message, 'error'); }
 }
 
 /* ---------------- Export ---------------- */
@@ -2809,6 +3375,208 @@ async function doExport(){
   }catch(e){ el.innerHTML='<p>Failed: '+esc(e.message)+'</p>'; }
 }
 
+/* ---------------- Play Bot ---------------- */
+let PLAY={loaded:false, info:null, players:[], game:null, human:'white', bot:'black',
+  orient:'white', selectedSq:null, legalTargets:[], pending:false, result:null, reason:'',
+  clocks:{white:3600, black:3600}, inc:30, timer:null, lastTick:0, lastMove:null, lastMeta:null};
+
+window.addEventListener('chessjs-ready',()=>{ if(curTab==='play') loadPlay(); });
+
+async function loadPlay(){
+  const el=document.getElementById('pg-play');
+  if(!window.Chess){ el.innerHTML='<div class="card muted"><span class="spinner"></span> Loading chess rules…</div>'; return; }
+  if(!PLAY.loaded){
+    el.innerHTML='<div class="card muted"><span class="spinner"></span> Loading players…</div>';
+    try{ const data=await api('/api/play/players');
+      PLAY.info=data; PLAY.players=data.players||[]; PLAY.loaded=true;
+    }catch(e){ el.innerHTML='<div class="card">Error: '+esc(e.message)+'</div>'; return; }
+  }
+  renderPlayShell();
+}
+
+function playSelectedPlayer(){
+  const pid=+(document.getElementById('playPlayer')?.value||0);
+  return PLAY.players.find(p=>p.player_id===pid) || PLAY.players[0] || null;
+}
+function playOpponentChanged(){
+  const p=playSelectedPlayer(); if(!p) return;
+  const elo=document.getElementById('playElo'), out=document.getElementById('playEloVal');
+  elo.value=p.default_elo; out.textContent=p.default_elo;
+}
+function renderPlayShell(){
+  const el=document.getElementById('pg-play');
+  if(!PLAY.players.length){
+    el.innerHTML='<div class="card">No PGN-backed players are available. Add PGNs and rescan.</div>';
+    return;
+  }
+  const info=PLAY.info||{}, p0=PLAY.players[0], engine=info.engine||{};
+  const playerOpts=PLAY.players.map(p=>'<option value="'+p.player_id+'">'+
+    esc((p.is_hero?'Dino — ':'')+p.real_name)+' ('+p.pgn_games+' PGNs)</option>').join('');
+  const clockOpts=(info.clock_presets||['60+30']).map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
+  const curElo=p0.default_elo || 2400;
+  el.innerHTML='<div class="play-layout"><div class="card"><h2>Play Bot</h2>'+
+    '<div class="play-controls">'+
+    '<label>Opponent <select id="playPlayer" onchange="playOpponentChanged()">'+playerOpts+'</select></label>'+
+    '<label>Play as <select id="playColor"><option value="white">White</option><option value="black">Black</option></select></label>'+
+    '<label>Clock <select id="playClock">'+clockOpts+'</select></label>'+
+    '<label>Strength <input id="playElo" type="range" min="'+info.elo_min+'" max="'+info.elo_max+
+      '" value="'+curElo+'" oninput="document.getElementById(\'playEloVal\').textContent=this.value">'+
+      ' <span id="playEloVal">'+curElo+'</span></label></div>'+
+    '<div class="play-controls">'+
+    '<button class="primary" onclick="playStart()" '+(engine.available?'':'disabled')+'>Start</button>'+
+    '<button class="danger" onclick="playResign()">Resign</button><button onclick="playOfferDraw()">Offer Draw</button>'+
+    '<button onclick="playFlip()">&#8645; Flip</button><button onclick="playCopyPgn()">Copy PGN</button>'+
+    '<button onclick="playDownloadPgn()">Download PGN</button></div>'+
+    (engine.available?'':'<p class="muted">No Stockfish engine found. Set PREP_STOCKFISH or add ./stockfish/.</p>')+
+    '<div class="clock-row"><div class="clock" id="playWhiteClock"></div><div class="clock" id="playBlackClock"></div></div>'+
+    '<div id="playStatus" class="muted"></div><div id="playMeta" class="muted small" style="margin-top:8px"></div></div>'+
+    '<div class="card"><div class="play-board" id="playBoard"></div></div>'+
+    '<div class="card"><h2>Moves</h2><div class="play-moves" id="playMoves"></div></div></div>';
+  renderPlayState();
+}
+
+function playParseClock(tc){
+  const m=(tc||'60+30').match(/^(\d+)\+(\d+)$/);
+  return m ? {base:+m[1]*60, inc:+m[2]} : {base:3600, inc:30};
+}
+function playFmtClock(sec){
+  sec=Math.max(0, Math.ceil(sec)); const m=Math.floor(sec/60), s=sec%60;
+  return m+':'+String(s).padStart(2,'0');
+}
+function playTurnColor(){ return PLAY.game && PLAY.game.turn()==='w' ? 'white' : 'black'; }
+function playStartClock(){
+  clearInterval(PLAY.timer); PLAY.lastTick=Date.now();
+  PLAY.timer=setInterval(playTick,250);
+}
+function playTick(){
+  if(!PLAY.game || PLAY.result) return;
+  const now=Date.now(), dt=(now-PLAY.lastTick)/1000; PLAY.lastTick=now;
+  const side=playTurnColor(); PLAY.clocks[side]=Math.max(0, PLAY.clocks[side]-dt);
+  if(side===PLAY.human && PLAY.clocks[side]<=0) playEnd(PLAY.human==='white'?'0-1':'1-0','Human flagged');
+  renderPlayClocks();
+}
+function playAddInc(color){ PLAY.clocks[color]+=PLAY.inc; }
+
+function playStart(){
+  if(!window.Chess){ toast('Chess rules are still loading.'); return; }
+  const p=playSelectedPlayer(); if(!p){ toast('Choose an opponent first.'); return; }
+  const tc=playParseClock(document.getElementById('playClock').value);
+  PLAY.game=new window.Chess(); PLAY.game.setHeader('White', document.getElementById('playColor').value==='white'?'Dino':p.real_name);
+  PLAY.game.setHeader('Black', document.getElementById('playColor').value==='black'?'Dino':p.real_name);
+  PLAY.game.setHeader('Event','Tournament prep bot game'); PLAY.game.setHeader('TimeControl', document.getElementById('playClock').value);
+  PLAY.human=document.getElementById('playColor').value; PLAY.bot=PLAY.human==='white'?'black':'white'; PLAY.orient=PLAY.human;
+  PLAY.clocks={white:tc.base, black:tc.base}; PLAY.inc=tc.inc; PLAY.result=null; PLAY.reason='';
+  PLAY.pending=false; PLAY.selectedSq=null; PLAY.legalTargets=[]; PLAY.lastMove=null; PLAY.lastMeta=null;
+  playStartClock(); renderPlayState();
+  if(PLAY.bot==='white') playRequestBotMove();
+}
+function playEnd(result, reason){
+  PLAY.result=result; PLAY.reason=reason||''; clearInterval(PLAY.timer);
+  if(PLAY.game) PLAY.game.setHeader('Result', result);
+  renderPlayState();
+}
+function playResign(){ if(PLAY.game && !PLAY.result) playEnd(PLAY.human==='white'?'0-1':'1-0','Resignation'); }
+function playOfferDraw(){ if(PLAY.game && !PLAY.result) playEnd('1/2-1/2','Draw agreed'); }
+function playFlip(){ PLAY.orient=PLAY.orient==='white'?'black':'white'; renderPlayBoard(); }
+async function playCopyPgn(){
+  if(!PLAY.game){ toast('Start a game first.'); return; }
+  await navigator.clipboard.writeText(PLAY.game.pgn()); toast('PGN copied.');
+}
+function playDownloadPgn(){
+  if(!PLAY.game){ toast('Start a game first.'); return; }
+  const blob=new Blob([PLAY.game.pgn()],{type:'application/x-chess-pgn'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='prep-bot-game.pgn';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+function playCanMove(){ return PLAY.game && !PLAY.result && !PLAY.pending && playTurnColor()===PLAY.human; }
+function playSquare(sq){
+  if(!playCanMove()) return;
+  if(PLAY.selectedSq && PLAY.legalTargets.includes(sq)){ playHumanMove(PLAY.selectedSq,sq); return; }
+  const piece=PLAY.game.get(sq), want=PLAY.human==='white'?'w':'b';
+  if(piece && piece.color===want){
+    PLAY.selectedSq=sq; PLAY.legalTargets=PLAY.game.moves({square:sq, verbose:true}).map(m=>m.to);
+  } else { PLAY.selectedSq=null; PLAY.legalTargets=[]; }
+  renderPlayBoard();
+}
+function playHumanMove(from,to){
+  const legal=PLAY.game.moves({square:from, verbose:true}).filter(m=>m.to===to);
+  if(!legal.length){ PLAY.selectedSq=null; PLAY.legalTargets=[]; renderPlayBoard(); return; }
+  let promotion='q';
+  if(legal.some(m=>(m.flags||'').includes('p'))){
+    promotion=(prompt('Promote to q, r, b, or n','q')||'q').toLowerCase();
+    if(!['q','r','b','n'].includes(promotion)) promotion='q';
+  }
+  const mv=PLAY.game.move({from,to,promotion});
+  if(!mv){ toast('Illegal move.'); return; }
+  PLAY.lastMove={from:mv.from,to:mv.to}; PLAY.selectedSq=null; PLAY.legalTargets=[]; PLAY.lastMeta=null;
+  playAddInc(PLAY.human); playCheckGameOver(); renderPlayState();
+  if(!PLAY.result) playRequestBotMove();
+}
+async function playRequestBotMove(){
+  if(!PLAY.game || PLAY.result) return;
+  PLAY.pending=true; renderPlayState();
+  try{
+    const meta=await post('/api/play/move',{
+      player_id:+document.getElementById('playPlayer').value,
+      fen:PLAY.game.fen(), bot_color:PLAY.bot, elo:+document.getElementById('playElo').value
+    });
+    const u=meta.uci, move={from:u.slice(0,2), to:u.slice(2,4)};
+    if(u.length>4) move.promotion=u[4];
+    const mv=PLAY.game.move(move);
+    if(!mv) throw new Error('Bot returned illegal move '+u);
+    PLAY.lastMove={from:mv.from,to:mv.to}; PLAY.lastMeta=meta; playAddInc(PLAY.bot);
+    PLAY.pending=false; playCheckGameOver(); renderPlayState();
+  }catch(e){ PLAY.pending=false; toast('Bot move failed: '+e.message, 'error'); renderPlayState(); }
+}
+function playCheckGameOver(){
+  if(!PLAY.game || PLAY.result) return;
+  if(PLAY.game.isCheckmate()) playEnd(PLAY.game.turn()==='w'?'0-1':'1-0','Checkmate');
+  else if(PLAY.game.isStalemate && PLAY.game.isStalemate()) playEnd('1/2-1/2','Stalemate');
+  else if(PLAY.game.isDraw && PLAY.game.isDraw()) playEnd('1/2-1/2','Draw');
+}
+
+function renderPlayState(){ renderPlayClocks(); renderPlayBoard(); renderPlayMoves(); renderPlayStatus(); }
+function renderPlayClocks(){
+  const w=document.getElementById('playWhiteClock'), b=document.getElementById('playBlackClock');
+  if(!w||!b) return;
+  w.innerHTML=playFmtClock(PLAY.clocks.white)+'<span class="small">White'+(PLAY.human==='white'?' (you)':' (bot)')+'</span>';
+  b.innerHTML=playFmtClock(PLAY.clocks.black)+'<span class="small">Black'+(PLAY.human==='black'?' (you)':' (bot)')+'</span>';
+}
+function renderPlayStatus(){
+  const s=document.getElementById('playStatus'), m=document.getElementById('playMeta'); if(!s||!m) return;
+  if(!PLAY.game){ s.textContent='Choose an opponent and start a game.'; m.textContent=''; return; }
+  s.textContent=PLAY.result ? (PLAY.result+' — '+PLAY.reason) :
+    (PLAY.pending ? 'Bot is thinking…' : (playTurnColor()==='white'?'White':'Black')+' to move');
+  if(PLAY.lastMeta){
+    m.textContent='Last bot move: '+PLAY.lastMeta.basis+' · confidence '+PLAY.lastMeta.confidence+
+      ' · samples '+PLAY.lastMeta.matched_samples+' · share '+PLAY.lastMeta.matched_share+
+      ' · source games '+PLAY.lastMeta.source_games+' · Elo '+PLAY.lastMeta.elo;
+  } else m.textContent='';
+}
+function renderPlayMoves(){
+  const el=document.getElementById('playMoves'); if(!el) return;
+  if(!PLAY.game){ el.innerHTML='<span class="muted">No game started.</span>'; return; }
+  const hist=PLAY.game.history();
+  let h=''; hist.forEach((mv,i)=>{ if(i%2===0) h+='<span class="muted"> '+(i/2+1)+'.</span>'; h+=' '+esc(mv); });
+  el.innerHTML=h||'<span class="muted">No moves yet.</span>';
+}
+function renderPlayBoard(){
+  const el=document.getElementById('playBoard'); if(!el || !window.Chess) return;
+  const fen=(PLAY.game||new window.Chess()).fen().split(' ')[0], rows=fen.split('/'), grid=[];
+  for(const row of rows){ const r=[]; for(const ch of row){ if(/\d/.test(ch)) for(let k=0;k<+ch;k++) r.push(''); else r.push(ch); } grid.push(r); }
+  const order=[...Array(8).keys()], rIdx=PLAY.orient==='white'?order:[...order].reverse(), cIdx=PLAY.orient==='white'?order:[...order].reverse();
+  const legal=new Set(PLAY.legalTargets||[]); let cells='';
+  for(const ri of rIdx){ for(const ci of cIdx){
+    const sq=FILES_STR_JS[ci]+(8-ri), dark=(ri+ci)%2===1, pc=grid[ri][ci];
+    const cls=[dark?'sqD':'sqL']; if(sq===PLAY.selectedSq) cls.push('sel'); if(legal.has(sq)) cls.push('legal');
+    if(PLAY.lastMove && (sq===PLAY.lastMove.from || sq===PLAY.lastMove.to)) cls.push('last');
+    cells+='<span class="'+cls.join(' ')+'"'+pieceStyle(pc)+' onclick="playSquare(\''+sq+'\')">'+coordLabels(ri,ci,rIdx,cIdx)+'</span>';
+  }}
+  el.innerHTML=cells;
+}
+const FILES_STR_JS='abcdefgh';
+
 /* ---------------- Board viewer ---------------- */
 async function openGame(id, jumpPly){
   try{
@@ -2821,7 +3589,7 @@ async function openGame(id, jumpPly){
     document.getElementById('verr').textContent=viewer.replay_error||'';
     renderMoves(); goPly(jumpPly||0);   // jump to the engine's flagged critical ply when given
     document.getElementById('modal').classList.add('open');
-  }catch(e){ toast('Could not load game: '+e.message); }
+  }catch(e){ toast('Could not load game: '+e.message, 'error'); }
 }
 function closeModal(){ document.getElementById('modal').classList.remove('open'); }
 function flip(){ orient = orient==='white'?'black':'white'; drawBoard(); }
@@ -2855,7 +3623,7 @@ function drawBoard(){
   for(const ri of rIdx){ for(const ci of cIdx){
     const dark=(ri+ci)%2===1;
     const pc=grid[ri][ci];
-    cells+='<span class="'+(dark?'sqD':'sqL')+'">'+(pc?PIECES[pc]:'')+'</span>'; } }
+    cells+='<span class="'+(dark?'sqD':'sqL')+'"'+pieceStyle(pc)+'>'+coordLabels(ri,ci,rIdx,cIdx)+'</span>'; } }
   document.getElementById('board').innerHTML=cells;
 }
 document.addEventListener('keydown',e=>{

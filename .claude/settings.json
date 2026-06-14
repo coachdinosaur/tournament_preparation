@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(netstat -ano)",
+      "Bash(powershell -Command \"Get-Process -Id 5628,7164 -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,StartTime\")",
+      "Bash(powershell -Command \"Stop-Process -Id 5628,7164 -Force\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8765/)",
+      "Bash(node shots3.js)",
+      "Bash(node shots4.js)",
+      "Bash(node shots5.js)"
+    ]
+  }
+}
