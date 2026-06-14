@@ -1,6 +1,6 @@
 # Opponent Dossier — GM Vignesh, N R
 
-*Generated 2026-06-13 from 187 games (104 over-the-board PGN, 83 Lichess online).*
+*Generated 2026-06-14 from 187 games (104 over-the-board PGN, 83 Lichess online).*
 
 **Title:** GM | **Federation:** IND | **FIDE:** 2515
 

@@ -1,6 +1,6 @@
 # Opponent Dossier — GM Shyaam, Nikhil P
 
-*Generated 2026-06-13 from 101 games (101 over-the-board PGN, 0 Lichess online).*
+*Generated 2026-06-14 from 101 games (101 over-the-board PGN, 0 Lichess online).*
 
 **Title:** GM | **Federation:** IND | **FIDE:** 2435
 
@@ -56,24 +56,27 @@
 
 ## Engine fingerprint
 
-*From 7 analysed game(s) at depth 12. Average centipawn loss (ACPL) — lower is more accurate.*
+*From 101 analysed game(s) at depth 12. Average centipawn loss (ACPL) — lower is more accurate.*
 
-- **Overall ACPL:** 11.8 (opening 8.4, middlegame 10.9, endgame 13.7)
-- **Serious errors on file:** 0 blunders, 3 mistakes, 8 inaccuracies
-- **Target structures (least accurate):** *Catalan / Réti Squeeze*, *Fianchetto KID / Grünfeld Complexes*
-- **Avoid — they are solid here (most accurate):** *Fianchetto KID / Grünfeld Complexes*, *Catalan / Réti Squeeze*
+- **Overall ACPL:** 14.5 (opening 9.9, middlegame 13.2, endgame 17.0)
+- **Serious errors on file:** 8 blunders, 43 mistakes, 173 inaccuracies
+- **Target structures (least accurate):** *Anti-Sicilian Counter-Package*, *Fianchetto KID / Grünfeld Complexes*
+- **Avoid — they are solid here (most accurate):** *Reversed-Sicilian / Flank Annexation*, *IQP / Panov Attack*
 
 | Structure family | Moves | ACPL | Serious errors |
 |---|---:|---:|---:|
-| Catalan / Réti Squeeze | 36 | 20.0 | 0 |
+| Anti-Sicilian Counter-Package | 425 | 14.6 | 7 |
 | Fianchetto KID / Grünfeld Complexes | 19 | 13.1 | 0 |
+| Catalan / Réti Squeeze | 718 | 13.1 | 8 |
+| IQP / Panov Attack | 66 | 12.9 | 1 |
+| Reversed-Sicilian / Flank Annexation | 442 | 12.3 | 2 |
 
 
 ## Player Profile
 
-*From 7 analysed game(s) at depth 12. Overall ACPL 11.8 — opening 8.4, middlegame 10.9, endgame 13.7.*
+*From 101 analysed game(s) at depth 12. Overall ACPL 14.5 — opening 9.9, middlegame 13.2, endgame 17.0.*
 
-- **Mistakes on file:** 0 blunders, 3 mistakes, 8 inaccuracies
+- **Mistakes on file:** 8 blunders, 43 mistakes, 173 inaccuracies
 - **Opening breadth:** 79 distinct openings
 - **Confidence lines:** Zukertort Opening (100.0% over 4 games), King's Indian Attack, with e6 (100.0% over 3 games), King's Indian Attack (66.7% over 3 games)
 - **Repair lines:** King's Indian Attack: Symmetrical Defense (25.0% over 2 games), Sicilian Defense: Najdorf Variation (37.5% over 4 games)
@@ -81,11 +84,32 @@
 ### Data-backed tendencies
 
 - **Opening breadth** (high confidence): Broad: 79 distinct openings across 101 games.
-- **Risk tendency** (medium confidence): Moderate tactical volatility: 3 blunders/mistakes in 7 analysed games.
-- **Phase stability** (medium confidence): Least accurate phase: endgame ACPL 13.7; best phase: opening ACPL 8.4.
-- **Conversion reliability** (low confidence): 0 conversion-failure sample(s) among 0 classified endgame/late-simplified samples.
-- **Drawing-defense reliability** (low confidence): 0 drawing-defense failure sample(s) among 0 classified endgame/late-simplified samples.
+- **Risk tendency** (high confidence): Moderate tactical volatility: 51 blunders/mistakes in 101 analysed games.
+- **Phase stability** (high confidence): Least accurate phase: endgame ACPL 17.0; best phase: opening ACPL 9.9.
+- **Conversion reliability** (medium confidence): 5 conversion-failure sample(s) among 18 classified endgame/late-simplified samples.
+- **Drawing-defense reliability** (medium confidence): 3 drawing-defense failure sample(s) among 18 classified endgame/late-simplified samples.
 - **Confidence lines** (medium confidence): Zukertort Opening (100.0%/4g), King's Indian Attack, with e6 (100.0%/3g), King's Indian Attack (66.7%/3g)
+
+### Endgame / simplified-position weakness categories
+
+| Category | Samples | Evidence |
+|---|---:|---|
+| Conversion failure | 5 | The move turned a winning position into a non-winning one.; The rook-and-pawn structure resembles a Philidor defense.; A passed pawn was present but the rook was not behind it. |
+| Philidor | 5 | The rook-and-pawn structure resembles a Philidor defense.; The move turned a winning position into a non-winning one.; A passed pawn was present but the rook was not behind it. |
+| Drawing defense failure | 3 | The move turned a drawable position into a losing one.; The rook-and-pawn structure resembles a Philidor defense. |
+| Rook behind pawn | 3 | A passed pawn was present but the rook was not behind it.; The move turned a winning position into a non-winning one.; The rook became passive after the move. |
+| Rook activity | 2 | The rook became passive after the move.; A passed pawn was present but the rook was not behind it.; The move turned a winning position into a non-winning one. |
+
+### Sample positions
+
+| Game | Move | Severity | Category | Engine prefers |
+|---|---|---|---|---|
+| vs Shen,Ree Herng | 31...Rf6 | blunder | Philidor, Conversion failure | Rf4-f1 |
+| vs Nagare,Kaivalya Sandip | 40...Na7 | mistake | Drawing defense failure | Nc6-d4 |
+| vs Krishnan,Ritvik | 33...Rb6 | mistake | Philidor, Drawing defense failure | Rb8xb3 |
+| vs Utsab,Chatterjee | 35.Bxe3 | mistake | Philidor | f2xe3 |
+| vs Dotzer,Lukas | 34...Bc7 | mistake | Drawing defense failure | Bd6-e7 |
+| vs Gavrilescu,David | 37.Ra7 | mistake | Rook activity, Rook behind pawn, Conversion failure | Be4-d5 |
 
 
 ## Prep pointers

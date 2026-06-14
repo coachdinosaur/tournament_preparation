@@ -1,6 +1,6 @@
 # Opponent Dossier — IM Chan, Kim Yew
 
-*Generated 2026-06-13 from 134 games (99 over-the-board PGN, 35 Lichess online).*
+*Generated 2026-06-14 from 134 games (99 over-the-board PGN, 35 Lichess online).*
 
 **Title:** IM | **Federation:** MAS | **FIDE:** 2360
 
@@ -56,13 +56,17 @@
 
 ## Engine fingerprint
 
-_Not analysed yet (99 games pending). Run `python prep_manual_app.py --analyze --scope all`, or click “Analyze with Stockfish” in the app._
+*From 1 analysed game(s) at depth 12. Average centipawn loss (ACPL) — lower is more accurate.*
+
+- **Overall ACPL:** 13.3 (opening 2.3, middlegame 4.6, endgame 21.3)
+- **Serious errors on file:** 0 blunders, 1 mistakes, 1 inaccuracies
 
 
 ## Player Profile
 
-_No cached engine profile yet (99 games pending). Run the fast Stockfish pass from the app or CLI._
+*From 1 analysed game(s) at depth 12. Overall ACPL 13.3 — opening 2.3, middlegame 4.6, endgame 21.3.*
 
+- **Mistakes on file:** 0 blunders, 1 mistakes, 1 inaccuracies
 - **Opening breadth:** 97 distinct openings
 - **Confidence lines:** Pirc Defense: Kholmov System (100.0% over 3 games), Sicilian Defense: Nyezhmetdinov-Rossolimo Attack, Fianchetto Variation (100.0% over 3 games), Bogo-Indian Defense: Retreat Variation (83.3% over 3 games)
 - **Repair lines:** Caro-Kann Defense: Advance Variation (0.0% over 2 games), Catalan Opening: Open Defense (0.0% over 2 games), Petrov's Defense: Nimzowitsch Attack (0.0% over 2 games)
@@ -70,6 +74,10 @@ _No cached engine profile yet (99 games pending). Run the fast Stockfish pass fr
 ### Data-backed tendencies
 
 - **Opening breadth** (high confidence): Broad: 97 distinct openings across 134 games.
+- **Risk tendency** (low confidence): High tactical volatility: 1 blunders/mistakes in 1 analysed games.
+- **Phase stability** (low confidence): Least accurate phase: endgame ACPL 21.3; best phase: opening ACPL 2.3.
+- **Conversion reliability** (low confidence): 0 conversion-failure sample(s) among 0 classified endgame/late-simplified samples.
+- **Drawing-defense reliability** (low confidence): 0 drawing-defense failure sample(s) among 0 classified endgame/late-simplified samples.
 - **Confidence lines** (medium confidence): Pirc Defense: Kholmov System (100.0%/3g), Sicilian Defense: Nyezhmetdinov-Rossolimo Attack, Fianchetto Variation (100.0%/3g), Bogo-Indian Defense: Retreat Variation (83.3%/3g)
 
 

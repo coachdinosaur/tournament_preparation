@@ -1,6 +1,6 @@
 # Opponent Dossier — IM Morris, James
 
-*Generated 2026-06-13 from 100 games (100 over-the-board PGN, 0 Lichess online).*
+*Generated 2026-06-14 from 100 games (100 over-the-board PGN, 0 Lichess online).*
 
 **Title:** IM | **Federation:** AUS | **FIDE:** 2423
 

@@ -1,6 +1,6 @@
 # Opponent Dossier — GM Thejkumar, M. S.
 
-*Generated 2026-06-13 from 102 games (102 over-the-board PGN, 0 Lichess online).*
+*Generated 2026-06-14 from 102 games (102 over-the-board PGN, 0 Lichess online).*
 
 **Title:** GM | **Federation:** IND | **FIDE:** 2352
 
@@ -56,15 +56,15 @@
 
 ## Engine fingerprint
 
-*From 1 analysed game(s) at depth 12. Average centipawn loss (ACPL) — lower is more accurate.*
+*From 2 analysed game(s) at depth 12. Average centipawn loss (ACPL) — lower is more accurate.*
 
-- **Overall ACPL:** 137.2 (opening 10.7, middlegame 26.1, endgame 281.0)
+- **Overall ACPL:** 124.5 (opening 7.8, middlegame 26.1, endgame 281.0)
 - **Serious errors on file:** 7 blunders, 0 mistakes, 0 inaccuracies
 
 
 ## Player Profile
 
-*From 1 analysed game(s) at depth 12. Overall ACPL 137.2 — opening 10.7, middlegame 26.1, endgame 281.0.*
+*From 2 analysed game(s) at depth 12. Overall ACPL 124.5 — opening 7.8, middlegame 26.1, endgame 281.0.*
 
 - **Mistakes on file:** 7 blunders, 0 mistakes, 0 inaccuracies
 - **Opening breadth:** 63 distinct openings
@@ -74,8 +74,8 @@
 ### Data-backed tendencies
 
 - **Opening breadth** (high confidence): Broad: 63 distinct openings across 102 games.
-- **Risk tendency** (low confidence): High tactical volatility: 7 blunders/mistakes in 1 analysed games.
-- **Phase stability** (low confidence): Least accurate phase: endgame ACPL 281.0; best phase: opening ACPL 10.7.
+- **Risk tendency** (low confidence): High tactical volatility: 7 blunders/mistakes in 2 analysed games.
+- **Phase stability** (low confidence): Least accurate phase: endgame ACPL 281.0; best phase: opening ACPL 7.8.
 - **Conversion reliability** (low confidence): 0 conversion-failure sample(s) among 0 classified endgame/late-simplified samples.
 - **Drawing-defense reliability** (low confidence): 0 drawing-defense failure sample(s) among 0 classified endgame/late-simplified samples.
 - **Confidence lines** (medium confidence): Queen's Pawn Game: Accelerated London System (100.0%/3g), Queen's Gambit Declined: Ragozin Defense (75.0%/6g), Caro-Kann Defense: Advance Variation, Botvinnik-Carls Defense (66.7%/3g)

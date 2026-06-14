@@ -259,29 +259,50 @@ Avoid:
 - Recommending a line Dino does not already understand.
 - Mixing result-score targets and engine-accuracy targets without explaining the difference.
 
-## Optimization Notes For The Second Seed
+## Optimization Notes For Later Seeds
 
-Use this first-seed workflow as the structure for the second seed, not as a source of copied conclusions. The second seed needs a fresh evidence pass from his own games.
+Use this first-seed workflow as the structure for later seeds, not as a source of copied conclusions.
+Each seed needs a fresh evidence pass from his own games.
 
-### Second Seed Target
+### Seed Queue
 
-- Player: GM Shyaam, Nikhil P
-- Player ID: `3`
-- Main dossier after export: `manual_sections/Opponent_GM_Shyaam_Nikhil_P.md`
-- Suggested report files:
-  - `second_seed_report.md`
-  - `second_seed_report.docx`
-- Suggested report title: `Second Seed Report: GM Shyaam, Nikhil P`
+Use the app/export order, which is sorted by current roster FIDE rating. In this workspace the
+current database player IDs are:
 
-### Analysis Command
+| Seed | Player | Player ID | Dossier | Report stem | Report title |
+|---:|---|---:|---|---|---|
+| 1 | GM Vignesh, N R | 2 | `manual_sections/Opponent_GM_Vignesh_N_R.md` | `first_seed_report` | `First Seed Report: GM Vignesh, N R` |
+| 2 | GM Shyaam, Nikhil P | 3 | `manual_sections/Opponent_GM_Shyaam_Nikhil_P.md` | `second_seed_report` | `Second Seed Report: GM Shyaam, Nikhil P` |
+| 3 | IM Morris, James | 104 | `manual_sections/Opponent_IM_Morris_James.md` | `third_seed_report` | `Third Seed Report: IM Morris, James` |
+| 4 | IM Tan, Jun Ying | 5 | `manual_sections/Opponent_IM_Tan_Jun_Ying.md` | `fourth_seed_report` | `Fourth Seed Report: IM Tan, Jun Ying` |
+| 5 | IM Chan, Kim Yew | 6 | `manual_sections/Opponent_IM_Chan_Kim_Yew.md` | `fifth_seed_report` | `Fifth Seed Report: IM Chan, Kim Yew` |
+| 6 | IM Susilodinata, Andrean | 7 | `manual_sections/Opponent_IM_Susilodinata_Andrean.md` | `sixth_seed_report` | `Sixth Seed Report: IM Susilodinata, Andrean` |
+| 7 | GM Thejkumar, M. S. | 8 | `manual_sections/Opponent_GM_Thejkumar_M_S.md` | `seventh_seed_report` | `Seventh Seed Report: GM Thejkumar, M. S.` |
+| 8 | FM Ang, Ern Jie Anderson | 9 | `manual_sections/Opponent_FM_Ang_Ern_Jie_Anderson.md` | `eighth_seed_report` | `Eighth Seed Report: FM Ang, Ern Jie Anderson` |
+| 9 | FM Arlan Cabe | 10 | `manual_sections/Opponent_FM_Arlan_Cabe.md` | `ninth_seed_report` | `Ninth Seed Report: FM Arlan Cabe` |
 
-Analyze all available games for the second seed at the same practical depth used for the first seed:
+Player IDs are database IDs, not ordinal seeds. If `prep_manual.db` is rebuilt from scratch, verify
+IDs from the app roster before running a player-scoped command. Morris is currently `104` in this
+workspace because he was added after older roster rows had already existed.
+
+### Per-Player Analysis Command
+
+Analyze all available games for each seed at the same practical depth used for the first seed.
+
+Examples:
 
 ```powershell
+# Second seed
 python prep_manual_app.py --analyze --scope player --player 3 --depth 12 --export
+
+# Third seed
+python prep_manual_app.py --analyze --scope player --player 104 --depth 12 --export
+
+# Fourth seed
+python prep_manual_app.py --analyze --scope player --player 5 --depth 12 --export
 ```
 
-After the command finishes, verify that the Shyaam dossier reports:
+After the command finishes, verify that the selected player's dossier reports:
 
 - Total games
 - OTB PGN games
@@ -297,7 +318,7 @@ If pending games remain, do not hide that in the report. State the coverage dire
 
 ### Reusable Report Checklist
 
-For the second seed, collect the same fixed evidence fields before writing prose:
+For each seed, collect the same fixed evidence fields before writing prose:
 
 - Game coverage: total games, OTB PGNs, Lichess metadata, analyzed count, pending count.
 - Opening profile: strongest lines, candidate weak lines, color split, and sample counts.
@@ -308,9 +329,9 @@ For the second seed, collect the same fixed evidence fields before writing prose
 - Endgame profile: top weakness categories and 3 to 5 clean sample positions.
 - Confidence notes: high, medium, or low confidence for each major claim.
 
-### Writing Rules For The Second Seed
+### Writing Rules For Later Seeds
 
-- Do not copy Vignesh-specific opening or endgame conclusions into Shyaam's report.
+- Do not copy another player's opening or endgame conclusions into the current report.
 - Keep all labels evidence-based: every strength, weakness, or tendency needs a number, sample count, phase score, or concrete game example.
 - Separate engine-analyzed OTB PGNs from Lichess metadata.
 - Include the engine depth near tactical or accuracy claims.
@@ -319,13 +340,16 @@ For the second seed, collect the same fixed evidence fields before writing prose
 
 ### DOCX Reuse
 
-The embedded DOCX builder below can be reused for the second seed by changing only the config values:
+Use the reusable root builder:
 
-- `SOURCE_MD = "second_seed_report.md"`
-- `OUTPUT_DOCX = "second_seed_report.docx"`
-- `REPORT_TITLE = "Second Seed Report: GM Shyaam, Nikhil P"`
+```powershell
+python -X utf8 build_standalone_report.py second_seed_report.md second_seed_report.docx --title "Second Seed Report: GM Shyaam, Nikhil P"
+python -X utf8 build_standalone_report.py third_seed_report.md third_seed_report.docx --title "Third Seed Report: IM Morris, James"
+python -X utf8 build_standalone_report.py fourth_seed_report.md fourth_seed_report.docx --title "Fourth Seed Report: IM Tan, Jun Ying"
+```
 
-Longer term, extract the embedded builder into a permanent `build_standalone_report.py` script so each seed report can be regenerated with config changes instead of copying code.
+The embedded DOCX builder below is kept as implementation reference only. Prefer
+`build_standalone_report.py` so each seed report can be regenerated without copying code.
 
 ## Producing the Report Files (Markdown + Standalone DOCX)
 
@@ -345,13 +369,92 @@ Author `<seed>_report.md` following the 6-section structure and the Report Quali
 
 ### Step 2 — Generate the standalone DOCX
 
-Needs `python-docx` (already installed; otherwise `pip install python-docx`). Save the script below
-as `build_standalone_report.py` **in the project root**, edit the three CONFIG lines at the top for
-the seed, and run:
+Needs `python-docx` (already installed; otherwise `pip install python-docx`). The reusable builder
+now lives at `build_standalone_report.py` in the project root. It defaults to the second-seed file
+names, but accepts explicit input/output paths and a running-header title:
 
 ```powershell
-python -X utf8 build_standalone_report.py
+python -X utf8 build_standalone_report.py second_seed_report.md second_seed_report.docx --title "Second Seed Report: GM Shyaam, Nikhil P"
 ```
+
+For the first seed, run:
+
+```powershell
+python -X utf8 build_standalone_report.py first_seed_report.md first_seed_report.docx --title "First Seed Report: GM Vignesh, N R"
+```
+
+For the next seed after Shyaam, run:
+
+```powershell
+python -X utf8 build_standalone_report.py third_seed_report.md third_seed_report.docx --title "Third Seed Report: IM Morris, James"
+```
+
+The original embedded builder is kept below as implementation reference. Prefer the root script for
+new seed reports so each report can be regenerated without copying code.
+
+### Step 3 — Render-check the DOCX on Windows
+
+The final DOCX should be visually checked by rendering it to page PNGs. On Windows this needs:
+
+- LibreOffice (`soffice.com` / `soffice.exe`)
+- Poppler (`pdftoppm.exe`, and usually `pdfinfo.exe`)
+- Python package `pdf2image` if using the bundled renderer
+
+Install checks:
+
+```powershell
+# In PowerShell, use where.exe. Plain "where" can resolve as a PowerShell alias.
+where.exe soffice
+where.exe pdfinfo
+where.exe pdftoppm
+python -m pip show pdf2image
+```
+
+If the tools were just installed but the current shell still cannot see them, either reopen
+PowerShell or refresh the current process PATH:
+
+```powershell
+$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' +
+            [Environment]::GetEnvironmentVariable('Path','User')
+where.exe soffice
+where.exe pdfinfo
+where.exe pdftoppm
+```
+
+If `winget` is installed but not on PATH, call it directly:
+
+```powershell
+& "$env:LOCALAPPDATA\Microsoft\WindowsApps\winget.exe" install --id TheDocumentFoundation.LibreOffice -e --accept-source-agreements --accept-package-agreements
+& "$env:LOCALAPPDATA\Microsoft\WindowsApps\winget.exe" install --id oschwartz10612.Poppler -e --accept-source-agreements --accept-package-agreements
+python -m pip install --user pdf2image
+```
+
+Expected persistent PATH entries after install:
+
+- `C:\Program Files\LibreOffice\program`
+- Poppler's winget package bin folder, usually:
+  `C:\Users\Admin\AppData\Local\Microsoft\WinGet\Packages\oschwartz10612.Poppler_Microsoft.Winget.Source_8wekyb3d8bbwe\poppler-25.07.0\Library\bin`
+- `C:\Users\Admin\AppData\Local\Microsoft\WindowsApps` for `winget.exe`
+
+If a newly installed tool is still not visible, use explicit paths for the current session. This is
+the Windows-safe manual render path. Change `$report` for the current seed:
+
+```powershell
+$report = "third_seed_report"   # change to the current report stem
+$out = Join-Path (Get-Location) "${report}_render"
+New-Item -ItemType Directory -Force -Path $out | Out-Null
+
+& "C:\Program Files\LibreOffice\program\soffice.com" --headless --norestore --convert-to pdf --outdir $out (Join-Path (Get-Location) "${report}.docx")
+
+$popplerBin = Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\Packages" -Recurse -Filter pdftoppm.exe |
+  Select-Object -First 1 -ExpandProperty DirectoryName
+& (Join-Path $popplerBin "pdftoppm.exe") -png -r 144 (Join-Path $out "${report}.pdf") (Join-Path $out "page")
+```
+
+Then inspect every generated `page-*.png`. Do not ship the DOCX if a table row is split awkwardly,
+text is clipped, page headers/footers are misplaced, or a table starts with only a stranded header
+row at the bottom of a page. Render artifacts are QA scratch files; delete them unless they are
+explicitly needed.
 
 ```python
 #!/usr/bin/env python
@@ -598,23 +701,43 @@ print("saved ->", OUT.name)
 
 ### Duplicating for the next seed
 
-Edit the three CONFIG lines (`MD`, `OUT`, `HEADER_NEW`) — e.g. point them at `second_seed_report.md`
-→ `second_seed_report.docx` — and re-run. Nothing else changes.
+Do not edit copied CONFIG lines anymore. Use the root builder with explicit arguments:
+
+```powershell
+python -X utf8 build_standalone_report.py fourth_seed_report.md fourth_seed_report.docx --title "Fourth Seed Report: IM Tan, Jun Ying"
+```
 
 ## Next Player Workflow
 
-For the next seed, run the same player-scope pattern:
+When one seed report is complete, meaning the Markdown is written, the DOCX is generated, and the
+rendered `page-*.png` files pass visual QA, advance to the next row in the queue:
+
+| If just completed | Next target | Command | Report files |
+|---|---|---|---|
+| Second seed, Shyaam | Third seed, Morris | `python prep_manual_app.py --analyze --scope player --player 104 --depth 12 --export` | `third_seed_report.md` / `third_seed_report.docx` |
+| Third seed, Morris | Fourth seed, Tan | `python prep_manual_app.py --analyze --scope player --player 5 --depth 12 --export` | `fourth_seed_report.md` / `fourth_seed_report.docx` |
+| Fourth seed, Tan | Fifth seed, Chan | `python prep_manual_app.py --analyze --scope player --player 6 --depth 12 --export` | `fifth_seed_report.md` / `fifth_seed_report.docx` |
+| Fifth seed, Chan | Sixth seed, Susilodinata | `python prep_manual_app.py --analyze --scope player --player 7 --depth 12 --export` | `sixth_seed_report.md` / `sixth_seed_report.docx` |
+| Sixth seed, Susilodinata | Seventh seed, Thejkumar | `python prep_manual_app.py --analyze --scope player --player 8 --depth 12 --export` | `seventh_seed_report.md` / `seventh_seed_report.docx` |
+| Seventh seed, Thejkumar | Eighth seed, Ang | `python prep_manual_app.py --analyze --scope player --player 9 --depth 12 --export` | `eighth_seed_report.md` / `eighth_seed_report.docx` |
+| Eighth seed, Ang | Ninth seed, Arlan Cabe | `python prep_manual_app.py --analyze --scope player --player 10 --depth 12 --export` | `ninth_seed_report.md` / `ninth_seed_report.docx` |
+
+For the immediate next seed after Shyaam, run:
 
 ```powershell
-python prep_manual_app.py --analyze --scope player --player 3 --depth 12 --export
+python prep_manual_app.py --analyze --scope player --player 104 --depth 12 --export
 ```
 
 Then review:
 
 ```text
-manual_sections/Opponent_GM_Shyaam_Nikhil_P.md
+manual_sections/Opponent_IM_Morris_James.md
 ```
 
 Repeat one player at a time so each dossier becomes complete and easy to verify. Then produce that
-seed's two report files (`second_seed_report.md` + `second_seed_report.docx`) with the steps in
+seed's two report files (`third_seed_report.md` + `third_seed_report.docx`) with the steps in
 *Producing the Report Files* above.
+
+**Arlan Cabe exception:** the app keeps FM Arlan Cabe in the roster for completeness, but the manual
+notes that his combat file is intentionally withheld. Do not create a ninth-seed combat report unless
+the user explicitly asks for one.
