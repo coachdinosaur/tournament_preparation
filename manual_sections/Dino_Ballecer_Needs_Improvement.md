@@ -12,6 +12,15 @@
 4. No practical games in the "IQP / Panov Attack" family — a core manual structure with zero reps. Schedule training games in it.
 5. Confidence weapons to keep sharp (not change): Sicilian Defense: Moscow Variation, Main Line (100.0%), French Defense: King's Indian Attack (91.7%), Sicilian Defense: Moscow Variation (100.0%).
 
+## Coach Recommendations
+
+1. **Make the Black repertoire the first repair block:** Dino is scoring 95.6% with White and 73.3% with Black. Spend the first preparation block on the weaker colour before adding new ideas.
+2. **Repair the repeated loss line before the event:** As black, the line e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 g6 has produced 3 losses in Sicilian Defense: Dragon Variation, Yugoslav Attack, Modern Line. The coach should require a written move-order file, two model games, and one checked fallback plan for this exact sequence.
+3. **Prioritize defensive endgames:** Endgame ACPL is 33.1, and the profile flags drawing-defense failures. Use the sample positions as coach-led hold-the-draw exercises, then ask Dino to explain the drawing mechanism without engine help.
+4. **Schedule reps in untested core structures:** Dino has no practical games in Advance Caro-Kann, IQP / Panov Attack. Treat these as coach-supervised sparring themes, not theory memorization.
+5. **Use a one-page round plan after pairings drop:** For each opponent, write the intended opening, the structure to target, the line to avoid, and the late-game weakness to test. Review only the three most relevant model games.
+6. **Require pass-fail readiness checks:** Before the tournament, Dino should pass the repaired Black line, one defensive endgame set, and one opponent-specific plan under clock pressure. Missed positions go back into review.
+
 ## Player Profile
 
 *From 8 analysed game(s) at depth 12. Overall ACPL 26.6 — opening 18.2, middlegame 18.7, endgame 34.6.*

@@ -155,10 +155,216 @@ ROSTER: list[dict] = [
     {"real_name": "IM Tan, Jun Ying",         "title": "IM", "federation": "MAS", "fide": 2404, "is_hero": 0},
     {"real_name": "IM Chan, Kim Yew",         "title": "IM", "federation": "MAS", "fide": 2360, "is_hero": 0},
     {"real_name": "IM Susilodinata, Andrean", "title": "IM", "federation": "INA", "fide": 2360, "is_hero": 0},
-    {"real_name": "GM Thejkumar, M. S.",      "title": "GM", "federation": "IND", "fide": 2352, "is_hero": 0},
+    {"real_name": "GM Thejkumar, M. S.",      "title": "GM", "federation": "IND", "fide": 2358, "is_hero": 0},
     {"real_name": "FM Ang, Ern Jie Anderson", "title": "FM", "federation": "MAS", "fide": 2309, "is_hero": 0},
     {"real_name": "FM Arlan Cabe",            "title": "FM", "federation": "PHI", "fide": 2298, "is_hero": 0},
 ]
+
+# Official nine-round pairing sheet supplied for the event. Times are local
+# Philippine time (UTC+8). Keeping this as source data instead of database rows
+# makes the fixed round-robin schedule easy to audit and export.
+PHT = dt.timezone(dt.timedelta(hours=8), "PHT")
+TOURNAMENT_SCHEDULE: list[dict] = [
+    {
+        "round": 1, "starts_at": "2026-06-22T16:00:00+08:00",
+        "pairings": [
+            ("IM Chan, Kim Yew", "IM Tan, Jun Ying"),
+            ("FM Ang, Ern Jie Anderson", "GM Shyaam, Nikhil P"),
+            ("IM Susilodinata, Andrean", "GM Vignesh, N R"),
+            ("GM Thejkumar, M. S.", "FM Arlan Cabe"),
+            ("IM Morris, James", HERO_NAME),
+        ],
+    },
+    {
+        "round": 2, "starts_at": "2026-06-23T10:00:00+08:00",
+        "pairings": [
+            ("IM Tan, Jun Ying", HERO_NAME),
+            ("FM Arlan Cabe", "IM Morris, James"),
+            ("GM Vignesh, N R", "GM Thejkumar, M. S."),
+            ("GM Shyaam, Nikhil P", "IM Susilodinata, Andrean"),
+            ("IM Chan, Kim Yew", "FM Ang, Ern Jie Anderson"),
+        ],
+    },
+    {
+        "round": 3, "starts_at": "2026-06-23T16:00:00+08:00",
+        "pairings": [
+            ("FM Ang, Ern Jie Anderson", "IM Tan, Jun Ying"),
+            ("IM Susilodinata, Andrean", "IM Chan, Kim Yew"),
+            ("GM Thejkumar, M. S.", "GM Shyaam, Nikhil P"),
+            ("IM Morris, James", "GM Vignesh, N R"),
+            (HERO_NAME, "FM Arlan Cabe"),
+        ],
+    },
+    {
+        "round": 4, "starts_at": "2026-06-24T10:00:00+08:00",
+        "pairings": [
+            ("IM Tan, Jun Ying", "FM Arlan Cabe"),
+            ("GM Vignesh, N R", HERO_NAME),
+            ("GM Shyaam, Nikhil P", "IM Morris, James"),
+            ("IM Chan, Kim Yew", "GM Thejkumar, M. S."),
+            ("FM Ang, Ern Jie Anderson", "IM Susilodinata, Andrean"),
+        ],
+    },
+    {
+        "round": 5, "starts_at": "2026-06-24T16:00:00+08:00",
+        "pairings": [
+            ("IM Susilodinata, Andrean", "IM Tan, Jun Ying"),
+            ("GM Thejkumar, M. S.", "FM Ang, Ern Jie Anderson"),
+            ("IM Morris, James", "IM Chan, Kim Yew"),
+            (HERO_NAME, "GM Shyaam, Nikhil P"),
+            ("FM Arlan Cabe", "GM Vignesh, N R"),
+        ],
+    },
+    {
+        "round": 6, "starts_at": "2026-06-25T16:00:00+08:00",
+        "pairings": [
+            ("IM Tan, Jun Ying", "GM Vignesh, N R"),
+            ("GM Shyaam, Nikhil P", "FM Arlan Cabe"),
+            ("IM Chan, Kim Yew", HERO_NAME),
+            ("FM Ang, Ern Jie Anderson", "IM Morris, James"),
+            ("IM Susilodinata, Andrean", "GM Thejkumar, M. S."),
+        ],
+    },
+    {
+        "round": 7, "starts_at": "2026-06-26T10:00:00+08:00",
+        "pairings": [
+            ("GM Thejkumar, M. S.", "IM Tan, Jun Ying"),
+            ("IM Morris, James", "IM Susilodinata, Andrean"),
+            (HERO_NAME, "FM Ang, Ern Jie Anderson"),
+            ("FM Arlan Cabe", "IM Chan, Kim Yew"),
+            ("GM Vignesh, N R", "GM Shyaam, Nikhil P"),
+        ],
+    },
+    {
+        "round": 8, "starts_at": "2026-06-26T16:00:00+08:00",
+        "pairings": [
+            ("IM Tan, Jun Ying", "GM Shyaam, Nikhil P"),
+            ("IM Chan, Kim Yew", "GM Vignesh, N R"),
+            ("FM Ang, Ern Jie Anderson", "FM Arlan Cabe"),
+            ("IM Susilodinata, Andrean", HERO_NAME),
+            ("GM Thejkumar, M. S.", "IM Morris, James"),
+        ],
+    },
+    {
+        "round": 9, "starts_at": "2026-06-27T16:00:00+08:00",
+        "pairings": [
+            ("IM Morris, James", "IM Tan, Jun Ying"),
+            (HERO_NAME, "GM Thejkumar, M. S."),
+            ("FM Arlan Cabe", "IM Susilodinata, Andrean"),
+            ("GM Vignesh, N R", "FM Ang, Ern Jie Anderson"),
+            ("GM Shyaam, Nikhil P", "IM Chan, Kim Yew"),
+        ],
+    },
+]
+
+
+def scheduled_pairing_for(player_name: str) -> dict | None:
+    """Return the player's tournament pairing against Dino, if any."""
+    if player_name == HERO_NAME:
+        return None
+    for rnd in TOURNAMENT_SCHEDULE:
+        start = dt.datetime.fromisoformat(rnd["starts_at"])
+        for board, (white, black) in enumerate(rnd["pairings"], 1):
+            if {white, black} != {HERO_NAME, player_name}:
+                continue
+            dino_color = "white" if white == HERO_NAME else "black"
+            return {
+                "round": rnd["round"],
+                "board": board,
+                "starts_at": start.isoformat(),
+                "date": start.date().isoformat(),
+                "date_label": f"{start.strftime('%A, %B')} {start.day}",
+                "time": start.strftime("%H:%M"),
+                "dino_color": dino_color,
+                "opponent_color": "black" if dino_color == "white" else "white",
+                "opponent_name": player_name,
+            }
+    return None
+
+
+def tournament_schedule(conn=None, now: dt.datetime | None = None) -> dict:
+    """Return a UI/export-ready version of the official pairing schedule."""
+    if now is None:
+        now = dt.datetime.now(PHT)
+    elif now.tzinfo is None:
+        now = now.replace(tzinfo=PHT)
+    else:
+        now = now.astimezone(PHT)
+
+    roster = {p["real_name"]: dict(p) for p in ROSTER}
+    if conn is not None:
+        roster.update({
+            r["real_name"]: dict(r)
+            for r in conn.execute("SELECT * FROM Roster")
+        })
+
+    rounds = []
+    hero_games = []
+    next_round = None
+    for raw in TOURNAMENT_SCHEDULE:
+        start = dt.datetime.fromisoformat(raw["starts_at"])
+        pairings = []
+        hero_pairing = None
+        for board, (white, black) in enumerate(raw["pairings"], 1):
+            wp, bp = roster[white], roster[black]
+            pairing = {
+                "board": board,
+                "white_name": white,
+                "white_player_id": wp.get("player_id"),
+                "white_rating": wp.get("fide"),
+                "black_name": black,
+                "black_player_id": bp.get("player_id"),
+                "black_rating": bp.get("fide"),
+                "is_hero_pairing": HERO_NAME in (white, black),
+            }
+            if pairing["is_hero_pairing"]:
+                dino_color = "white" if white == HERO_NAME else "black"
+                opponent_name = black if white == HERO_NAME else white
+                opponent = roster[opponent_name]
+                pairing.update({
+                    "dino_color": dino_color,
+                    "opponent_name": opponent_name,
+                    "opponent_player_id": opponent.get("player_id"),
+                    "opponent_rating": opponent.get("fide"),
+                })
+                hero_pairing = pairing
+            pairings.append(pairing)
+
+        round_row = {
+            "round": raw["round"],
+            "starts_at": start.isoformat(),
+            "date": start.date().isoformat(),
+            "date_label": f"{start.strftime('%A, %B')} {start.day}",
+            "time": start.strftime("%H:%M"),
+            "status": "past" if start < now else "upcoming",
+            "pairings": pairings,
+            "hero_pairing": hero_pairing,
+        }
+        rounds.append(round_row)
+        if hero_pairing:
+            hero_games.append({
+                "round": raw["round"],
+                "board": hero_pairing["board"],
+                "starts_at": start.isoformat(),
+                "date": round_row["date"],
+                "date_label": round_row["date_label"],
+                "time": round_row["time"],
+                "dino_color": hero_pairing["dino_color"],
+                "opponent_name": hero_pairing["opponent_name"],
+                "opponent_player_id": hero_pairing["opponent_player_id"],
+                "opponent_rating": hero_pairing["opponent_rating"],
+            })
+        if next_round is None and start >= now:
+            next_round = round_row
+
+    if next_round is not None:
+        next_round["status"] = "next"
+    return {
+        "timezone": "Asia/Manila (UTC+8)",
+        "rounds": rounds,
+        "hero_games": hero_games,
+        "next_round": next_round,
+    }
 
 # ChessBase PGN exports spell some names with compressed initials / variant
 # spellings the token matcher can't bridge on its own (it needs >=2 shared
@@ -2191,6 +2397,173 @@ def family_table(games: list[dict]) -> list[dict]:
     return rows
 
 
+def readiness_report(conn) -> dict:
+    """Workflow readiness for the dashboard and export preflight."""
+    rows = conn.execute(
+        """SELECT r.player_id, r.real_name, r.title, r.federation, r.fide, r.is_hero,
+                  COUNT(DISTINCT g.game_id) AS total_games,
+                  COUNT(DISTINCT CASE
+                    WHEN COALESCE(g.source, 'pgn') != 'lichess' THEN g.game_id END
+                  ) AS pgn_games,
+                  COUNT(DISTINCT CASE
+                    WHEN COALESCE(g.source, 'pgn') = 'lichess' THEN g.game_id END
+                  ) AS lichess_games,
+                  COUNT(DISTINCT CASE
+                    WHEN COALESCE(g.source, 'pgn') != 'lichess'
+                     AND ga.dedup_hash IS NOT NULL THEN g.game_id END
+                  ) AS analyzed_pgn_games
+           FROM Roster r
+           LEFT JOIN Games g ON g.player_id = r.player_id
+           LEFT JOIN GameAnalysis ga ON ga.dedup_hash = g.dedup_hash
+           GROUP BY r.player_id
+           ORDER BY r.is_hero DESC, r.fide DESC"""
+    ).fetchall()
+    players = []
+    totals = Counter()
+    for r in rows:
+        total = int(r["total_games"] or 0)
+        pgn = int(r["pgn_games"] or 0)
+        lichess = int(r["lichess_games"] or 0)
+        analyzed = int(r["analyzed_pgn_games"] or 0)
+        pending = max(0, pgn - analyzed)
+        if total == 0:
+            status = "needs_games"
+            next_action = "Add or map games for this roster player."
+        elif pgn == 0:
+            status = "data_only"
+            next_action = "Add PGN-backed games to unlock replay and engine analysis."
+        elif pending:
+            status = "needs_analysis"
+            next_action = f"Analyze {pending} PGN game{'s' if pending != 1 else ''}."
+        else:
+            status = "ready"
+            next_action = "Ready for export."
+        player = {
+            **dict(r),
+            "total_games": total,
+            "pgn_games": pgn,
+            "lichess_games": lichess,
+            "analyzed_pgn_games": analyzed,
+            "pending_pgn_games": pending,
+            "analysis_pct": round(100.0 * analyzed / pgn, 1) if pgn else None,
+            "status": status,
+            "next_action": next_action,
+        }
+        players.append(player)
+        totals.update({
+            "total_games": total,
+            "pgn_games": pgn,
+            "lichess_games": lichess,
+            "analyzed_pgn_games": analyzed,
+            "pending_pgn_games": pending,
+        })
+
+    unmatched_count = conn.execute("SELECT COUNT(*) FROM UnmatchedNames").fetchone()[0] or 0
+    unmatched_games = conn.execute(
+        "SELECT COALESCE(SUM(games), 0) FROM UnmatchedNames").fetchone()[0] or 0
+    high_unmatched = [dict(r) for r in conn.execute(
+        "SELECT name, games FROM UnmatchedNames WHERE games >= 3 "
+        "ORDER BY games DESC, name LIMIT 5")]
+    engine = engine_info()
+
+    missing = [p for p in players if p["status"] == "needs_games"]
+    data_only = [p for p in players if p["status"] == "data_only"]
+    pending = [p for p in players if p["pending_pgn_games"]]
+    next_actions = []
+    if missing:
+        names = ", ".join(p["real_name"] for p in missing[:4])
+        if len(missing) > 4:
+            names += f", +{len(missing) - 4} more"
+        next_actions.append({
+            "priority": 1,
+            "kind": "add_games",
+            "label": "Add missing roster games",
+            "detail": f"{len(missing)} roster player(s) have no games: {names}.",
+        })
+    if data_only:
+        names = ", ".join(p["real_name"] for p in data_only[:4])
+        next_actions.append({
+            "priority": 2,
+            "kind": "add_pgn",
+            "label": "Add PGN-backed games",
+            "detail": f"{len(data_only)} player(s) only have Lichess scout metadata: {names}.",
+        })
+    if totals["pending_pgn_games"]:
+        if engine.get("available") or ONLINE_ENABLED:
+            next_actions.append({
+                "priority": 3,
+                "kind": "analyze",
+                "label": "Analyze pending PGN games",
+                "detail": f"{totals['pending_pgn_games']} PGN game(s) are not in the engine cache yet.",
+            })
+        else:
+            next_actions.append({
+                "priority": 3,
+                "kind": "configure_engine",
+                "label": "Configure Stockfish",
+                "detail": f"{totals['pending_pgn_games']} PGN game(s) need analysis, but no engine is configured.",
+            })
+    if unmatched_count:
+        detail = f"{unmatched_count} unmatched name(s) across {unmatched_games} game reference(s)."
+        if high_unmatched:
+            detail += " Highest volume: " + ", ".join(
+                f"{r['name']} ({r['games']})" for r in high_unmatched[:3])
+        next_actions.append({
+            "priority": 4,
+            "kind": "review_names",
+            "label": "Review unmatched names",
+            "detail": detail,
+        })
+    if not next_actions:
+        next_actions.append({
+            "priority": 5,
+            "kind": "export",
+            "label": "Export manual sections",
+            "detail": "Coverage and cached analysis are complete enough for this dataset.",
+        })
+
+    export_warnings = []
+    if missing:
+        export_warnings.append(
+            f"{len(missing)} roster player(s) have no games and will export as low-confidence dossiers.")
+    if data_only:
+        export_warnings.append(
+            f"{len(data_only)} player(s) have only Lichess scout metadata, so board replay and engine profile remain limited.")
+    if totals["pending_pgn_games"]:
+        export_warnings.append(
+            f"{totals['pending_pgn_games']} PGN game(s) have not been engine-analyzed yet.")
+    if unmatched_count:
+        export_warnings.append(
+            f"{unmatched_count} unmatched PGN name(s) remain; many can be harmless historical opponents.")
+
+    players_total = len(players)
+    players_with_games = sum(1 for p in players if p["total_games"])
+    summary = {
+        "players_total": players_total,
+        "players_with_games": players_with_games,
+        "players_missing_games": players_total - players_with_games,
+        "total_games": totals["total_games"],
+        "pgn_games": totals["pgn_games"],
+        "lichess_games": totals["lichess_games"],
+        "analyzed_pgn_games": totals["analyzed_pgn_games"],
+        "pending_pgn_games": totals["pending_pgn_games"],
+        "analysis_pct": round(100.0 * totals["analyzed_pgn_games"] / totals["pgn_games"], 1)
+        if totals["pgn_games"] else None,
+        "unmatched_names": unmatched_count,
+        "unmatched_game_refs": unmatched_games,
+        "high_volume_unmatched": high_unmatched,
+        "engine_available": bool(engine.get("available")),
+        "export_ready": not export_warnings,
+        "export_status": "ready" if not export_warnings else "warnings",
+    }
+    return {
+        "summary": summary,
+        "players": players,
+        "next_actions": sorted(next_actions, key=lambda a: a["priority"]),
+        "export_warnings": export_warnings,
+    }
+
+
 def repeated_loss_lines(loss_rows: list, min_count: int = 2) -> list[dict]:
     """Find repeated losing prefixes, preferring the most specific useful line."""
     candidates = []
@@ -2223,6 +2596,88 @@ def repeated_loss_lines(loss_rows: list, min_count: int = 2) -> list[dict]:
     return selected
 
 
+def coach_recommendations(rec_w: dict, rec_b: dict, repeated: list[dict],
+                          profile: dict | None, families: list[dict]) -> list[dict]:
+    """Coach-facing action items derived from Dino's current audit."""
+    recs = []
+    if rec_w.get("n") and rec_b.get("n") and abs(rec_w["score"] - rec_b["score"]) >= 10:
+        weaker = "Black" if rec_b["score"] < rec_w["score"] else "White"
+        recs.append({
+            "title": f"Make the {weaker} repertoire the first repair block",
+            "detail": (
+                f"Dino is scoring {rec_w['score']}% with White and {rec_b['score']}% with Black. "
+                f"Spend the first preparation block on the weaker colour before adding new ideas."
+            ),
+        })
+    else:
+        recs.append({
+            "title": "Keep repertoire work narrow",
+            "detail": (
+                "Use the current confidence lines as tournament weapons and avoid adding broad new systems "
+                "unless the pairing clearly demands it."
+            ),
+        })
+
+    if repeated:
+        top = repeated[0]
+        recs.append({
+            "title": "Repair the repeated loss line before the event",
+            "detail": (
+                f"As {top['color']}, the line {top['line']} has produced {top['count']} losses "
+                f"in {top['opening']}. The coach should require a written move-order file, "
+                "two model games, and one checked fallback plan for this exact sequence."
+            ),
+        })
+
+    phase = (profile or {}).get("phase_profile") or {}
+    phase_acpl = phase.get("phase_acpl") or {}
+    end_acpl = phase_acpl.get("end")
+    if end_acpl is not None:
+        recs.append({
+            "title": "Prioritize defensive endgames",
+            "detail": (
+                f"Endgame ACPL is {end_acpl}, and the profile flags drawing-defense failures. "
+                "Use the sample positions as coach-led hold-the-draw exercises, then ask Dino "
+                "to explain the drawing mechanism without engine help."
+            ),
+        })
+    else:
+        recs.append({
+            "title": "Add a defensive endgame review block",
+            "detail": (
+                "Even without a complete engine profile, the tournament plan should include rook activity, "
+                "king placement, and drawing-defense technique from simplified positions."
+            ),
+        })
+
+    empty_families = [f["family"] for f in families if f.get("n", 0) == 0]
+    if empty_families:
+        recs.append({
+            "title": "Schedule reps in untested core structures",
+            "detail": (
+                "Dino has no practical games in "
+                + ", ".join(empty_families[:3])
+                + ". Treat these as coach-supervised sparring themes, not theory memorization."
+            ),
+        })
+
+    recs.append({
+        "title": "Use a one-page round plan after pairings drop",
+        "detail": (
+            "For each opponent, write the intended opening, the structure to target, the line to avoid, "
+            "and the late-game weakness to test. Review only the three most relevant model games."
+        ),
+    })
+    recs.append({
+        "title": "Require pass-fail readiness checks",
+        "detail": (
+            "Before the tournament, Dino should pass the repaired Black line, one defensive endgame set, "
+            "and one opponent-specific plan under clock pressure. Missed positions go back into review."
+        ),
+    })
+    return recs
+
+
 def player_dossier(conn, pid: int) -> dict:
     prof = conn.execute("SELECT * FROM Roster WHERE player_id=?", (pid,)).fetchone()
     games = player_games(conn, pid)
@@ -2239,6 +2694,7 @@ def player_dossier(conn, pid: int) -> dict:
         "black": {**wdl(bg), "openings": opening_table(bg)},
         "families": family_table(games),
         "games": games,
+        "scheduled_pairing": scheduled_pairing_for(prof["real_name"]),
         # Engine accuracy profile (cached results only — see analyze_all()).
         "fingerprint": opponent_fingerprint(conn, pid, allow_engine=False),
         "player_profile": build_player_profile(conn, pid, allow_engine=False),
@@ -2346,6 +2802,8 @@ def hero_improvement(conn) -> dict:
         "black": {**rec_b, "openings": op_b},
         "families": fams, "loss_phases": phases,
         "repeated_lines": repeated, "bullets": bullets,
+        "coach_recommendations": coach_recommendations(
+            rec_w, rec_b, repeated, player_profile, fams),
         "losses": [g for g in games if g["presult"] == "loss"],
         # Engine-pinpointed critical mistakes + accuracy-by-phase (cached only).
         "engine": engine,
@@ -2506,10 +2964,111 @@ def md_player_profile(pp: dict | None) -> str:
     return "\n".join(out) + "\n"
 
 
+def md_coach_recommendations(recs: list[dict] | None) -> str:
+    if not recs:
+        return "_No coach recommendations generated._\n"
+    return "\n".join(
+        f"{i}. **{r['title']}:** {r['detail']}"
+        for i, r in enumerate(recs, 1)
+    ) + "\n"
+
+
+def md_readiness_report(report: dict, today: str) -> str:
+    summary = report["summary"]
+    out = [
+        "# Prep Readiness",
+        "",
+        f"*Generated {today} by prep_manual_app.py.*",
+        "",
+        "## Summary",
+        "",
+        f"- **Roster coverage:** {summary['players_with_games']} of "
+        f"{summary['players_total']} player(s) have games on file.",
+        f"- **Games:** {summary['total_games']} total "
+        f"({summary['pgn_games']} PGN-backed, {summary['lichess_games']} Lichess scout).",
+        f"- **Engine coverage:** {summary['analyzed_pgn_games']} of "
+        f"{summary['pgn_games']} PGN-backed game(s) analysed"
+        + (f" ({summary['analysis_pct']}%)." if summary["analysis_pct"] is not None else "."),
+        f"- **Name review queue:** {summary['unmatched_names']} unmatched name(s) "
+        f"across {summary['unmatched_game_refs']} game reference(s).",
+        "",
+        "## Next Actions",
+        "",
+    ]
+    out += [f"{i}. **{a['label']}:** {a['detail']}"
+            for i, a in enumerate(report["next_actions"], 1)]
+    out += ["", "## Player Readiness", "",
+            "| Player | Games | PGN | Lichess | Analysed PGN | Status | Next action |",
+            "|---|---:|---:|---:|---:|---|---|"]
+    for p in report["players"]:
+        pct = f"{p['analysis_pct']}%" if p["analysis_pct"] is not None else "n/a"
+        out.append(
+            f"| {p['real_name']} | {p['total_games']} | {p['pgn_games']} | "
+            f"{p['lichess_games']} | {p['analyzed_pgn_games']} ({pct}) | "
+            f"{p['status']} | {p['next_action']} |")
+    out += ["", "## Export Warnings", ""]
+    if report["export_warnings"]:
+        out += [f"- {w}" for w in report["export_warnings"]]
+    else:
+        out.append("_No export warnings._")
+    return "\n".join(out) + "\n"
+
+
+def md_tournament_schedule(schedule: dict, today: str) -> str:
+    out = [
+        "# Tournament Schedule",
+        "",
+        f"*Generated {today} from the official pairing sheet. "
+        f"Times: {schedule['timezone']}.*",
+        "",
+        "## Dino's Round-by-Round Path",
+        "",
+        "| Round | Date | Time | Board | Color | Opponent | Rating |",
+        "|---:|---|---:|---:|---|---|---:|",
+    ]
+    for game in schedule["hero_games"]:
+        out.append(
+            f"| {game['round']} | {game['date_label']} | {game['time']} | "
+            f"{game['board']} | {game['dino_color'].title()} | "
+            f"{game['opponent_name']} | {game['opponent_rating']} |"
+        )
+
+    out += ["", "## Full Pairings", ""]
+    for rnd in schedule["rounds"]:
+        out += [
+            f"### Round {rnd['round']} — {rnd['date_label']} at {rnd['time']}",
+            "",
+            "| Board | White | Rating | Black | Rating |",
+            "|---:|---|---:|---|---:|",
+        ]
+        for pairing in rnd["pairings"]:
+            white_marker = " **(Dino)**" if pairing["white_name"] == HERO_NAME else ""
+            black_marker = " **(Dino)**" if pairing["black_name"] == HERO_NAME else ""
+            out.append(
+                f"| {pairing['board']} | {pairing['white_name']}{white_marker} | "
+                f"{pairing['white_rating']} | {pairing['black_name']}{black_marker} | "
+                f"{pairing['black_rating']} |"
+            )
+        out.append("")
+    return "\n".join(out) + "\n"
+
+
 def export_markdown(conn) -> list[str]:
     EXPORT_DIR.mkdir(exist_ok=True)
     today = dt.date.today().isoformat()
     written = []
+
+    # --- official tournament schedule ---
+    schedule = tournament_schedule(conn)
+    out = EXPORT_DIR / "Tournament_Schedule.md"
+    out.write_text(md_tournament_schedule(schedule, today), encoding="utf-8")
+    written.append(out.name)
+
+    # --- prep readiness ---
+    readiness = readiness_report(conn)
+    out = EXPORT_DIR / "Prep_Readiness.md"
+    out.write_text(md_readiness_report(readiness, today), encoding="utf-8")
+    written.append(out.name)
 
     # --- opponent dossiers ---
     opp_rows = conn.execute(
@@ -2518,6 +3077,7 @@ def export_markdown(conn) -> list[str]:
         d = player_dossier(conn, r["player_id"])
         p = d["profile"]
         src = d["sources"]
+        pairing = d.get("scheduled_pairing")
         lines = [f"# Opponent Dossier — {p['real_name']}", "",
                  f"*Generated {today} from {d['totals']['n']} games "
                  f"({src['pgn']} over-the-board PGN, {src['lichess']} Lichess online).*", "",
@@ -2535,6 +3095,13 @@ def export_markdown(conn) -> list[str]:
                  "## Player Profile", "",
                  md_player_profile(d.get("player_profile")), "",
                  "## Prep pointers", ""]
+        if pairing:
+            lines[6:6] = [
+                f"**Tournament pairing:** Round {pairing['round']}, "
+                f"{pairing['date_label']} at {pairing['time']}, Board {pairing['board']} "
+                f"— Dino has {pairing['dino_color'].title()}.",
+                "",
+            ]
         pointers = []
         for f in d["families"]:
             if f["n"] >= 2 and f["score"] < 50:
@@ -2577,7 +3144,9 @@ def export_markdown(conn) -> list[str]:
              f"White {md_wdl(imp['white'])}, Black {md_wdl(imp['black'])}", "",
              "## Priority work list", ""]
     lines += [f"{i}. {b}" for i, b in enumerate(imp["bullets"], 1)] or ["_No findings._"]
-    lines += ["", "## Player Profile", "",
+    lines += ["", "## Coach Recommendations", "",
+              md_coach_recommendations(imp.get("coach_recommendations")), "",
+              "## Player Profile", "",
               md_player_profile(imp.get("player_profile")), "",
               f"## Openings as White ({imp['white']['n']} games)", "",
               md_opening_table(imp["white"]["openings"], 20), "",
@@ -2870,11 +3439,14 @@ class Handler(BaseHTTPRequestHandler):
                 """SELECT a.alias, a.source, r.real_name FROM Aliases a
                    JOIN Roster r ON r.player_id = a.player_id ORDER BY r.real_name, a.alias""")]
             analyzed = conn.execute("SELECT COUNT(*) FROM GameAnalysis").fetchone()[0]
+            readiness = readiness_report(conn)
+            schedule = tournament_schedule(conn)
             return {"roster": roster, "files": files, "unmatched": unmatched,
                     "aliases": aliases, "folder": str(BASE_DIR),
                     "engine": engine_info(), "opening_db": opening_db_available(),
                     "online": ONLINE_ENABLED, "analyze": dict(ANALYZE_STATUS),
-                    "analyzed_games": analyzed}
+                    "analyzed_games": analyzed, "readiness": readiness,
+                    "schedule": schedule}
         finally:
             conn.close()
 
@@ -2886,7 +3458,7 @@ HTML_PAGE = r"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Tournament Prep Manual — Dino Ballecer 2026</title>
+<title>Dino Tournament Prep</title>
 <style>
 :root { --bg:#11151c; --panel:#1a2029; --panel2:#222a36; --text:#dde4ee; --dim:#8a97a8;
         --acc:#4da3ff; --good:#4ec77a; --bad:#e2645a; --warn:#e2b75a; --line:#2c3645;
@@ -2898,8 +3470,7 @@ header { padding:10px 22px; background:var(--panel); border-bottom:1px solid var
          display:flex; flex-direction:column; gap:6px; }
 header h1 { font-size:17px; margin:0; white-space:nowrap; }
 .headerTop { display:flex; align-items:center; gap:16px; }
-.headerActions { display:flex; gap:8px; margin-left:auto; flex-wrap:wrap; }
-@media (max-width:760px){ .headerTop { flex-wrap:wrap; } .headerActions { margin-left:0; } }
+@media (max-width:760px){ .headerTop { flex-wrap:wrap; } }
 .headerStatus { display:flex; gap:16px; flex-wrap:wrap; }
 .headerStatus .sub { min-width:0; }
 header .sub { color:var(--dim); font-size:12px; }
@@ -2944,6 +3515,46 @@ tr.click:hover td { background:var(--panel2); }
           border-radius:0 6px 6px 0; margin-bottom:8px; }
 .cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 @media (max-width:900px){ .cols { grid-template-columns:1fr; } }
+.focus { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:16px; align-items:center; }
+@media (max-width:720px){ .focus { grid-template-columns:1fr; } }
+.eyebrow { margin:0 0 4px; color:var(--dim); font-size:12px; text-transform:uppercase; letter-spacing:.05em; }
+.focus h2 { border-bottom:none; color:var(--text); font-size:22px; margin:0 0 6px; padding:0; }
+.focus p { margin:0; }
+.focusAction { display:flex; justify-content:flex-end; }
+.quick-stats { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; margin-bottom:16px; }
+@media (max-width:760px){ .quick-stats { grid-template-columns:1fr; } }
+.quick-stat { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:11px 13px; }
+.quick-stat b { display:block; font-size:18px; }
+.queue-table th:nth-child(3), .queue-table td:nth-child(3) { width:150px; }
+details.card > summary { cursor:pointer; color:var(--acc); font-weight:600; list-style-position:inside; }
+details.card[open] > summary { margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--line); }
+details:not([open]) > :not(summary) { display:none !important; }
+.metric-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:12px; margin-bottom:16px; }
+@media (max-width:900px){ .metric-grid { grid-template-columns:1fr 1fr; } }
+@media (max-width:560px){ .metric-grid { grid-template-columns:1fr; } }
+.metric { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
+.metric .label { color:var(--dim); font-size:12px; }
+.metric .value { font-size:24px; font-weight:700; margin-top:2px; }
+.status { display:inline-block; border-radius:10px; padding:1px 8px; font-size:11px; font-weight:600; }
+.status.ready { background:#1d3a26; color:var(--good); }
+.status.needs_analysis, .status.data_only { background:#37321d; color:var(--warn); }
+.status.needs_games { background:#3a201d; color:var(--bad); }
+.actions .bullet { border-left-color:var(--acc); }
+.schedule-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; }
+@media (max-width:820px){ .schedule-grid { grid-template-columns:1fr; } }
+.round-card { margin-bottom:0; }
+.round-card.next { border-color:var(--acc); box-shadow:0 0 0 1px rgba(77,163,255,.2), var(--shadow); }
+.round-card.past { opacity:.72; }
+.round-head { display:flex; justify-content:space-between; gap:10px; align-items:baseline; }
+.round-head h2 { border:0; padding:0; margin:0; }
+.hero-pairing td { background:rgba(77,163,255,.12) !important; }
+.player-link { border:0; background:transparent; color:var(--acc); padding:0; text-align:left; }
+.player-link:hover { border:0; text-decoration:underline; }
+.color-chip { display:inline-block; border:1px solid var(--line); border-radius:10px;
+              padding:1px 8px; font-size:11px; font-weight:600; }
+.color-chip.white { background:#f1f1e8; color:#1a2029; }
+.color-chip.black { background:#0d1015; color:#dde4ee; }
+.next-game { border-left:3px solid var(--acc); }
 .opp-layout { display:grid; grid-template-columns:280px 1fr; gap:16px; }
 @media (max-width:900px){ .opp-layout { grid-template-columns:1fr; } }
 .plist div { padding:8px 10px; border-radius:6px; cursor:pointer; margin-bottom:3px; }
@@ -2993,6 +3604,9 @@ textarea { width:100%; font-family:Consolas, monospace; }
 .play-board span.last { box-shadow:inset 0 0 0 999px rgba(226,183,90,.22); }
 .play-controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:10px; }
 .play-controls label { display:flex; align-items:center; gap:5px; }
+.toolbox { margin-bottom:10px; }
+.toolbox summary { cursor:pointer; color:var(--dim); font-size:12px; }
+.toolbox[open] summary { margin-bottom:8px; }
 .clock-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0; }
 .clock { background:var(--panel2); border:1px solid var(--line); border-radius:8px;
          padding:8px 10px; font-size:18px; font-weight:600; }
@@ -3020,11 +3634,7 @@ textarea { width:100%; font-family:Consolas, monospace; }
 <body>
 <header>
   <div class="headerTop">
-    <h1>Tournament Prep Manual — Dino Ballecer 2026</h1>
-    <div class="headerActions">
-      <button id="analyzeBtn" onclick="runAnalyze()">⚙ Analyze selected player</button>
-      <button class="primary" onclick="rescan()">⟳ Rescan PGN folder</button>
-    </div>
+    <h1>Dino Tournament Prep</h1>
   </div>
   <div class="headerStatus">
     <span class="sub" id="folder"></span>
@@ -3032,15 +3642,17 @@ textarea { width:100%; font-family:Consolas, monospace; }
   </div>
 </header>
 <nav>
-  <button id="tb-overview" class="on" onclick="tab('overview')">Overview</button>
+  <button id="tb-overview" class="on" onclick="tab('overview')">Today</button>
+  <button id="tb-schedule" onclick="tab('schedule')">Schedule</button>
   <button id="tb-opponents" onclick="tab('opponents')">Opponents</button>
-  <button id="tb-play" onclick="tab('play')">Play Bot</button>
-  <button id="tb-dino" onclick="tab('dino')">Dino — Needs Improvement</button>
-  <button id="tb-files" onclick="tab('files')">Files &amp; Names</button>
-  <button id="tb-export" onclick="tab('export')">Export Manual Sections</button>
+  <button id="tb-play" onclick="tab('play')">Practice</button>
+  <button id="tb-dino" onclick="tab('dino')">Dino Plan</button>
+  <button id="tb-files" onclick="tab('files')">Data</button>
+  <button id="tb-export" onclick="tab('export')">Export</button>
 </nav>
 <main>
   <div id="pg-overview"></div>
+  <div id="pg-schedule" style="display:none"></div>
   <div id="pg-opponents" style="display:none"></div>
   <div id="pg-play" style="display:none"></div>
   <div id="pg-dino" style="display:none"></div>
@@ -3104,22 +3716,45 @@ function esc(s){ return (s??'').toString().replace(/[&<>"]/g,
 function scoreCls(s,n){ if(!n) return 'muted'; return s>=60?'score-hi':(s<45?'score-lo':'score-md'); }
 function pill(p){ const m={win:'w',loss:'l',draw:'d'}; const c=m[p]||'u';
   return '<span class="pill '+c+'">'+esc(p)+'</span>'; }
+function statusLabel(s){ return ({
+  ready:'Ready', needs_analysis:'Needs analysis', needs_games:'Needs games', data_only:'Scout only'
+})[s] || s; }
+function statusPill(s){ return '<span class="status '+esc(s)+'">'+esc(statusLabel(s))+'</span>'; }
+function metric(label,value,detail){ return '<div class="metric"><div class="label">'+esc(label)+
+  '</div><div class="value">'+esc(value)+'</div><div class="muted small">'+esc(detail||'')+'</div></div>'; }
+function analysisText(p){ return p.analysis_pct==null ? 'n/a' :
+  p.analyzed_pgn_games+'/'+p.pgn_games+' ('+p.analysis_pct+'%)'; }
+function openPlayerAction(p){ return p.is_hero ? "tab('dino')" :
+  "tab('opponents');selectPlayer("+p.player_id+")"; }
+function primaryActionButton(a){
+  if(!a) return '<button class="primary" onclick="tab(\'dino\')">Open Dino plan</button>';
+  const busy=STATE && STATE.analyze && STATE.analyze.running;
+  if(a.kind==='analyze') return '<button class="primary" onclick="analyzeAll()" '+(busy?'disabled':'')+'>Run engine pass</button>';
+  if(a.kind==='review_names') return '<button class="primary" onclick="tab(\'files\')">Review names</button>';
+  if(a.kind==='export') return '<button class="primary" onclick="tab(\'export\')">Export manual</button>';
+  if(a.kind==='configure_engine') return '<button class="primary" onclick="tab(\'export\')">Export anyway</button>';
+  return '<button class="primary" onclick="rescan()">Update PGNs</button>';
+}
+function quickStat(label,value,detail){ return '<div class="quick-stat"><span class="muted small">'+
+  esc(label)+'</span><b>'+esc(value)+'</b><span class="muted small">'+esc(detail||'')+'</span></div>'; }
 
 function tab(name){ curTab=name;
-  for(const t of ['overview','opponents','play','dino','files','export']){
+  for(const t of ['overview','schedule','opponents','play','dino','files','export']){
     document.getElementById('pg-'+t).style.display = t===name?'':'none';
     document.getElementById('tb-'+t).classList.toggle('on', t===name); }
   if(name==='play') loadPlay();
   if(name==='dino') loadDino();
+  if(name==='schedule') renderSchedule();
   if(name==='opponents') renderOpponents();
 }
 
 async function refresh(){ STATE=await api('/api/state');
   const folderEl=document.getElementById('folder');
-  folderEl.textContent='watching: '+STATE.folder+'\\*.pgn';
-  folderEl.title=folderEl.textContent;
+  const folderName=(STATE.folder||'').split(/[\\/]/).pop() || STATE.folder;
+  folderEl.textContent='PGN folder: '+folderName;
+  folderEl.title='Watching '+STATE.folder+'\\*.pgn';
   updateEngineStatus();
-  renderOverview(); renderFiles(); renderExportTab();
+  renderOverview(); renderSchedule(); renderFiles(); renderExportTab();
   if(curTab==='opponents') renderOpponents(); }
 
 /* ---------------- Engine analysis (powers the generated analysis only) ---- */
@@ -3127,16 +3762,11 @@ function fmtCp(cp){ if(cp>=9000) return '#'+(10000-cp); if(cp<=-9000) return '#-
   return (cp>=0?'+':'')+(cp/100).toFixed(1); }
 function updateEngineStatus(){
   if(!STATE) return; const e=STATE.engine||{}, a=STATE.analyze||{};
-  const bits=[ e.available?('engine: '+esc(e.name||'Stockfish')):'engine: none',
-    'openings DB: '+(STATE.opening_db?'on':'off') ];
-  if(STATE.online) bits.push('online: on');
-  bits.push('analysed: '+(STATE.analyzed_games||0));
+  const bits=[ e.available?'Engine ready':'Engine off',
+    (STATE.analyzed_games||0)+' analysed' ];
+  if(STATE.online) bits.push('online ready');
   if(a.running) bits.push('analysing '+(a.current||0)+'/'+(a.total||0)+'…');
   const se=document.getElementById('engineStatus'); if(se) se.textContent=bits.join('  ·  ');
-  const btn=document.getElementById('analyzeBtn');
-  if(btn){ btn.disabled = !!a.running || !(e.available||STATE.online);
-    btn.textContent = a.running ? ('⚙ Analysing '+(a.current||0)+'/'+(a.total||0))
-                                : '⚙ Analyze selected player'; }
 }
 async function runAnalyze(){
   const pid=selectedAnalyzePlayerId();
@@ -3162,6 +3792,13 @@ async function analyzePlayer(pid){
     pollAnalyze();
   }catch(e){ toast('Analyze failed: '+e.message, 'error'); }
 }
+async function analyzeAll(){
+  try{ const r=await post('/api/analyze',{scope:'all'});
+    if(r.error){ toast(r.error, 'error'); return; }
+    toast('Engine analysis started for all PGN games.');
+    pollAnalyze();
+  }catch(e){ toast('Analyze failed: '+e.message, 'error'); }
+}
 function pollAnalyze(){ clearTimeout(window._ap);
   window._ap=setTimeout(async()=>{
     try{ STATE=await api('/api/state'); updateEngineStatus();
@@ -3178,26 +3815,110 @@ async function rescan(){ try{ const r=await post('/api/scan');
   if(curTab==='play'){ PLAY.loaded=false; loadPlay(); }
  }catch(e){ toast('Scan failed: '+e.message, 'error'); } }
 
+/* ---------------- Tournament schedule ---------------------------------- */
+function colorChip(color){
+  return '<span class="color-chip '+esc(color)+'">'+esc(color[0].toUpperCase()+color.slice(1))+'</span>';
+}
+function openScheduledOpponent(pid){
+  if(!pid) return;
+  tab('opponents');
+  selectPlayer(pid);
+}
+function schedulePlayer(name,pid){
+  if(name==='Dino Ballecer') return '<b>&#11088; '+esc(name)+'</b>';
+  if(!pid) return esc(name);
+  return '<button class="player-link" onclick="openScheduledOpponent('+pid+')">'+esc(name)+'</button>';
+}
+function nextGameCard(){
+  const schedule=(STATE&&STATE.schedule)||{};
+  const next=schedule.next_round, game=next&&next.hero_pairing;
+  if(!next||!game) return '';
+  return '<div class="card next-game focus"><div><p class="eyebrow">Next game &middot; Round '+
+    next.round+'</p><h2>'+colorChip(game.dino_color)+' vs '+esc(game.opponent_name)+
+    '</h2><p class="muted">'+esc(next.date_label)+' at '+esc(next.time)+
+    ' &middot; Board '+game.board+' &middot; Opponent rating '+game.opponent_rating+
+    '</p></div><div class="focusAction"><button class="primary" onclick="openScheduledOpponent('+
+    game.opponent_player_id+')">Open opponent prep</button></div></div>';
+}
+function renderSchedule(){
+  if(!STATE) return;
+  const schedule=STATE.schedule||{rounds:[],hero_games:[]};
+  let h=nextGameCard();
+  h+='<div class="card"><h2>Dino round-by-round</h2>'+
+    '<p class="muted">Times are '+esc(schedule.timezone||'local')+'. Click an opponent to open their dossier.</p>'+
+    '<table><tr><th>Round</th><th>Date</th><th>Time</th><th>Board</th><th>Color</th><th>Opponent</th><th>Rtg</th></tr>';
+  for(const game of schedule.hero_games||[]){
+    h+='<tr><td>'+game.round+'</td><td>'+esc(game.date_label)+'</td><td>'+esc(game.time)+
+      '</td><td>'+game.board+'</td><td>'+colorChip(game.dino_color)+'</td><td>'+
+      schedulePlayer(game.opponent_name,game.opponent_player_id)+'</td><td>'+game.opponent_rating+'</td></tr>';
+  }
+  h+='</table></div><div class="schedule-grid">';
+  for(const rnd of schedule.rounds||[]){
+    h+='<div class="card round-card '+esc(rnd.status)+'"><div class="round-head"><h2>Round '+
+      rnd.round+'</h2><span class="muted">'+esc(rnd.date_label)+' &middot; '+esc(rnd.time)+'</span></div>'+
+      '<table><tr><th>Bo.</th><th>White</th><th>Rtg</th><th>Black</th><th>Rtg</th></tr>';
+    for(const p of rnd.pairings){
+      h+='<tr class="'+(p.is_hero_pairing?'hero-pairing':'')+'"><td>'+p.board+'</td><td>'+
+        schedulePlayer(p.white_name,p.white_player_id)+'</td><td>'+p.white_rating+'</td><td>'+
+        schedulePlayer(p.black_name,p.black_player_id)+'</td><td>'+p.black_rating+'</td></tr>';
+    }
+    h+='</table></div>';
+  }
+  h+='</div>';
+  document.getElementById('pg-schedule').innerHTML=h;
+}
+
 /* ---------------- Overview ---------------- */
 function renderOverview(){
-  const opp=STATE.roster.filter(r=>!r.is_hero), hero=STATE.roster.find(r=>r.is_hero);
-  let h='<div class="card"><h2>Round-robin pool — games loaded per player</h2>';
-  h+='<table><tr><th>Player</th><th>Title</th><th>Fed</th><th>FIDE</th><th>Games in DB</th><th>W-D-L</th><th>Score</th></tr>';
-  const row=r=>'<tr class="click" onclick="tab(\'opponents\');selectPlayer('+r.player_id+')">'+
-    '<td>'+(r.is_hero?'&#11088; ':'')+esc(r.real_name)+'</td><td>'+esc(r.title||'—')+'</td>'+
-    '<td>'+esc(r.federation)+'</td><td>'+(r.fide||'—')+'</td><td>'+r.games+'</td>'+
-    '<td>'+r.w+'-'+r.d+'-'+r.l+'</td><td class="'+scoreCls(r.score,r.games)+'">'+
-    (r.games?r.score+'%':'—')+'</td></tr>';
-  h+=row(hero); for(const r of opp) h+=row(r);
+  const ready=STATE.readiness||{summary:{},players:[],next_actions:[],export_warnings:[]};
+  const s=ready.summary||{}, rosterById={};
+  (STATE.roster||[]).forEach(r=>{ rosterById[r.player_id]=r; });
+  const pct=s.analysis_pct==null?'n/a':s.analysis_pct+'%';
+  const actions=ready.next_actions||[];
+  const top=actions[0] || {label:'Open Dino plan', detail:'Review the current prep priorities and opponent files.'};
+  let h='<div class="card focus"><div><p class="eyebrow">Today</p><h2>'+esc(top.label)+
+    '</h2><p class="muted">'+esc(top.detail)+'</p></div><div class="focusAction">'+
+    primaryActionButton(top)+'</div></div>';
+
+  h+=nextGameCard();
+  h+='<div class="quick-stats">'+
+    quickStat('Roster', (s.players_with_games||0)+'/'+(s.players_total||0)+' ready',
+      (s.players_missing_games||0)+' missing games')+
+    quickStat('Engine', pct, (s.analyzed_pgn_games||0)+'/'+(s.pgn_games||0)+' PGN games')+
+    quickStat('Manual', s.export_status==='ready'?'Ready':'Has notes',
+      (ready.export_warnings||[]).length+' export note(s)')+'</div>';
+
+  h+='<div class="card"><h2>Prep queue</h2>'+
+     '<table class="queue-table"><tr><th>Player</th><th>Games</th><th>Status</th></tr>';
+  for(const p of ready.players||[]){
+    const r=rosterById[p.player_id]||p;
+    h+='<tr class="click" onclick="'+openPlayerAction(p)+'"><td>'+(p.is_hero?'&#11088; ':'')+
+      esc(p.real_name)+'</td><td>'+p.total_games+'</td><td>'+statusPill(p.status)+'</td></tr>';
+  }
   h+='</table></div>';
-  const missing=opp.filter(r=>!r.games);
+
+  const missing=(ready.players||[]).filter(p=>p.status==='needs_games'&&!p.is_hero);
   if(missing.length){
     h+='<div class="card"><h2>Waiting for opponent PGN databases</h2>'+
-       '<p class="muted">Drop the multi-game PGN file(s) into the folder above (any filename '+
-       'ending in .pgn) and click <b>Rescan</b>. Player names inside the PGN are matched to the '+
-       'roster automatically; anything unrecognised appears under <b>Files &amp; Names</b> for '+
-       'manual mapping.</p><p>'+missing.map(r=>'<span class="tag">'+esc(r.real_name)+'</span>').join('')+
+       '<p class="muted">Drop the multi-game PGN file(s) into the folder above and click '+
+       '<b>Update PGNs</b>. Unrecognised names appear under <b>Data</b>.</p><p>'+
+       missing.map(r=>'<span class="tag">'+esc(r.real_name)+'</span>').join('')+
        '</p></div>'; }
+  h+='<details class="card"><summary>Data health</summary>'+
+    '<div class="metric-grid">'+
+    metric('Roster coverage', (s.players_with_games||0)+'/'+(s.players_total||0),
+      (s.players_missing_games||0)+' player(s) missing games')+
+    metric('Engine coverage', pct,
+      (s.analyzed_pgn_games||0)+'/'+(s.pgn_games||0)+' PGN-backed games')+
+    metric('Name queue', s.unmatched_names||0,
+      (s.unmatched_game_refs||0)+' game reference(s)')+
+    metric('Export status', s.export_status==='ready'?'Ready':'Warnings',
+      (ready.export_warnings||[]).length+' warning(s)')+'</div>';
+  if(actions.length){
+    for(const a of actions) h+='<div class="bullet"><b>'+esc(a.label)+
+      ':</b> '+esc(a.detail)+'</div>';
+  }
+  h+='</details>';
   document.getElementById('pg-overview').innerHTML=h;
 }
 
@@ -3260,11 +3981,16 @@ function gamesTbl(games){
   return h+'</table>';
 }
 function dossierHtml(d){
-  const p=d.profile;
+  const p=d.profile, pairing=d.scheduled_pairing;
+  const scheduled=pairing
+    ? '<div class="bullet"><b>Tournament pairing:</b> Round '+pairing.round+', '+
+      esc(pairing.date_label)+' at '+esc(pairing.time)+', Board '+pairing.board+
+      ' &middot; Dino has '+colorChip(pairing.dino_color)+'</div>'
+    : '';
   return '<div class="card"><h2>'+esc(p.real_name)+'</h2><p class="muted">'+esc(p.title||'')+
     ' &middot; '+esc(p.federation)+' &middot; FIDE '+(p.fide||'—')+' &middot; '+d.totals.n+
     ' games on file ('+d.totals.w+'-'+d.totals.d+'-'+d.totals.l+', '+d.totals.score+'%)'+
-    ' &middot; sources: '+d.sources.pgn+' OTB PGN / '+d.sources.lichess+' Lichess online</p>'+
+    ' &middot; sources: '+d.sources.pgn+' OTB PGN / '+d.sources.lichess+' Lichess online</p>'+scheduled+
     '<p><button class="primary" onclick="analyzePlayer('+p.player_id+')">Analyze all games for this player</button></p>'+
     '<div class="cols"><div><h3>As White — '+d.white.n+' games ('+d.white.score+'%)</h3>'+
     openingTbl(d.white.openings)+'</div><div><h3>As Black — '+d.black.n+' games ('+
@@ -3377,6 +4103,14 @@ function engineFindingsHtml(eng){
     h+='</table>'; }
   return h+'</div>';
 }
+function coachRecommendationsHtml(recs){
+  if(!recs||!recs.length) return '';
+  let h='<div class="card"><h2>Coach Recommendations</h2>';
+  for(const r of recs){
+    h+='<div class="bullet"><b>'+esc(r.title)+':</b> '+esc(r.detail)+'</div>';
+  }
+  return h+'</div>';
+}
 
 /* ---------------- Dino tab ---------------- */
 async function loadDino(){
@@ -3393,6 +4127,7 @@ async function loadDino(){
     h+= d.bullets.length? d.bullets.map(b=>'<div class="bullet">'+esc(b)+'</div>').join('')
                         : '<p class="muted">No findings.</p>';
     h+='</div>';
+    h+=coachRecommendationsHtml(d.coach_recommendations);
     h+='<div class="cols"><div class="card"><h2>Openings as White</h2>'+
        openingTbl(d.white.openings)+'</div><div class="card"><h2>Openings as Black</h2>'+
        openingTbl(d.black.openings)+'</div></div>';
@@ -3415,45 +4150,44 @@ async function loadDino(){
 
 /* ---------------- Files & names ---------------- */
 function renderFiles(){
-  let h='<div class="card"><h2>PGN files found in folder</h2>';
+  let h='<div class="card focus"><div><p class="eyebrow">Data</p><h2>Keep the prep files current</h2>'+
+    '<p class="muted">Add or replace PGN files in the watched folder, then update the app.</p></div>'+
+    '<div class="focusAction"><button class="primary" onclick="rescan()">Update PGNs</button></div></div>';
+
+  const visibleUnmatched=STATE.unmatched.slice(0,5);
+  h+='<div class="card"><h2>Names to confirm ('+STATE.unmatched.length+')</h2>';
+  if(STATE.unmatched.length){
+    const opts=STATE.roster.map(r=>'<option value="'+r.player_id+'">'+esc(r.real_name)+'</option>').join('');
+    if(STATE.unmatched.length>visibleUnmatched.length) h+='<p class="muted">Showing the highest-volume names only. Most unmatched names are past opponents and can stay unmatched.</p>';
+    h+='<p><input type="text" id="unmatchedFilter" placeholder="Filter by name…" oninput="filterUnmatched()" '+
+       'style="width:240px"> <span class="muted small" id="unmatchedCount"></span></p>';
+    h+='<table><tr><th>Name in PGN</th><th>Games</th><th>Map to roster player</th></tr><tbody id="unmatchedBody">';
+    visibleUnmatched.forEach((u,i)=>{
+      h+='<tr data-name="'+esc(u.name.toLowerCase())+'"><td>'+esc(u.name)+'</td><td>'+u.games+'</td>'+
+         '<td><select id="map-'+i+'"><option value="">— choose —</option>'+opts+'</select> '+
+         '<button onclick="mapName('+i+')">Map</button></td></tr>'; });
+    h+='</tbody></table>';
+  } else h+='<p class="muted">No roster-name cleanup is waiting.</p>';
+  h+='</div>';
+
+  h+='<details class="card"><summary>PGN files and name mappings</summary>';
   if(STATE.files.length){
-    h+='<table><tr><th>File</th><th>Games parsed</th><th>Games stored (roster matches)</th><th>Last scan</th></tr>';
+    h+='<h3>PGN files found</h3><table><tr><th>File</th><th>Games parsed</th><th>Games stored</th><th>Last scan</th></tr>';
     for(const f of STATE.files) h+='<tr><td>'+esc(f.filename)+'</td><td>'+f.games_parsed+
       '</td><td>'+f.stored+'</td><td class="muted">'+esc(f.scanned_at)+'</td></tr>';
     h+='</table>';
   } else h+='<p class="muted">No .pgn files found yet.</p>';
-  h+='<p class="muted small">A game is stored once per roster player appearing in it. Names that '+
-     'are not Dino or one of the 9 opponents (e.g. Dino’s past opponents in his own file) can '+
-     'safely stay unmatched.</p></div>';
-
-  h+='<div class="card"><h2>Unmatched player names ('+STATE.unmatched.length+')</h2>';
-  if(STATE.unmatched.length){
-    const opts=STATE.roster.map(r=>'<option value="'+r.player_id+'">'+esc(r.real_name)+'</option>').join('');
-    h+='<p><input type="text" id="unmatchedFilter" placeholder="Filter by name…" oninput="filterUnmatched()" '+
-       'style="width:240px"> <span class="muted small" id="unmatchedCount"></span></p>';
-    h+='<table><tr><th>Name in PGN</th><th>Games</th><th>Map to roster player</th><th></th></tr><tbody id="unmatchedBody">';
-    STATE.unmatched.forEach((u,i)=>{
-      h+='<tr data-name="'+esc(u.name.toLowerCase())+'"><td>'+esc(u.name)+'</td><td>'+u.games+'</td>'+
-         '<td><select id="map-'+i+'"><option value="">— choose —</option>'+opts+'</select> '+
-         '<button onclick="mapName('+i+')">Map</button></td>'+
-         '<td><button onclick="ignoreName('+i+')">Ignore</button></td></tr>'; });
-    h+='</tbody></table>';
-  } else h+='<p class="muted">Every name in the PGN files is either mapped or ignored.</p>';
-  h+='</div>';
-
-  h+='<div class="card"><h2>Active name mappings</h2><table><tr><th>PGN name (alias)</th>'+
+  h+='<h3>Active name mappings</h3><table><tr><th>PGN name (alias)</th>'+
      '<th>Roster player</th><th>How</th><th></th></tr>';
   for(const a of STATE.aliases) h+='<tr><td>'+esc(a.alias)+'</td><td>'+esc(a.real_name)+
     '</td><td class="muted">'+esc(a.source)+'</td><td><button onclick="unmap(\''+
     esc(a.alias).replace(/'/g,"\\'")+'\')">Remove</button></td></tr>';
-  h+='</table></div>';
+  h+='</table><p class="muted small">A game is stored once per roster player appearing in it. Names that are not Dino or a tournament opponent can stay unmatched.</p></details>';
 
-  h+='<div class="card"><h2>Paste a PGN database directly</h2>'+
-     '<p class="muted small">Alternative to dropping a file in the folder: paste multi-game PGN '+
-     'text here and it is saved as a .pgn file, then scanned.</p>'+
+  h+='<details class="card"><summary>Paste PGN text instead</summary>'+
      '<p>Save as: <input type="text" id="pasteName" value="opponents_database" size="30">.pgn</p>'+
      '<textarea id="pasteText" rows="8" placeholder="[Event &quot;...&quot;] ..."></textarea>'+
-     '<p><button class="primary" onclick="pastePgn()">Save &amp; scan</button></p></div>';
+     '<p><button class="primary" onclick="pastePgn()">Save and update</button></p></details>';
   document.getElementById('pg-files').innerHTML=h;
   if(STATE.unmatched.length) filterUnmatched();
 }
@@ -3489,15 +4223,28 @@ async function pastePgn(){
 
 /* ---------------- Export ---------------- */
 function renderExportTab(){
+  const ready=(STATE&&STATE.readiness)||{summary:{},next_actions:[],export_warnings:[]};
+  const s=ready.summary||{}, warnings=ready.export_warnings||[];
+  const warnHtml = warnings.length
+    ? warnings.map(w=>'<div class="bullet">'+esc(w)+'</div>').join('')
+    : '<p class="muted">No export notes. The current dataset is ready for manual generation.</p>';
+  const actionHtml = (ready.next_actions||[]).map(a=>'<div class="bullet"><b>'+
+    esc(a.label)+':</b> '+esc(a.detail)+'</div>').join('');
   document.getElementById('pg-export').innerHTML=
-   '<div class="card"><h2>Export Markdown sections for the manual</h2>'+
-   '<p class="muted">Writes one dossier per opponent plus '+
-   '<b>Dino_Ballecer_Needs_Improvement.md</b> into the <code>manual_sections</code> folder. '+
-   'Open them in any editor and paste into Tournament_Preparation_Manual.docx. '+
-   'Re-export any time after adding PGNs. Analyze each player first to include '+
-   'the engine fingerprint, player profile, and critical-mistake sections.</p>'+
-   '<p><button class="primary" onclick="doExport()">Generate manual sections</button></p>'+
-   '<div id="exportResult"></div></div>';
+   '<div class="card focus"><div><p class="eyebrow">Export</p><h2>Generate the manual sections</h2>'+
+   '<p class="muted">'+(s.export_status==='ready'?'Ready to export.':
+   'Export is allowed; '+warnings.length+' readiness note(s) will be reflected in the output.')+
+   '</p></div><div class="focusAction"><button class="primary" onclick="doExport()">Generate manual</button></div></div>'+
+   '<div class="quick-stats">'+
+   quickStat('Roster', (s.players_with_games||0)+'/'+(s.players_total||0)+' with games', '')+
+   quickStat('Engine', s.analysis_pct==null?'n/a':s.analysis_pct+'%', 'PGN coverage')+
+   quickStat('Status', s.export_status==='ready'?'Ready':'Has notes', warnings.length+' note(s)')+'</div>'+
+   '<div id="exportResult"></div>'+
+   '<details class="card"><summary>Readiness notes</summary>'+
+   warnHtml+
+   '<h3>Recommended before export</h3>'+
+   (actionHtml||'<p class="muted">No pending readiness actions.</p>')+
+   '</details>';
 }
 async function doExport(){
   const el=document.getElementById('exportResult'); el.innerHTML='<p class="muted">Writing…</p>';
@@ -3546,7 +4293,7 @@ function renderPlayShell(){
     esc((p.is_hero?'Dino — ':'')+p.real_name)+' ('+p.pgn_games+' PGNs)</option>').join('');
   const clockOpts=(info.clock_presets||['60+30']).map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
   const curElo=p0.default_elo || 2400;
-  el.innerHTML='<div class="play-layout"><div class="card"><h2>Play Bot</h2>'+
+  el.innerHTML='<div class="play-layout"><div class="card"><h2>Practice Game</h2>'+
     '<div class="play-controls">'+
     '<label>Opponent <select id="playPlayer" onchange="playOpponentChanged()">'+playerOpts+'</select></label>'+
     '<label>Play as <select id="playColor"><option value="white">White</option><option value="black">Black</option></select></label>'+
@@ -3555,10 +4302,12 @@ function renderPlayShell(){
       '" value="'+curElo+'" oninput="document.getElementById(\'playEloVal\').textContent=this.value">'+
       ' <span id="playEloVal">'+curElo+'</span></label></div>'+
     '<div class="play-controls">'+
-    '<button class="primary" onclick="playStart()" '+(engine.available?'':'disabled')+'>Start</button>'+
-    '<button class="danger" onclick="playResign()">Resign</button><button onclick="playOfferDraw()">Offer Draw</button>'+
-    '<button onclick="playFlip()">&#8645; Flip</button><button onclick="playCopyPgn()">Copy PGN</button>'+
-    '<button onclick="playDownloadPgn()">Download PGN</button></div>'+
+    '<button class="primary" onclick="playStart()" '+(engine.available?'':'disabled')+'>Start game</button>'+
+    '<button class="danger" onclick="playResign()">Resign</button></div>'+
+    '<details class="toolbox"><summary>Game tools</summary><div class="play-controls">'+
+    '<button onclick="playOfferDraw()">Offer draw</button><button onclick="playFlip()">Flip board</button>'+
+    '<button onclick="playCopyPgn()">Copy PGN</button><button onclick="playDownloadPgn()">Download PGN</button>'+
+    '</div></details>'+
     (engine.available?'':'<p class="muted">No Stockfish engine found. Set PREP_STOCKFISH or add ./stockfish/.</p>')+
     '<div class="clock-row"><div class="clock" id="playWhiteClock"></div><div class="clock" id="playBlackClock"></div></div>'+
     '<div id="playStatus" class="muted"></div><div id="playMeta" class="muted small" style="margin-top:8px"></div></div>'+

@@ -7,7 +7,12 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8765/)",
       "Bash(node shots3.js)",
       "Bash(node shots4.js)",
-      "Bash(node shots5.js)"
+      "Bash(node shots5.js)",
+      "Read(//c/Users/Ronaldo/AppData/Local/Temp/dino_qa3_9rvuqr6p/**)",
+      "Bash(awk '{print $6, $7}')",
+      "Bash(python -c \"import chess; print\\('python-chess', chess.__version__\\)\")",
+      "Bash(python build_arlan_workbook.py)",
+      "Bash(awk '{print $5, $9}')"
     ]
   }
 }

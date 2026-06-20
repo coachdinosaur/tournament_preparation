@@ -68,6 +68,19 @@ Without these, those three would land in the "Unmatched Names" list instead of a
 
 ---
 
+## 2a. Official tournament schedule
+
+`TOURNAMENT_SCHEDULE` in `prep_manual_app.py` is the source of truth for the fixed nine-round
+pairing sheet (June 22-27, 2026, Philippine time/UTC+8). `tournament_schedule()` enriches it with
+roster IDs and ratings, identifies Dino's color and opponent each round, and marks the next round.
+
+The schedule is exposed through `/api/state`, displayed in the **Schedule** tab and the **Today**
+view, linked into each opponent dossier, and exported as
+`manual_sections/Tournament_Schedule.md`. The schedule integrity test verifies 9 rounds, 45 unique
+pairings, and 9 appearances per player.
+
+---
+
 ## 3. The six Core Structure Families
 
 A prep concept from the manual's Part III. Every game is tagged with zero or more of these

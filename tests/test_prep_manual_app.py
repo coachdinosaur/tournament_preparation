@@ -1,3 +1,4 @@
+import datetime as dt
 import sqlite3
 import tempfile
 import threading
@@ -10,6 +11,32 @@ import prep_manual_app as pm
 
 
 class PrepManualCoreTests(unittest.TestCase):
+    def test_tournament_schedule_is_complete_round_robin(self):
+        schedule = pm.tournament_schedule(
+            now=dt.datetime(2026, 6, 20, 12, 0, tzinfo=pm.PHT)
+        )
+
+        self.assertEqual(len(schedule["rounds"]), 9)
+        self.assertEqual(len(schedule["hero_games"]), 9)
+        self.assertEqual(schedule["next_round"]["round"], 1)
+        self.assertEqual(schedule["hero_games"][0]["opponent_name"], "IM Morris, James")
+        self.assertEqual(schedule["hero_games"][0]["dino_color"], "black")
+        self.assertEqual(schedule["hero_games"][-1]["opponent_name"], "GM Thejkumar, M. S.")
+        self.assertEqual(schedule["hero_games"][-1]["dino_color"], "white")
+
+        appearances = {}
+        unique_pairs = set()
+        for rnd in schedule["rounds"]:
+            self.assertEqual(len(rnd["pairings"]), 5)
+            for pairing in rnd["pairings"]:
+                white, black = pairing["white_name"], pairing["black_name"]
+                appearances[white] = appearances.get(white, 0) + 1
+                appearances[black] = appearances.get(black, 0) + 1
+                unique_pairs.add(frozenset((white, black)))
+
+        self.assertEqual(len(unique_pairs), 45)
+        self.assertEqual(set(appearances.values()), {9})
+
     def test_parse_pgn_and_replay_fens(self):
         pgn = """[Event "Unit Test"]
 [Site "?"]
@@ -303,6 +330,140 @@ class PrepManualCoreTests(unittest.TestCase):
         self.assertEqual(repeated[0]["plies"], 10)
         self.assertEqual(repeated[1]["count"], 2)
         self.assertEqual(repeated[1]["plies"], 12)
+
+    def test_readiness_report_classifies_coverage_and_analysis(self):
+        original_db = pm.DB_PATH
+        with tempfile.TemporaryDirectory() as td:
+            pm.DB_PATH = Path(td) / "prep_manual.db"
+            try:
+                pm.init_db()
+                conn = pm.db()
+                try:
+                    roster = conn.execute(
+                        "SELECT player_id FROM Roster ORDER BY is_hero DESC, fide DESC"
+                    ).fetchall()
+                    analyzed_pid = roster[0]["player_id"]
+                    pending_pid = roster[1]["player_id"]
+                    lichess_pid = roster[2]["player_id"]
+                    conn.execute(
+                        """INSERT INTO Games
+                           (player_id, color, presult, white, black, result,
+                            moves_json, source, dedup_hash)
+                           VALUES (?,?,?,?,?,?,?,?,?)""",
+                        (analyzed_pid, "white", "win", "Dino", "Opponent", "1-0",
+                         json_dumps(["e4"]), "pgn", "analyzed-game"),
+                    )
+                    conn.execute(
+                        """INSERT INTO GameAnalysis
+                           (dedup_hash, depth, engine, analyzed_at, acpl_white,
+                            acpl_black, moves_white, moves_black, phase_json,
+                            blunders_json)
+                           VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                        ("analyzed-game", 12, "Stockfish", "2026-06-15T00:00:00",
+                         10.0, 12.0, 1, 1, "{}", "[]"),
+                    )
+                    conn.execute(
+                        """INSERT INTO Games
+                           (player_id, color, presult, white, black, result,
+                            moves_json, source, dedup_hash)
+                           VALUES (?,?,?,?,?,?,?,?,?)""",
+                        (pending_pid, "black", "loss", "Opponent", "Player", "1-0",
+                         json_dumps(["d4"]), "pgn", "pending-game"),
+                    )
+                    conn.execute(
+                        """INSERT INTO Games
+                           (player_id, color, presult, white, black, result,
+                            moves_json, source, dedup_hash, lichess_id)
+                           VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                        (lichess_pid, "white", "draw", "Player", "Online", "1/2-1/2",
+                         json_dumps([]), "lichess", "lichess-game", "abc123"),
+                    )
+                    conn.execute("INSERT INTO UnmatchedNames (name, games) VALUES (?,?)",
+                                 ("Example Alias", 4))
+                    conn.commit()
+
+                    report = pm.readiness_report(conn)
+                    by_id = {p["player_id"]: p for p in report["players"]}
+
+                    self.assertEqual(by_id[analyzed_pid]["status"], "ready")
+                    self.assertEqual(by_id[analyzed_pid]["analyzed_pgn_games"], 1)
+                    self.assertEqual(by_id[pending_pid]["status"], "needs_analysis")
+                    self.assertEqual(by_id[pending_pid]["pending_pgn_games"], 1)
+                    self.assertEqual(by_id[lichess_pid]["status"], "data_only")
+                    self.assertEqual(by_id[lichess_pid]["pgn_games"], 0)
+                    self.assertGreater(report["summary"]["players_missing_games"], 0)
+                    self.assertEqual(report["summary"]["unmatched_names"], 1)
+                    self.assertTrue(any(
+                        a["kind"] in ("analyze", "configure_engine")
+                        for a in report["next_actions"]
+                    ))
+                finally:
+                    conn.close()
+            finally:
+                pm.DB_PATH = original_db
+
+    def test_state_endpoint_includes_readiness(self):
+        original_db = pm.DB_PATH
+        with tempfile.TemporaryDirectory() as td:
+            pm.DB_PATH = Path(td) / "prep_manual.db"
+            try:
+                pm.init_db()
+                server = pm.ThreadingHTTPServer(("127.0.0.1", 0), pm.Handler)
+                thread = threading.Thread(target=server.serve_forever, daemon=True)
+                thread.start()
+                try:
+                    port = server.server_address[1]
+                    http = HTTPConnection("127.0.0.1", port, timeout=5)
+                    http.request("GET", "/api/state")
+                    res = http.getresponse()
+                    state = json_loads(res.read())
+                    self.assertEqual(res.status, 200)
+                    self.assertIn("readiness", state)
+                    self.assertIn("summary", state["readiness"])
+                    self.assertIn("next_actions", state["readiness"])
+                    self.assertIn("schedule", state)
+                    self.assertEqual(len(state["schedule"]["rounds"]), 9)
+                finally:
+                    server.shutdown()
+                    server.server_close()
+            finally:
+                pm.DB_PATH = original_db
+
+    def test_export_markdown_writes_prep_readiness_section(self):
+        original_db, original_export = pm.DB_PATH, pm.EXPORT_DIR
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            pm.DB_PATH = root / "prep_manual.db"
+            pm.EXPORT_DIR = root / "manual_sections"
+            try:
+                pm.init_db()
+                conn = pm.db()
+                try:
+                    written = pm.export_markdown(conn)
+                    self.assertIn("Tournament_Schedule.md", written)
+                    self.assertIn("Prep_Readiness.md", written)
+                    index = (pm.EXPORT_DIR / "00_INDEX.md").read_text(encoding="utf-8")
+                    self.assertIn("Tournament_Schedule.md", index)
+                    self.assertIn("Prep_Readiness.md", index)
+                    schedule = (pm.EXPORT_DIR / "Tournament_Schedule.md").read_text(
+                        encoding="utf-8"
+                    )
+                    self.assertIn("# Tournament Schedule", schedule)
+                    self.assertIn("Dino's Round-by-Round Path", schedule)
+                    self.assertIn("IM Morris, James", schedule)
+                    readiness = (pm.EXPORT_DIR / "Prep_Readiness.md").read_text(
+                        encoding="utf-8"
+                    )
+                    self.assertIn("# Prep Readiness", readiness)
+                    dino = (pm.EXPORT_DIR / "Dino_Ballecer_Needs_Improvement.md").read_text(
+                        encoding="utf-8"
+                    )
+                    self.assertIn("## Coach Recommendations", dino)
+                finally:
+                    conn.close()
+            finally:
+                pm.DB_PATH = original_db
+                pm.EXPORT_DIR = original_export
 
     def test_play_endpoints(self):
         original_db = pm.DB_PATH
