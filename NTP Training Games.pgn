@@ -1,0 +1,743 @@
+[Event "NTP Training Games"]
+[Site "?"]
+[Date "2026.07.12"]
+[Round "?"]
+[White "Lin Yi Christopher"]
+[Black "Yeo Si En Faith"]
+[Result "1-0"]
+[Termination "White won by resignation"]
+
+1. d4 Nf6 2. c4 e6 3. g3 d5 4. Bg2 Bb4+ 5. Nd2 O-O (5... dxc4 6. Qa4+ Nc6 7.
+Bxc6+ bxc6 8. Qxb4) 6. Nf3 dxc4 7. Qc2 b5 8. a4 Ba6 (8... c6 9. axb5 cxb5 10.
+Ng5! {[%c_effect
+g5;square;g5;type;GreatFind;size;100%25;animated;false;persistent;true]} 10...
+h6 (10... Nd5 11. Qxh7#! {[%c_effect
+h7;square;h7;type;GreatFind;size;100%25;animated;false;persistent;true]}) 11.
+h4!! {[%c_effect
+h4;square;h4;type;Brilliant;size;100%25;animated;false;persistent;true]}) 9.
+Ne5? {[%c_effect e5;square;e5;type;Mistake;persistent;true]} 9... Nd5?!
+{[%c_effect d5;square;d5;type;Inaccuracy;persistent;true]} 10. O-O c3??
+{[%c_effect c3;square;c3;type;Blunder;persistent;true]} 11. bxc3! {[%c_effect
+c3;square;c3;type;GreatFind;persistent;true]} 11... f6? {[%c_effect
+f6;square;f6;type;Mistake;persistent;true]} (11... Bxc3 12. Bxd5 Bxa1 (12...
+Qxd5 13. Qxc3) 13. Bxa8) 12. Nd3 Be7 13. axb5 Bb7 14. c4 Nb4 15. Nxb4 Bxg2 16.
+Kxg2 Bxb4 17. Qe4 Nd7 18. Nf3 Re8 19. Qb1 Bf8 20. Rd1 Nb6 21. Qb3 Kh8 22. c5 Qd5
+23. Qxd5 Nxd5 24. Bd2 Ne7 25. Ra6 Ng6 26. Rda1 Rab8 27. R1a5 e5 28. e3 exd4 29.
+exd4 Ne7 30. Rxa7 Nd5 31. Kf1 h6 32. h4 Be7 33. h5 Rec8 34. Nh4 Bd8 35. Ng6+ Kg8
+(35... Kh7 36. Nf8+ Kg8 37. Nd7) 36. R7a6 Kf7 37. Nf4 Nxf4 38. Bxf4 f5 39. Be5
+{[%c_effect
+f1;square;f1;type;Winner;animated;true,f7;square;f7;type;ResignBlack;animated;true]}
+1-0
+
+[Event "NTP Training Games"]
+[Site "Bishan Community Club"]
+[Date "2026.06.14"]
+[Round "3/3"]
+[White "Lin Yi Christopher"]
+[Black "Fang Kun"]
+[Result "1-0"]
+[Termination "White won by resignation"]
+[TimeControl "1500+10"]
+
+1. d4 d5 2. c4 c6 3. Nf3 Nf6 4. Nc3 dxc4 5. a4 Bf5 6. e3 e6 7. Bxc4 Bb4 8. O-O
+Nbd7 9. Qe2 O-O 10. e4 Bg6 11. Bd3 Be7 12. a5 a6 13. Rd1 Bh5 14. Bf4 Re8 15. Qc2
+Bxf3 16. gxf3 Nh5 17. Bg3 Nxg3 18. hxg3 e5 19. dxe5 Nxe5 20. Be2 Qc8 (20... Qc7
+21. Nd5 Qb8 22. Nb6! {[%c_effect b6;square;b6;type;GreatFind;persistent;true]})
+21. f4 Ng4 22. Na4 Bd8 23. b4?! {[%c_effect
+b4;square;b4;type;Inaccuracy;size;100%25;animated;false;persistent;true]} (23.
+Rxd8!! {[%c_effect
+d8;square;d8;type;Brilliant;size;100%25;animated;false;persistent;true]} 23...
+Qxd8 (23... Rxd8 24. Nb6 Qe6 25. Nxa8 Rxa8 26. f5! {[%c_effect
+f5;square;f5;type;GreatFind;size;100%25;animated;false;persistent;true]}) 24.
+Bxg4 Qxa5 25. Rb1) 23... Nf6 24. Bf3 Qe6?! {[%c_effect
+e6;square;e6;type;Inaccuracy;persistent;true]} 25. Nc5 Qc8 (25... Qe7?!
+{[%c_effect e7;square;e7;type;Inaccuracy;persistent;true]} 26. e5) 26. e5 Ng4
+27. Bxg4 Qxg4 28. Nxb7 Be7 29. Nd6 Rf8 30. Qxc6 h5 31. Qe4 h4 32. Nf5 Bd8 33.
+Qxa8 {[%c_effect
+g1;square;g1;type;Winner;animated;true,g8;square;g8;type;ResignBlack;animated;true]}
+1-0
+
+[Event "NTP Training Games"]
+[Site "Bishan Community Club"]
+[Date "2026.06.14"]
+[Round "2/3"]
+[White "Fang Kun"]
+[Black "Lin Yi Christopher"]
+[Result "1/2-1/2"]
+[TimeControl "1500+10"]
+
+1. e4 e6 2. d4 d5 3. Nc3 Nf6 (3... Bb4 4. e5 c5 5. a3 Bxc3+ 6. bxc3 Qc7 (6...
+Ne7 7. Qg4 (7. Nf3 Qa5 8. Bd2 c4) 7... Qc7 8. Qxg7 Rg8 9. Qxh7) (6... Qa5)) 4.
+Bg5 dxe4 5. Nxe4 Be7 6. Bxf6 Bxf6 (6... gxf6 7. Nf3 f5 8. Ng3 (8. Nc3 Nd7 9.
+d5?! {[%c_effect
+d5;square;d5;type;Inaccuracy;size;100%25;animated;false;persistent;true]} (9.
+Qd2 a6 10. O-O-O b5 11. d5 e5 12. Re1 e4 13. Nd4 Ne5 (13... O-O 14. Nxf5 Bg5!
+{[%c_effect
+g5;square;g5;type;GreatFind;size;100%25;animated;false;persistent;true]} 15. Ne3
+f5) 14. f4 b4 (14... Ng6? {[%c_effect
+g6;square;g6;type;Mistake;size;100%25;animated;false;persistent;true]} 15. g4)
+15. fxe5 Bg5! {[%c_effect
+g5;square;g5;type;GreatFind;size;100%25;animated;false;persistent;true]} 16. Re3
+bxc3 17. Qxc3 Qxd5) 9... Nb6 10. Bb5+ Kf8 11. dxe6 Qxd1+ 12. Rxd1 Bxe6 13. O-O
+c6 14. Bd3 Bf6 15. Rfe1 Kg7) 8... c5) 7. Nf3 Nd7 8. Bd3 b6?! {[%c_effect
+b6;square;b6;type;Inaccuracy;persistent;true]} 9. Qe2 Bb7 10. O-O-O Be7 11. h4
+h6 12. Kb1 Nf6 13. Nxf6+ Bxf6 14. g4 Qd5 15. Bb5+?! {[%c_effect
+b5;square;b5;type;Inaccuracy;persistent;true]} 15... Kf8?! {[%c_effect
+f8;square;f8;type;Inaccuracy;persistent;true]} (15... Ke7 {is better} 16. Rh3
+Rad8) 16. Ne5 Qe4 17. Qxe4 Bxe4 18. Rh3?! {[%c_effect
+h3;square;h3;type;Inaccuracy;persistent;true]} 18... Rd8 19. Nd7+ Ke7 20. Nxf6
+gxf6 21. Rc3 c5 22. Kc1 h5! {[%c_effect
+h5;square;h5;type;GreatFind;persistent;true]} 23. dxc5 Rxd1+ 24. Kxd1 bxc5 25.
+f3 Ba8 26. Be2 Kd6 27. Ra3 hxg4 28. fxg4 Rxh4 29. Rxa7 Be4 30. Rxf7 Ke5 31. Rc7
+Kd4 32. Kd2 (32. a4 Ke3) 32... Rh2 33. c3+ Kd5 34. Ke3 Rh3+ 35. Kd2 (35. Kf4??
+{[%c_effect f4;square;f4;type;Blunder;persistent;true]} 35... e5#! {[%c_effect
+e5;square;e5;type;GreatFind;persistent;true]}) 35... Rh2 36. Ke1 Rh1+ 37. Kf2
+Rh2+ 38. Kf1 Rh1+ 39. Kf2 Rh2+ 40. Ke3 Rh3+ 41. Kd2 Rh2 42. Ke3 {[%c_effect
+d5;square;d5;type;DrawBlack;animated;true,e3;square;e3;type;DrawWhite;animated;true]}
+1/2-1/2
+
+[Event "NTP Training Game"]
+[Site "Bishan Community Club"]
+[Date "2026.06.14"]
+[Round "1/3"]
+[White "Lin Yi Christopher"]
+[Black "Fang Kun"]
+[Result "1-0"]
+[BlackUrl ""]
+[BlackCountry ""]
+[BlackTitle "WFM"]
+[TimeControl "1500+10"]
+[Termination "White won by timeout"]
+
+1. d4 Nf6 2. c4 e6 3. g3 Bb4+ 4. Nd2 d5 5. Nf3 O-O 6. Bg2 dxc4 7. Qc2 Bd7 $6
+{[%c_effect
+d7;square;d7;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 8. Ne5
+Bc6 9. Nxc6 Nxc6 10. Bxc6 bxc6 11. Qxc4 Qd5 12. Qxd5 $6 {[%c_effect
+d5;square;d5;type;Inaccuracy;size;100%25;animated;false;persistent;true]} (12.
+O-O {is much better} 12... Bxd2 (12... Rab8 {to defend the bishop}) 13. Qxd5
+cxd5 14. Bxd2 $1 {[%c_effect
+d2;square;d2;type;GreatFind;size;100%25;animated;false;persistent;true][%cal
+sa3f8,sf4b8][%c_arrow
+a3f8;keyPressed;shift;opacity;0.8;from;a3;to;f8;persistent;false,f4b8;keyPressed;shift;opacity;0.8;from;f4;to;b8;persistent;false]})
+12... cxd5 13. a3 Bd6 14. O-O (14. e3 {is another option so if} 14... Rab8 {is
+played} 15. Ke2 {would be a good move}) 14... Rfb8 15. Rd1 a5 16. Nf3 Nd7 17.
+Ne1 Nb6 18. a4 $6 {[%c_effect
+a4;square;a4;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 18...
+Nc4 19. Nd3 Rb3 $6 {[%c_effect
+b3;square;b3;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 20.
+Rb1 $2 {[%c_effect
+b1;square;b1;type;Mistake;size;100%25;animated;false;persistent;true] My idea is
+to play Bd2 and untangle my pieces} 20... Rab8 $6 {[%c_effect
+b8;square;b8;type;Inaccuracy;persistent;true]} 21. Bd2 Ba3 22. Bc3 $6 {[%c_effect
+c3;square;c3;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 22...
+Bxb2 23. Bxb2 Nxb2 24. Nxb2 Rxb2 25. Rxb2 Rxb2 26. e3 Rb4 27. Rc1 Rb7 $2
+{[%c_effect
+b7;square;b7;type;Mistake;size;100%25;animated;false;persistent;true]} (27...
+Rxa4 {was the better option as after} 28. Rxc7 g5 $1 {[%c_effect
+g5;square;g5;type;GreatFind;persistent;true] can be played with idea to play
+g4}) 28. Rc5 Ra7 {The problem now is black's rook is passive} 29. Kf1 Kf8 30.
+Ke2 Ke7 31. Kd3 Kd6 32. Rb5 Ra8 33. h4 h5 34. Kc2 Ra7 35. Kc1 Ra6 36. Kd2 Ra7
+37. Kd3 Ra8 38. Kc2 {At this point, my opponent lost on time...} 1-0
+
+[Event "NTP Training Games"]
+[Site "Bishan Community Club"]
+[Date "2026.05.31"]
+[Round "?"]
+[White "Lin Yi Christopher"]
+[Black "Teo Hong Kai Javier"]
+[Result "1-0"]
+[Termination "White won by resignation"]
+[TimeControl "90+30"]
+
+1. e4 c5 2. Nf3 g6 3. c4 Bg7 4. d4 cxd4 5. Nxd4 Nc6 6. Nc2 d6 7. Be2 Nf6 8. Nc3
+h6?! {[%c_effect
+h6;square;h6;type;Inaccuracy;size;100%25;animated;false;persistent;true] This
+move is very strange as Bg5 is not a threat.} 9. O-O O-O 10. f3 Bd7 11. Be3 Rc8
+12. Qd2 Ne5 13. b3 Kh7 14. Rad1 Qc7?! {[%c_effect
+c7;square;c7;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 15.
+Nd4?! {[%c_effect
+d4;square;d4;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 15...
+a6?! {[%c_effect
+a6;square;a6;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 16.
+Rc1?! {[%c_effect
+c1;square;c1;type;Inaccuracy;size;100%25;animated;false;persistent;true]} (16.
+Nd5 {straight away is also good}) 16... Bc6? {[%c_effect
+c6;square;c6;type;Mistake;size;100%25;animated;false;persistent;true]} 17. Nd5
+Bxd5 18. cxd5?! {[%c_effect
+d5;square;d5;type;Inaccuracy;size;100%25;animated;false;persistent;true] After
+this, the position for black is squeeze and passive.} 18... Qb8?! {[%c_effect
+b8;square;b8;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 19. a4
+Ned7 20. a5 {I felt this move is good because I am trying to squeeze the
+position even more and make it harder for him.} 20... Rxc1 21. Rxc1 Rc8 22. Rxc8
+Qxc8 23. Qc2?! {[%c_effect
+c2;square;c2;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 23...
+Qd8?! {[%c_effect
+d8;square;d8;type;Inaccuracy;size;100%25;animated;false;persistent;true]} (23...
+Qxc2 24. Nxc2 {I felt this position is better because of the two bishops and how
+I can attack his pawns easily.} 24... h5 25. Nb4 {Now the sacrifices are all in
+the air.}) 24. b4 Nh5 25. Qc1?! {[%c_effect
+c1;square;c1;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 25...
+Nf4 26. Bf1 e5? {[%c_effect
+e5;square;e5;type;Mistake;size;100%25;animated;false;persistent;true] This move
+is bad move as he blocked his own bishop.} 27. Nc6!! {[%c_effect
+c6;square;c6;type;Brilliant;size;100%25;animated;false;persistent;true]} 27...
+bxc6 (27... Qc7 28. Na7 Qd8 29. Qc8 {This was my idea. Trading off the queens
+and attack the pawns.} 29... Qxc8 30. Nxc8 Bf8 31. b5 {creating passers}) 28.
+dxc6 Nb8?! {[%c_effect
+b8;square;b8;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 29. c7
+Qc8 30. cxb8=R (30. Ba7 {is another option} 30... Nd7 31. Bb6 {Idea: Bring the
+queen to c4 and capture a6}) 30... Qxb8 31. Qc4 {After this move, my opponent
+touched the bishop and blundered f7. In view of that, he resigned.} 1-0
+
+[Event "NTP Training Games"]
+[Site "?"]
+[Date "2026.05.24"]
+[Round "?"]
+[White "Sophie, Judith Supatra"]
+[Black "Lin Yi Christopher"]
+[Result "0-1"]
+[WhiteElo "1702"]
+[BlackElo "1732"]
+[TimeControl "90+30"]
+
+1. e4 e6 2. d4 d5 3. e5 c5 4. c3 Nc6 5. Nf3 Qb6 6. a3 c4 7. Nbd2 Na5 8. Be2 Ne7
+9. Qc2 Bd7 10. O-O Ng6 11. g3 Be7 12. Rb1 Rc8?! {[%c_effect
+c8;square;c8;type;Inaccuracy;persistent;true]} 13. Bd1 Bb5 14. Re1 Qc6 15. Re3
+b6 16. Nf1?! {[%c_effect f1;square;f1;type;Inaccuracy;persistent;true]} 16...
+Bd8?! {[%c_effect d8;square;d8;type;Inaccuracy;persistent;true]} 17. Qe2?!
+{[%c_effect e2;square;e2;type;Inaccuracy;persistent;true]} 17... Ne7 18. Bc2 Ba4
+19. Bxa4 Qxa4 20. N3d2?? {[%c_effect d2;square;d2;type;Blunder;persistent;true]}
+20... g5 ☒ (20... Nf5 21. Rf3 Qc2! {[%c_effect
+c2;square;c2;type;GreatFind;persistent;true]} 22. Ne3 Nxe3! {[%c_effect
+e3;square;e3;type;GreatFind;persistent;true]} 23. Rxe3 Nb3! {[%c_effect
+b3;square;b3;type;GreatFind;persistent;true]}) 21. Qh5 Qc2 22. Kh1 Rc7 23. f4?
+{[%c_effect f4;square;f4;type;Mistake;persistent;true]} 23... Nf5 24. Re1 gxf4
+25. gxf4? {[%c_effect f4;square;f4;type;Mistake;persistent;true]} 25... Rg8 ☒
+({Better was} 25... Bh4! {[%c_effect
+h4;square;h4;type;GreatFind;persistent;true]} 26. Ne3 Nxe3 27. Qxh4 (27. Rxe3
+Nb3) 27... Nb3! {[%c_effect b3;square;b3;type;GreatFind;persistent;true]}) 26.
+Qd1 (26. Qxh7?? {[%c_effect h7;square;h7;type;Blunder;persistent;true]} 26...
+Ng3+! {[%c_effect
+g3;square;g3;type;GreatFind;size;100%25;animated;false;persistent;true]}) 26...
+Qd3 27. Qf3 Bh4? {[%c_effect h4;square;h4;type;Mistake;persistent;true]} 28.
+Qxd3! {[%c_effect
+d3;square;d3;type;GreatFind;size;100%25;animated;false;persistent;true]} 28...
+cxd3 29. Rd1! {[%c_effect
+d1;square;d1;type;GreatFind;size;100%25;animated;false;persistent;true]} 29...
+Bf2 30. Nf3! {[%c_effect f3;square;f3;type;GreatFind;persistent;true]} 30...
+Nh4? {[%c_effect h4;square;h4;type;Mistake;persistent;true]} 31. N1d2 ☒ Nc4 32.
+Rf1! {[%c_effect f1;square;f1;type;GreatFind;persistent;true]} 32... Nxd2 33.
+Bxd2 Nxf3! {[%c_effect f3;square;f3;type;GreatFind;persistent;true]} 34. Rxf2!
+{[%c_effect f2;square;f2;type;GreatFind;persistent;true]} 34... Nh4 35. Rd1 Kd7
+36. Bc1?! {[%c_effect c1;square;c1;type;Inaccuracy;persistent;true]} 36... Kc6
+37. Rxd3 Nf5 {Stopping Rg3} 38. Rg2 Rcc8 39. Kg1 Kb5 (39... a5 {is more accurate
+because after} 40. Kf2? {[%c_effect f2;square;f2;type;Mistake;persistent;true]}
+40... Kb5 (40... a4 ☒ {[%c_effect
+a4;square;a4;type;Miss;size;100%25;animated;false;persistent;true] is also
+another move here} 41. Bd2?! {[%c_effect
+d2;square;d2;type;Inaccuracy;persistent;true]} 41... Kb5 {and the king enters})
+41. b3?! {[%c_effect b3;square;b3;type;Inaccuracy;persistent;true]} 41... a4?!
+{[%c_effect a4;square;a4;type;Inaccuracy;persistent;true]}) 40. b3! {[%c_effect
+b3;square;b3;type;GreatFind;persistent;true]} 40... Rxg2+ 41. Kxg2 Rg8+ 42. Kf2
+a5 {Now it is different as b3 has been played already} 43. a4+ Kc6 44. c4 Rg4
+45. Bd2 h5 46. h3 Rg6?! {[%c_effect
+g6;square;g6;type;Inaccuracy;persistent;true]} (46... Rg8 {is better because it
+is more flexible}) 47. Be1 Rg8 48. c5?! {[%c_effect
+c5;square;c5;type;Inaccuracy;persistent;true]} 48... bxc5 49. dxc5 d4 50. Bxa5
+Kxc5 51. Bd2 Rb8 52. Kf3 Kd5 53. Kf2? {[%c_effect
+f2;square;f2;type;Mistake;persistent;true]} 53... Ke4! {[%c_effect
+e4;square;e4;type;GreatFind;size;100%25;animated;false;persistent;true]} 54. Ke2
+Rg8 55. Rf3?! {[%c_effect f3;square;f3;type;Inaccuracy;persistent;true]} 55...
+Rg2+ 56. Rf2 Ng3+ 57. Ke1 Rg1+! {[%c_effect
+g1;square;g1;type;GreatFind;persistent;true]} 58. Rf1 Rxf1# {[%c_effect
+e4;square;e4;type;Winner;animated;true,e1;square;e1;type;CheckmateWhite;animated;true]}
+0-1
+
+[Event "NTP Training Games"]
+[Site "Bishan Community Club"]
+[Date "2026.05.03"]
+[Round "1"]
+[White "Yu Ziheng"]
+[Black "Lin Yi Christopher"]
+[Result "0-1"]
+[TimeControl "90 min with 30 sec increment"]
+
+1. e4 e6 2. d4 d5 3. exd5 exd5 4. Bd3 Nc6 5. c3 Bd6 6. h3 Nge7 7. Nf3 Bf5 8. O-O
+Qd7 9. Bxf5 Qxf5 10. Be3?! {[%c_effect
+e3;square;e3;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 10...
+O-O-O 11. b4 f6?! {[%c_effect
+f6;square;f6;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 12.
+Nbd2?! {[%c_effect
+d2;square;d2;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 12...
+g5 13. a4 h5 14. Nh2?! {[%c_effect
+h2;square;h2;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 14...
+g4 15. h4 (15. hxg4? {[%c_effect g4;square;g4;type;Mistake;persistent;true]}
+15... Bxh2+ 16. Kxh2 hxg4+! {[%c_effect
+g4;square;g4;type;GreatFind;persistent;true]} 17. Kg1 Qh5) 15... Qd3 16. Nb1
+Qxd1 17. Rxd1 Nf5 18. Nd2 Nxh4 19. Nhf1 Nf5 20. Nb3 Nce7 21. Nc5 Ng6 22. Re1
+Rde8 23. Bd2 Bf4 24. Ne6 Bxd2 25. Nxd2 Re7 {Idea: Stack rooks on e-file and
+trade into a winning endgame} (25... Rh7 {same idea as Re7}) (25... b6 {trying
+to trap the knight but there is} 26. c4 {a liitle annoying. I wanted to play
+safe and go for my idea of stacking rooks.}) 26. Kf1 Rhe8 27. Nc5 Rxe1+ 28. Rxe1
+Rxe1+ 29. Kxe1 h4 30. f3? {[%c_effect
+f3;square;f3;type;Mistake;persistent;true]} 30... g3! {[%c_effect
+g3;square;g3;type;GreatFind;persistent;true] playing easy and simple} (30... h3
+☒ {[%c_effect
+h3;square;h3;type;Miss;size;100%25;animated;false;persistent;true]} 31. gxh3
+g3?! {[%c_effect
+g3;square;g3;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 32.
+Nd3 (32. Kf1? {[%c_effect
+f1;square;f1;type;Mistake;size;100%25;animated;false;persistent;true]} 32... Nf4
+33. Kg1?! {[%c_effect g1;square;g1;type;Inaccuracy;persistent;true]} 33... Ne3
+34. Nf1 Ne2+ 35. Kh1 g2+)) 31. Nd3 Ne3 32. b5 Nxg2+ 33. Kf1 N2f4 34. Ne1 h3 35.
+Kg1 g2 36. Kh2 Nh4 37. Nxg2 hxg2 38. Kg1 Nh3+ 39. Kh2 g1=Q+ 40. Kxh3 Nf5 41. Nf1
+Qxf1+ 42. Kg4 Nd6 43. a5 Qg2+ 44. Kh4 Nf5+ 45. Kh5 Qg5# {[%c_effect
+c8;square;c8;type;Winner;animated;true,h5;square;h5;type;CheckmateWhite;animated;true]}
+0-1
+
+[Event "NTP Training Games"]
+[Site "?"]
+[Date "2026.03.15"]
+[Round "?"]
+[White "Lin Yi Christopher "]
+[Black "Goh Ching Hayk"]
+[Result "1/2-1/2"]
+
+1. e4 c5 2. Nf3 Nc6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 e5 6. Ndb5 d6 7. Bg5 a6 8. Na3
+b5 9. Nd5 Be7 10. Bxf6 Bxf6 11. c3 O-O 12. Nc2 Bg5 13. Be2 Be6 14. Nce3 Bxe3 15.
+Nxe3 Ne7 16. Bg4 Qd7 17. Bxe6 Qxe6 18. O-O Rfd8 19. Qb3 Qxb3 20. axb3 d5 21.
+Nxd5 Nxd5 22. exd5 Rxd5 23. Rfd1 Rad8 24. Rxd5 Rxd5 25. Kf1 Rd6 26. Ke2 f6 27.
+c4 Rd4 $2 {[%c_effect
+d4;square;d4;type;Mistake;keyPressed;undefined;persistent;true]} 28. c5 $9 (28.
+Rxa6 $1 {[%c_effect a6;square;a6;type;GreatFind;persistent;true]} 28... bxc4 29.
+Ra4 $3 {[%c_effect a4;square;a4;type;Brilliant;persistent;true]} 29... cxb3 $2
+{[%c_effect b3;square;b3;type;Mistake;keyPressed;undefined;persistent;true]} 30.
+Rxd4 exd4 31. Kd3 $18 {Capture all pawns}) 28... Rd5 29. b4 Rd4 30. Rc1 Kf7 31.
+c6 Rd8 32. Ra1 Rd4 33. Rc1 Rd8 34. Ra1 Rd4 35. Rc1 {[%c_effect
+f7;square;f7;type;DrawBlack;animated;true,e2;square;e2;type;DrawWhite;animated;true]}
+1/2-1/2
+
+[Event "?"]
+[Site "?"]
+[Date "2026.03.01"]
+[Round "?"]
+[White "Yashika Das"]
+[Black "Lin Yi Christopher"]
+[Result "0-1"]
+
+1. e4 e6 2. d4 d5 3. e5 c5 4. c3 Nc6 5. Nf3 Qb6 6. Bd3 cxd4 7. cxd4 Bd7 8. O-O
+Nge7?! {[%c_effect
+e7;square;e7;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 9. Nc3
+Ng6 ☒ {[%c_effect
+g6;square;g6;type;Miss;size;100%25;animated;false;persistent;true]} 10. Kh1 ☒
+{[%c_effect h1;square;h1;type;Miss;size;100%25;animated;false;persistent;true]}
+10... Be7 11. a3 Nh4? {[%c_effect
+h4;square;h4;type;Mistake;size;100%25;animated;false;persistent;true]} 12. Nxh4
+Bxh4 13. Nb5? {[%c_effect
+b5;square;b5;type;Mistake;size;100%25;animated;false;persistent;true]} 13...
+Be7! {[%c_effect
+e7;square;e7;type;GreatFind;size;100%25;animated;true;persistent;true]} 14. Qg4
+Nb4? {[%c_effect
+b4;square;b4;type;Mistake;size;100%25;animated;false;persistent;true]} 15. Nc7+!
+{[%c_effect
+c7;square;c7;type;GreatFind;size;100%25;animated;true;persistent;true]} 15...
+Qxc7 16. axb4? {[%c_effect
+b4;square;b4;type;Mistake;size;100%25;animated;false;persistent;true]} 16... g6
+17. Bh6 Bxb4 18. f4? {[%c_effect
+f4;square;f4;type;Mistake;size;100%25;animated;false;persistent;true]} 18... a5
+☒ {[%c_effect
+a5;square;a5;type;Miss;size;100%25;animated;false;persistent;true]} 19. Qh3?!
+{[%c_effect
+h3;square;h3;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 19...
+Qb6 20. Bg7 Rg8 21. Qxh7 O-O-O! {[%c_effect
+c8;square;c8;type;GreatFind;size;100%25;animated;true;persistent;true]} 22. Bf6
+Rdf8 23. Rfd1 Kb8?! {[%c_effect
+b8;square;b8;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 24.
+Qh3? {[%c_effect
+h3;square;h3;type;Mistake;size;100%25;animated;false;persistent;true]} 24... Rc8
+☒ {[%c_effect
+c8;square;c8;type;Miss;size;100%25;animated;false;persistent;true]} 25. Qe3?!
+{[%c_effect
+e3;square;e3;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 25...
+Bb5 26. Bxb5? {[%c_effect
+b5;square;b5;type;Mistake;size;100%25;animated;false;persistent;true]} 26...
+Qxb5 27. Qb3? {[%c_effect
+b3;square;b3;type;Mistake;size;100%25;animated;false;persistent;true]} 27... Qe2
+28. Rdc1 Qd2 29. Rd1 Qxf4 30. Qa4 Rc7 31. Qb5 Rgc8 32. Qa4 Rc2 33. Be7?
+{[%c_effect
+e7;square;e7;type;Mistake;size;100%25;animated;false;persistent;true]} 33...
+Rh8!! {[%c_effect
+h8;square;h8;type;Brilliant;size;100%25;animated;false;persistent;true,b8;square;b8;type;Winner;animated;true]}
+0-1
+
+[Event "?"]
+[Site "?"]
+[Date "2026.02.22"]
+[Round "?"]
+[White "Lin Yi Christopher "]
+[Black "Song Sichen"]
+[Result "0-1"]
+
+1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Bc4 Bb4+ 5. c3 dxc3 6. O-O d6 7. Qb3 Qf6 8.
+bxc3 Bc5 9. Be3 Bb6 10. Bb5 Bxe3 11. fxe3 Ne7 12. e5 dxe5 13. Ng5 Qxg5 14. Qxf7+
+Kd8 15. Na3 Bd7 16. Rad1 Qg6 17. Qf3 Kc8 18. Nc4 e4 19. Qf2 Rd8 20. Qf4 a6 21.
+Rd6 cxd6 22. Nxd6+ Qxd6 23. Qxd6 axb5 24. a3 Bf5 25. Qf4 Rxa3 26. g4 Bg6 27. h4
+Nd5 28. Qg5 Nxc3 29. h5 Rd5 30. Qh4 Be8 31. Qf2 Ra2 32. Qf8 Ne2+ 33. Kh2 Re5 34.
+Kh3 g6 35. h6 Re7 36. Qg8 Ra3 37. Kh4 Ne5 38. Qf8 Kd8 39. Rf6 Rd3 40. Rf2 Rxe3
+41. Qf6 Nf3+ 42. Kh3 Ne5+ 43. Kh4 g5+ 44. Kxg5 Nf3+ 45. Rxf3 exf3 46. Qb6+ Kc8
+47. Qc5+ Bc6 48. Qf5+ Kb8 49. Qf8+ Be8 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "2026.01.25"]
+[Round "?"]
+[White "Lin Yi Christopher"]
+[Black "Liew Tze Yu"]
+[Result "1/2-1/2"]
+[Termination "Draw by agreement"]
+
+1. e4 e6 2. d3 d5 3. Nd2 Nf6 4. Ngf3 c5 5. g3 Nc6 6. Bg2 Be7 7. O-O O-O 8. Re1
+b5 9. e5 Nd7 10. Nf1 a5 11. h4 b4 12. h5 h6 13. N1h2 Re8 14. Ng4 f5 15. exf6
+Nxf6 16. Nge5 Nxe5 17. Nxe5 Bd6 18. Bf4 Bb7 19. g4 (19. Bf3 Qc7 20. Qd2 d4 21.
+Bxb7 Qxb7 22. Nc4 Bxf4 23. Qxf4 $16 {Play Re5 and double up rooks(attack e6 pawn)}
+23... Nxh5 $2 {[%c_effect h5;square;h5;type;Mistake;persistent;true] does not
+work} 24. Qh4 $18) 19... Qc7 20. Bg3 Nd7 (20... Rf8 21. Ng6 Bxg3 $3 {[%c_effect
+g3;square;g3;type;Brilliant;persistent;true] sacrifice exchange for huge attack}
+22. fxg3 (22. Nxf8 $4 {[%c_effect f8;square;f8;type;Blunder;persistent;true]}
+22... Bh2+ $1 $19 {[%c_effect h2;square;h2;type;GreatFind;persistent;true]}) 22...
+Qxg3 $3 {[%c_effect g3;square;g3;type;Brilliant;persistent;true]} 23. Nxf8 Nxg4
+24. Nxe6 d4 $1 {[%c_effect d4;square;d4;type;GreatFind;persistent;true]} 25. Qe2
+Qh2+ 26. Kf1 Ne3+ $1 {[%c_effect e3;square;e3;type;GreatFind;persistent;true]} 27.
+Qxe3 Qxg2#) 21. f4 $6 {[%c_effect f4;square;f4;type;Inaccuracy;persistent;true]}
+(21. Qe2 $12) 21... Nxe5 22. fxe5 Be7 23. Bf4 Bh4 24. Rf1 Rf8 25. Qe2 Qe7 26. Kh2
+Bg5 27. Bxg5 Qxg5 28. Kh3 Rad8 29. a3 $133 {I’m trying to create counterplay} 29...
+bxa3 30. Rxf8+ Rxf8 31. Rxa3 Qc1 32. Kh2 Qf4+ 33. Kh3 Qc1 1/2-1/2
+
+[Event "?"]
+[Site "?"]
+[Date "2026.01.18"]
+[Round "?"]
+[White "Lin Yi Christopher"]
+[Black "Raman Kanav"]
+[Result "1-0"]
+
+1. d4 Nf6 2. c4 e6 3. Nc3 Bb4 4. a3 Bxc3+ 5. bxc3 Nc6 6. f3 b6 7. e4 Ba6 8. Bd3
+Na5 9. Qe2 c5 10. d5 e5 11. f4 d6 12. fxe5 dxe5 13. Nf3 Qe7 14. Bg5 h6 15. Bxf6
+Qxf6 16. O-O Qe7 17. Ne1 O-O-O 18. Nc2 g6 19. Ne3 Rhf8 20. Qg4+ Kb8 21. Ra2 h5
+22. Qg3 h4 23. Qf3 Rd6 24. Raf2 Qd7 25. Ng4 Qe7 26. Qe2 f6 27. h3 Bc8 28. Ne3
+Qg7 29. Kh1 Qe7 30. Rf3 f5 31. exf5 e4 32. Nd1 gxf5 33. Bxe4 Re8 $1 {[%c_effect
+e8;square;e8;type;GreatFind;persistent;true]} 34. Re3 fxe4 35. Rf4 Qg5 36. Rfxe4
+Rxe4 37. Rxe4 Rg6 38. Re5 Qf6 39. Re8 Rg7 40. Nf2 Rf7 41. Qg4 Rf8 $4 {[%c_effect
+f8;square;f8;type;Blunder;persistent;true]} 42. Qxc8# {[%c_effect
+h1;square;h1;type;Winner;animated;true,b8;square;b8;type;CheckmateBlack;animated;true]}
+1-0
+
+[Event "?"]
+[Site "?"]
+[Date "2026.01.17"]
+[Round "?"]
+[White "Lin Yi Christopher"]
+[Black "Tanvi Trivedi"]
+[Result "1-0"]
+[Termination "White won by resignation"]
+
+1. d4 d5 2. c4 c6 3. Nf3 Bg4 4. Ne5 Bh5 5. cxd5 cxd5 6. Qb3 Nc6 7. Qxb7 Nxe5 8.
+dxe5 Bg4 9. e4 a6 10. Qxd5 e6 11. Qxd8+ Kxd8 12. Nc3 Ne7 13. f3 Bh5 14. g4 Bg6
+15. f4 h5 16. Be3 hxg4 17. Be2 g3 18. O-O-O+ Ke8 19. hxg3 Bh7 20. Kb1 Rd8 21.
+Rxd8+ Kxd8 22. Bb6+ Ke8 23. Rd1 Nc6 24. Bxa6 Ke7 25. Bb5 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "2025.06.22"]
+[Round "?"]
+[White "Karl Sutanto"]
+[Black "Lin Yi Christopher"]
+[Result "1-0"]
+
+1. e4 e6 2. d4 d5 3. Nd2 c5 4. Ngf3 Nc6 5. exd5 exd5 6. dxc5 Bxc5 7. Nb3 Bb6 8.
+c3 h6 9. h3 Nf6 10. Bd3 O-O 11. O-O Ne4 12. Bc2 Bf5 13. Nbd4 Bg6 14. Re1 Qf6 15.
+Be3 Rfe8 16. Nb3 Bh5 17. Bxb6 axb6 18. Qd3 Ne5 19. Qxd5 Nxf3+ 20. gxf3 Re5 21.
+Qxb7 Rg5+ 22. Kf1 Ng3+ 23. fxg3 Bxf3 24. Qc7 Be4+ 25. Qf4 Rf5 26. Rxe4 g5 27.
+Qxf5 Qxf5+ 28. Kg2 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Lin Yi Christopher"]
+[Black "Yeo Si En Faith"]
+[Result "1-0"]
+
+1. d4 Nf6 2. c4 e6 3. Nc3 Bb4 4. e3 O-O 5. Bd3 b6 6. Ne2 Bb7 7. O-O d5 8. a3 Be7
+9. b4 Nbd7 10. f4 dxc4 11. Bxc4 Ne4 12. Nxe4 Bxe4 13. Ng3 Bb7 14. f5 e5 15. Nh5
+Nf6 16. Bb2 Nxh5 17. Qxh5 exd4 18. Bxd4 Bf6 19. Rad1 Bxd4 20. Rxd4 Qe7 21. Rh4
+Qxe3+ 22. Kh1 h6 23. f6 Qg5 24. Qxg5 hxg5 25. Rg4 gxf6 26. Rxf6 Kg7 27. Rf1 f6
+28. Kg1 Kh6 29. Rd4 Rad8 30. Rxd8 Rxd8 31. Rxf6+ Kh5 {+M5} 32. Bf7+ Kh4 33. g3+
+Kg4 34. Be6+ Kh5 35. g4+ Kh4 36. Rh6# {[%c_effect
+g1;square;g1;type;Winner;animated;true,h4;square;h4;type;CheckmateBlack;animated;true]}
+1-0
+
+[Event "?"]
+[Site "?"]
+[Date "2025.10.11"]
+[Round "?"]
+[White "Lin Yi Christopher"]
+[Black "Tan Xuan Ying Calyn"]
+[Result "1-0"]
+[Termination "White won by resignation"]
+
+1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6 5. Bd3 O-O 6. Nge2 e5 7. d5 Nbd7 8. O-O
+a5 9. h3 Nc5 10. Bc2 Ne8 11. Ng3 c6 12. f4 Bd7 13. f5 Rb8 14. Qg4 cxd5 15. Nxd5
+Nf6 16. Nxf6+ Bxf6 17. Bh6 Re8 18. Rad1 Qb6 19. Kh2 Qxb2 20. Rxd6 Be7 21. Rd2
+Qb4 22. Qf3 f6 23. Nh5 g5 24. Rdd1 Bc6 25. h4 Qxc4 26. hxg5 fxg5 27. f6 Bf8 28.
+f7+ Kh8 29. Qf6+ 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "2025.10.23"]
+[Round "?"]
+[White "Yeo Si En Faith"]
+[Black "Lin Yi Christopher"]
+[Result "0-1"]
+
+1. e4 e6 2. d4 d5 3. Nc3 dxe4 4. Nxe4 Nd7 5. Bg5 Be7 6. Bxe7 Qxe7 7. c3 Ngf6 8.
+Nxf6+ Nxf6 9. Bd3 O-O 10. Nf3 b6 11. O-O Bb7 12. Re1 Rfd8 13. Qc2 Bxf3 14. gxf3
+c5 15. dxc5 Qxc5 16. Kh1 Rd6 17. b4 Qh5 18. Be4 Rad8 19. Re2 Nd5 20. Rd2 f5 21.
+Bxd5 Rxd5 22. Rxd5 Qxf3+ 23. Kg1 Rxd5 24. Qa4 h6 25. Qe8+ Kh7 26. Qxe6 Rd2 27.
+Rf1 Re2 28. Qd6 Re4 29. h3 Qxh3 30. Qh2 Rg4+ 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "2025.11.01"]
+[Round "?"]
+[White "Tan Jingying Sonia"]
+[Black "Lin Yi Christopher"]
+[Result "0-1"]
+
+1. e4 e6 2. d4 d5 3. e5 c5 4. c3 Nc6 5. Nf3 Qb6 6. Na3 Nge7 7. Nc2 h5 8. Bd3 Nf5
+9. O-O Be7 10. Re1 Bd7 11. Bd2 O-O-O 12. a4 Rdg8 13. b4 c4 14. Bxf5 exf5 15. h4
+Qd8 16. g3 f6 17. e6 Be8 18. Ne3 f4 19. Nf5 g5 20. Nxe7+ Qxe7 21. hxg5 fxg5 22.
+gxf4 gxf4+ 23. Kh2 Bg6 24. Bxf4 Be4 25. Bg3 h4 26. Be5 Nxe5 27. dxe5 Qxe6 28.
+Qe2 Rf8 29. Nd4 Qxe5+ 30. Kh3 Rhg8 31. Rg1 Bf5+ 32. Kxh4 Qh2# {[%c_effect
+c8;square;c8;type;Winner;animated;true,h4;square;h4;type;CheckmateWhite;animated;true]}
+0-1
+
+[Event "?"]
+[Site "?"]
+[Date "2025.10.26"]
+[Round "?"]
+[White "Lin Yi Christopher"]
+[Black "Nayudu Vedant"]
+[Result "1/2-1/2"]
+
+1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Bg5 Be7 5. e3 O-O 6. Nf3 h6 7. Bh4 Nbd7 8. Bd3
+c5 9. O-O cxd4 10. exd4 {I felt that when I have IQP I should try to fight for
+initiative and start an attack} 10... dxc4 11. Bxc4 Nb6 12. Bd3 (12. Bb3
+{definitely a better move than Bd3 as it is more flexible. This move supports
+the d5 break and Bb3 might go to c2 and make battery with Qd3}) 12... Nbd5 13.
+Qd2 b6 14. Ne5 Bb7 15. a3 {I thought black might play Bb4 and Rc8, I felt this
+pin is very irritating and a3 also stops Nb4} 15... Rc8 16. f4 {This move helps
+with the in the attack but is also a weakening move as now light squares are
+very weak} 16... Nxc3 17. bxc3 Ne4 {My opponent immediately punished me} 18.
+Bxe4 Bxe4 19. Bxe7 Qxe7 ∓ {Black is already better as the bishop is just better
+than my knight as the bishop controls a lot of squares and my Ne5 can be easily
+kick out with f6} 20. a4 Qc7 21. Ra3 {I wanted to create some counter play} (21.
+Rae1 {is better as the rook lift(Re3 to Rg3) would have helped in the attack})
+21... Rfd8 22. Qe3 Qb7 23. Qg3 Rd5 24. Qh4 {I spent 14 minutes on this move,
+trying to find a way to continue the attack so I thought to play c4 and slide my
+rook to g3 but I completely missed the next move} 24... Bxg2!! {[%c_effect
+g2;square;g2;type;Brilliant;persistent;true]} 25. Rd1 {I am still trying to play
+c4 by protecting the d-pawn} 25... Rdd8 26. c4 Be4 ({If any other move like
+this} 26... Rf8 {would lead white to have compensation and a decisive attack by
+playing the only move} 27. Rg3) 27. Rg3 Kh7 28. Kf2 f6 -+ 29. Rdg1 {Just trying
+to put pressure on the black king} 29... fxe5 30. Rxg7+ Qxg7 31. Rxg7+ Kxg7 32.
+Qe7+ Kh8 33. Qf6+ Kh7 34. Qf7+ Kh8 35. Qf6+ Kh7 36. Qf7+ 1/2-1/2
+
+[Event "?"]
+[Site "?"]
+[Date "2025.10.19"]
+[Round "?"]
+[White "Ng, Zheng He Sherman"]
+[Black "Lin Yi Christopher"]
+[Result "1-0"]
+
+1. e4 e6 2. d4 d5 3. exd5 exd5 4. Bd3 Bd6 5. Ne2 Nf6 6. f3 h6 7. O-O O-O 8. c3
+Qe7 9. Ng3 Bxg3 {I thought Nf5 would be very annoying but white now have two
+bishops} 10. hxg3 ⩲ Re8 11. Kf2 c5 {Striking in the center} 12. Re1 ({If} 12.
+dxc5?? {[%c_effect c5;square;c5;type;Blunder;persistent;true]} 12... Qxc5+ 13.
+Be3 Qxe3#) 12... Qxe1+ {Huge mistake by me as the endgame is just better for
+white because of two bishops} ({I should have played} 12... Be6 13. dxc5 Qxc5+
+14. Be3 Qd6 {Even though I have IQP, his king is very weak} 15. Nd2 {The next
+move is very annoying} 15... Nh5) 13. Qxe1 Rxe1 14. Kxe1 c4 {I thought to get
+counter play on the queenside} 15. Bc2 b5 16. a4 {Trying to undermine} 16... b4
+17. b3 {This move is also undermining} 17... Nc6 18. Bb2 Rb8 19. Nd2 (19. cxb4?
+{[%c_effect b4;square;b4;type;Mistake;persistent;true]} 19... Nxb4 20. Kd2 (20.
+Bd1?? {[%c_effect d1;square;d1;type;Blunder;persistent;true]} 20... Nd3+!
+{[%c_effect d3;square;d3;type;GreatFind;persistent;true]}) 20... Nxc2 21. Kxc2
+Rxb3 ∓ {Black is one pawn up and white lost its bishop pair}) 19... Ba6 20. Kf2
+Ne8 {Trying to bring my knight to help in the attack} 21. bxc4 Bxc4 22. Nxc4
+dxc4 23. Be4 Na5 24. cxb4 Nb3 25. Re1! {[%c_effect
+e1;square;e1;type;GreatFind;persistent;true]} 25... Rxb4 26. Bc2 Nf6 27. d5!
+{[%c_effect d5;square;d5;type;GreatFind;persistent;true]} 27... c3 ({Cannot
+take} 27... Nxd5?? {[%c_effect d5;square;d5;type;Blunder;persistent;true]
+Because of} 28. Re8# {Back rank mate}) 28. Bxc3 Rc4 29. Bxb3 Rxc3 30. Re3 Rxe3
+31. Kxe3 Kf8 32. Kd4 Ke7 33. Kc5! {[%c_effect
+c5;square;c5;type;GreatFind;persistent;true]} 33... Kd7 34. Bc4 g5 35. Bb5+ Kd8
+36. Kc6 g4 37. fxg4 Nxg4 38. Kb7 Ne3 39. d6 Nf5 40. Kxa7 Nxd6 41. Kb8 f6 42. Bc6
+Ke7 43. a5 Nc4 44. a6 Ne5 {Last trick} 45. Bb5 {[%c_effect
+b8;square;b8;type;Winner;animated;true] And I resigned as I cannot stop
+promotion} (45. a7?? {[%c_effect a7;square;a7;type;Blunder;persistent;true]}
+45... Nxc6+ 46. Kb7 Nxa7 47. Kxa7 =) 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "2025.10.12"]
+[Round "?"]
+[White "Lin Yi Christopher "]
+[Black "Claire Chen Ziyi"]
+[Result "0-1"]
+
+1. d4 d5 2. c4 c6 3. Nf3 Nf6 4. Nc3 dxc4 5. a4 Bf5 6. e3 e6 7. Bxc4 Bb4 8. Bd2
+a5 9. O-O O-O 10. Qe2 Nbd7 {She allowed me to play e4} 11. e4 Bg6 12. Bd3 Qe7
+13. e5 Nd5 14. Ne4 {I thought to trade off the dark square bishop and use the
+outpost for my knighr} 14... Bxd2 ({If} 14... Bxe4 {then} 15. Qxe4 {This
+position is just better for me}) 15. Nfxd2 Nf4 {I completely missed this knight
+fork} 16. Qf3 Nxd3 17. Qxd3 {Now this pin is very irretating} 17... c5 {Striking
+in the center} 18. Qg3 $2 {[%c_effect g3;square;g3;type;Mistake;persistent;true] I
+thought to give this pawn and thought I could win it back easily but I was
+wrong} 18... cxd4 19. Rac1 Rac8 20. Nd6 {Now I missed the next move} 20... Rc2 $1
+{[%c_effect c2;square;c2;type;GreatFind;persistent;true]} 21. Rxc2 Bxc2 22. Rc1
+d3 {This pawn and bishop protect each other} 23. N2c4 f6 $1 {[%c_effect
+f6;square;f6;type;GreatFind;persistent;true] She is trying to open up her rook}
+24. f4 fxe5 25. fxe5 Nc5 {Another piece comes in and there is nothing I can do
+about it} 26. Qe3 Nb3 27. Re1 Qh4 28. h3 Nd4 $1 {[%c_effect
+d4;square;d4;type;GreatFind;persistent;true] Threatening Ne2+ and winning my
+rook} 29. Kh2 Ne2 {Now this is completely lost for me} 30. Rxe2 dxe2 31. Qxe2
+Qf4+ 32. Kg1 Qd4+ 33. Kh2 Bd3 {Easiest move to win and I resigned} 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Lin Yi Christopher"]
+[Black "Tan Xuan Ying Calyn"]
+[Result "1-0"]
+
+1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Bg5 Be7 5. e3 h6 6. Bh4 O-O 7. Nf3 b6 8. cxd5
+Nxd5 9. Bxe7 Qxe7 10. Bd3 Nd7?! {[%c_effect
+d7;square;d7;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 11.
+Rc1 c5 12. O-O?! {[%c_effect
+g1;square;g1;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 12...
+Nxc3 13. Rxc3 Bb7 14. Qe2 cxd4 15. Nxd4 Nc5 16. Rfc1 Rac8 17. Bb1 Rfd8?
+{[%c_effect
+d8;square;d8;type;Mistake;size;100%25;animated;false;persistent;true]} 18. b4!
+{[%c_effect
+b4;square;b4;type;GreatFind;size;100%25;animated;true;persistent;true]} 18...
+Na6 19. Rxc8 Rxc8 20. Rxc8+ Bxc8 21. Qc2 Qc7! {[%c_effect
+c7;square;c7;type;GreatFind;size;100%25;animated;true;persistent;true]} 22. Nc6
+g6?? {[%c_effect
+g6;square;g6;type;Blunder;size;100%25;animated;false;persistent;true]} 23. Ne7+!
+{[%c_effect
+e7;square;e7;type;GreatFind;size;100%25;animated;true;persistent;true]} 23...
+Qxe7 24. Qxc8+ Kg7 25. Qxa6 Qxb4 26. Qd3 Qe1+ 27. Qf1 Qd2 28. g3 a5 29. Qd3 Qc1+
+30. Kg2 Qc6+ 31. Qe4 Qb5 32. Bd3 Qc5 33. Qd4+ e5 34. Qxc5 bxc5 35. e4 Kf6 36.
+Kf3 Ke6 37. Ke3 f5 38. Bc4+ Kf6 39. Kd3 f4 40. Bd5 {[%c_effect
+d3;square;d3;type;Winner;animated;true]} 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Lin Yi Christopher"]
+[Black "Si Xu Shane Yeo"]
+[Result "1-0"]
+[BlackElo "1487"]
+
+1. d4 Nf6 2. c4 e6 3. Nc3 Bb4 4. e3 b6 5. Bd3 Bb7 6. Ne2 d5 ☒ {[%c_effect
+d5;square;d5;type;Miss;size;100%25;animated;false;persistent;true]} 7. O-O?!
+{[%c_effect
+g1;square;g1;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 7...
+O-O 8. a3 Be7 9. Ng3?! {[%c_effect
+g3;square;g3;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 9...
+c5 10. dxc5 dxc4 11. Bxc4 Bxc5 12. b4 Be7 13. Qc2?! {[%c_effect
+c2;square;c2;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 13...
+Nc6?! {[%c_effect
+c6;square;c6;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 14.
+Bb2 Ne5 15. Rfd1 Qc7 16. Bf1 Rac8 17. Rac1 Nc4?? {[%c_effect
+c4;square;c4;type;Blunder;size;100%25;animated;false;persistent;true]} 18. Nb5!
+{[%c_effect
+b5;square;b5;type;GreatFind;size;100%25;animated;true;persistent;true]} 18...
+Qb8 19. Bxc4 a6 20. Bxf6! {[%c_effect
+f6;square;f6;type;GreatFind;size;100%25;animated;true;persistent;true]} 20...
+gxf6 (20... Bxf6) 21. Nd4 b5 22. Nxe6!! {[%c_effect
+e6;square;e6;type;Brilliant;size;100%25;animated;true;persistent;true]} 22...
+Rxc4 23. Qf5 fxe6 24. Qxe6+ Rf7 25. Rxc4! {[%c_effect
+c4;square;c4;type;GreatFind;size;100%25;animated;true;persistent;true]} 25...
+bxc4 26. Nf5! {[%c_effect
+f5;square;f5;type;GreatFind;size;100%25;animated;true;persistent;true]} 26...
+Qf8?! {[%c_effect
+f8;square;f8;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 27.
+Rd7 Bc8 28. Nxe7+! {[%c_effect
+e7;square;e7;type;GreatFind;size;100%25;animated;true;persistent;true]} 28...
+Qxe7 29. Qxe7 Rxe7 30. Rxe7 Kf8 31. Rxh7 Bf5 32. Rc7 Bd3 33. h4 f5 34. h5 Ke8
+35. f4 Kd8 36. Rc5 Kd7 37. h6 Kd6?! {[%c_effect
+d6;square;d6;type;Inaccuracy;size;100%25;animated;false;persistent;true]} 38. h7
+a5 39. h8=Q axb4 40. Qe5+ {[%c_effect g1;square;g1;type;Winner;animated;true]}
+1-0
+
+[Event "?"]
+[Site "?"]
+[Date "2025.10.09"]
+[Round "?"]
+[White "Lin Yi Christopher"]
+[Black "Tan Li Ya Leah"]
+[Result "1-0"]
+
+1. d4 Nf6 2. c4 d6 3. Nf3 Nbd7 4. Nc3 e5 5. dxe5 dxe5 6. Bg5 Be7 7. e3 O-O 8.
+Be2 b6 9. O-O Bb7 10. Qc2 Qe8 11. Rfd1 Bb4 12. Nb5 Bd6 13. Nxd6 cxd6 14. Bxf6
+Nxf6 15. Rxd6 Ne4 16. Rdd1 f5 17. Nd2 Ng5 18. c5 Qg6 19. f3 h5 20. cxb6 Rac8 21.
+Qb3+ Kh8 22. bxa7 Ba8 23. Rac1 Rce8 24. Qa3 h4 25. Qa6 Qh7 26. Bb5 Re6 27. Rc8
+Rf6 28. Qxf6 $3 {[%c_effect f6;square;f6;type;Brilliant;persistent;true]} 28...
+gxf6 29. Rxf8+ Kg7 30. Rxa8 h3 31. Re8 hxg2 32. Re7+ 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "2025.10.05"]
+[Round "?"]
+[White "Yogesh, Vivek Shelgaonkar"]
+[Black "Lin, Yi Christopher"]
+[Result "1/2-1/2"]
+
+1. e4 e6 2. d4 d5 3. Nd2 dxe4 4. Nxe4 Nd7 5. Nf3 Be7 6. Bd3 Ngf6 7. O-O O-O 8.
+Bg5 Nxe4 9. Bxe7 Qxe7 ({I saw this line} 9... Nxf2? {[%c_effect
+f2;square;f2;type;Mistake;persistent;true]} 10. Bxd8 Nxd1 11. Bxc7 Nxb2 {But
+looks like white has compensation}) 10. Bxe4 Nf6 11. Bd3 b6 {Get the bishop to
+the nice diagona} 12. Re1 Bb7 13. c3 Rfd8 14. Qe2 c5 {Strike in the center} 15.
+dxc5 Qxc5 16. Rad1 Rd6 {Double rooks} 17. b4 Qc7 18. Nd4? {[%c_effect
+d4;square;d4;type;Mistake;size;100%25;animated;false;persistent;true]} 18... a6
+☒ {[%c_effect
+a6;square;a6;type;Miss;size;100%25;animated;false;persistent;true]} ({I
+calculated this move} 18... Qxc3 19. Nb5 Qc6! {[%c_effect
+c6;square;c6;type;GreatFind;size;100%25;animated;false;persistent;true] the only
+move} 20. f3 Rd7 21. Rc1 Qd5 22. Nc7?! {[%c_effect
+c7;square;c7;type;Inaccuracy;size;100%25;animated;false;persistent;true] but I
+missed} 22... Qd4+! {[%c_effect
+d4;square;d4;type;GreatFind;size;100%25;animated;false;persistent;true]}) 19.
+Nb3 Rad8 20. c4 Qd7 21. Bc2 Qc6 22. f3 Rxd1 23. Rxd1 Rxd1+ 24. Qxd1 g6 {I wanted
+to give space for my king so there will be no back rank issue} 25. Qd8+ Kg7 26.
+Qd4 e5 27. Qc3 h5 {I’m trying to create weaknesses by playing h4 and h3 then his
+king will be weak} 28. Nd2 Qe6 29. Bb3 Qd6 30. a4 h4 31. c5 bxc5 32. bxc5 Qd4+
+33. Qxd4 exd4 34. Bc4 Nd7 35. Nb3 Ne5 (35... h3 {was also an option} 36. Nxd4
+Nxc5) 36. Na5 Nxc4 37. Nxb7 Kf6 {Bring my king to help} 38. c6 Ke6 39. Nc5+ Kd6
+40. Nxa6 Kxc6 41. Nb4+ Kb6 42. f4 Na5 43. Nd3 Nc6 44. Kf2 Ka5 45. Kf3 Kxa4!
+{[%c_effect
+a4;square;a4;type;GreatFind;size;100%25;animated;false;persistent;true]} 46. Kg4
+({If} 46. Ke4 Kb3 {and if} 47. Kd5 Kc3 {black is just in time}) 46... Kb3 47.
+Kxh4 Kc3 48. Nf2 Kd2 49. Kg5 Ke3 50. Nd1+ Ke2 51. Nb2 Kf2 52. f5 Kxg2 53. fxg6
+fxg6 54. h4 Ne5 55. Kf6 Nf3 56. Kxg6 Nxh4+ = 57. Kf6 Kf2 58. Ke5 Nf3+ 59. Kf4
+Nd2 60. Nd3+ Ke2 61. Nc1+ Kd1 62. Nd3 ({last trick} 62. Ke5?? {[%c_effect
+e5;square;e5;type;Blunder;persistent;true]} 62... Nf3+! {[%c_effect
+f3;square;f3;type;GreatFind;persistent;true]} 63. Ke4 Kxc1 64. Kxf3 d3) 62...
+Kc2 63. Nb4+ Kc3 64. Nc6 {[%c_effect
+c3;square;c3;type;DrawBlack;animated;true,f4;square;f4;type;DrawWhite;animated;true]}
+1/2-1/2

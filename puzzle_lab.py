@@ -134,7 +134,7 @@ def generate_puzzles(core, pgn_text: str, player_name: str) -> dict:
                 continue
             rollup = core.analyze_game(
                 conn, _dedup_hash(headers, moves), moves,
-                getattr(core, "ENGINE_DEPTH", 16), allow_engine=True, force=True,
+                min(getattr(core, "ENGINE_DEPTH", 16), 12), allow_engine=True, force=True,
             )
             if not rollup:
                 continue
@@ -285,7 +285,7 @@ function puzzleEnsureReady(){const s=document.getElementById('puzzleStatus');if(
 async function puzzleGenerate(){
  if(PUZZLE.busy)return;const player=(document.getElementById('puzzlePlayer').value||'').trim(),file=document.getElementById('puzzleFile').files[0],pasted=document.getElementById('puzzlePgn').value||'',status=document.getElementById('puzzleStatus'),btn=document.getElementById('puzzleGenerate');
  if(!player){toast('Enter the player name from the PGN headers.','error');return}if(!file&&!pasted.trim()){toast('Choose a PGN file or paste PGN text.','error');return}
- PUZZLE.busy=true;btn.disabled=true;status.innerHTML='<span class="spinner"></span>Analyzing games at depth 16…';document.getElementById('puzzleResults').innerHTML='';
+ PUZZLE.busy=true;btn.disabled=true;status.innerHTML='<span class="spinner"></span>Analyzing games at depth 12…';document.getElementById('puzzleResults').innerHTML='';
  try{let opts;if(file){const f=new FormData();f.append('pgn_text',file,file.name);f.append('player_name',player);opts={method:'POST',body:f}}else opts={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pgn_text:pasted,player_name:player})};
   const data=await api('/api/puzzle/generate',opts);PUZZLE.items=data.puzzles||[];PUZZLE.index=0;PUZZLE.reveal=false;status.textContent='Analyzed '+data.games_analyzed+' of '+data.games_matched+' matched game(s); generated '+PUZZLE.items.length+' puzzle(s).';
   if(!PUZZLE.items.length)document.getElementById('puzzleResults').innerHTML='<div class="card"><p>No moves crossed the 50 cp inaccuracy threshold in the analyzed range.</p></div>';else puzzleRender();
