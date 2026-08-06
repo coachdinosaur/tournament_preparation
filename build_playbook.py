@@ -23,6 +23,7 @@ TITLE = "Dino Ballecer — Round-by-Round Game Preparation"
 # Section headings that should start a new page (matched by prefix).
 BREAK_BEFORE = (
     "Tournament-Wide Gates",
+    "Systems Library",
     "Round 1", "Round 2", "Round 3", "Round 4", "Round 5",
     "Round 6", "Round 7", "Round 8", "Round 9",
     "Appendix",

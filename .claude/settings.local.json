@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "PowerShell(python -c \"import docx; print\\(docx.__version__\\)\")"
-    ]
-  }
-}

@@ -10,8 +10,8 @@ Recommendations are based on the improved seed reports, opponent dossiers, and g
 
 | Round / Date | Time · Bd | Color | Opponent | Rtg | Opening intention & priority |
 |---|---|---|---|---:|---|
-| R1 · Mon Jun 22 | 16:00 · B4 | Black | GM Thejkumar, M. S. (IND) | 2358 | Slav/Semi-Slav structure; develop cleanly and make the `...c5` or `...e5` break |
-| R2 · Tue Jun 23 | 10:00 · B2 | White | IM Morris, James (AUS) | 2423 | `1.e4`; sidestep his preferred Nimzowitsch line and steer the French toward an IQP/endgame |
+| R1 · Mon Jun 22 | 16:00 · B4 | Black | GM Thejkumar, M. S. (IND) | 2358 | **1–0, completed.** Slav Defense, Semi-Slav (`5.e3 a6`); 46 moves |
+| R2 · Tue Jun 23 | 10:00 · B2 | White | IM Morris, James (AUS) | 2423 | **0–1, completed.** Pirc Defense, Quiet Center (`5.Nc3 O-O`); 69 moves |
 
 ## Tournament-Wide Gates
 

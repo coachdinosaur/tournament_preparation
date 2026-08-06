@@ -1,114 +1,103 @@
 # Opponent Dossier — FM Ang, Ern Jie Anderson
 
-*Generated 2026-06-14 from 100 games (100 over-the-board PGN, 0 Lichess online).*
+*Generated 2026-06-23 from 102 games (102 over-the-board PGN, 0 Lichess online).*
 
 **Title:** FM | **Federation:** MAS | **FIDE:** 2309
 
-**Overall record on file:** 40W 30D 30L (55.0%)
+**Tournament pairing:** Round 7, Friday, June 26 at 10:00, Board 3 — Dino has White.
 
-## Repertoire as White (51 games, 62.7%)
+**Overall record on file:** 40W 32D 30L (54.9%, reliable 50.0%)
 
-| Opening | ECO | Games | W-D-L | Score |
-|---|---|---:|---|---:|
-| Catalan Opening: Closed | E01 | 4 | 1-1-2 | 37.5% |
-| King's Indian Attack | A07 | 4 | 1-1-2 | 37.5% |
-| Slav Defense: Modern Line | D11 | 4 | 1-2-1 | 50.0% |
-| Benoni Defense: Fianchetto Variation | A62 | 3 | 1-2-0 | 66.7% |
-| King's Indian Defense: Fianchetto Variation, Uhlmann-Szabo System | E62 | 3 | 3-0-0 | 100.0% |
-| Catalan Opening | E00 | 2 | 0-2-0 | 50.0% |
-| Catalan Opening: Open Defense | E04 | 2 | 1-0-1 | 50.0% |
-| King's Indian Attack: Sicilian Variation | A08 | 2 | 2-0-0 | 100.0% |
-| King's Indian Attack: Spassky Variation | A05 | 2 | 0-1-1 | 25.0% |
-| Queen's Pawn Game: Modern Defense | A40 | 2 | 1-0-1 | 50.0% |
-| Zukertort Opening: Sicilian Invitation | A04 | 2 | 1-0-1 | 50.0% |
-| Benoni Defense: Czech Benoni Defense | A56 | 1 | 1-0-0 | 100.0% |
+## Repertoire as White (52 games, 62.5%)
+
+| Opening | ECO | Games | W-D-L | Score | Reliable | Confidence |
+|---|---|---:|---|---:|---:|---|
+| Catalan Opening: Closed | E01 | 4 | 1-1-2 | 37.5% | 18.2% | medium |
+| King's Indian Attack | A07 | 4 | 1-1-2 | 37.5% | 18.2% | medium |
+| Slav Defense: Modern Line | D11 | 4 | 1-2-1 | 50.0% | 27.6% | medium |
+| Benoni Defense: Fianchetto Variation | A62 | 3 | 1-2-0 | 66.7% | 38.6% | low |
+| King's Indian Defense: Fianchetto Variation, Uhlmann-Szabo System | E62 | 3 | 3-0-0 | 100.0% | 75.0% | low |
+| Catalan Opening | E00 | 2 | 0-2-0 | 50.0% | 21.1% | low |
+| Catalan Opening: Open Defense | E04 | 2 | 1-0-1 | 50.0% | 21.1% | low |
+| King's Indian Attack: Sicilian Variation | A08 | 2 | 2-0-0 | 100.0% | 66.7% | low |
+| King's Indian Attack: Spassky Variation | A05 | 2 | 0-1-1 | 25.0% | 7.0% | low |
+| King's Indian Defense: Fianchetto Variation, Immediate Fianchetto | E60 | 2 | 1-1-0 | 75.0% | 40.3% | low |
+| Queen's Pawn Game: Modern Defense | A40 | 2 | 1-0-1 | 50.0% | 21.1% | low |
+| Zukertort Opening: Sicilian Invitation | A04 | 2 | 1-0-1 | 50.0% | 21.1% | low |
 
 
-## Repertoire as Black (49 games, 46.9%)
+## Repertoire as Black (50 games, 47.0%)
 
-| Opening | ECO | Games | W-D-L | Score |
-|---|---|---:|---|---:|
-| Sicilian Defense: Accelerated Dragon, Maróczy Bind | B36 | 5 | 1-3-1 | 50.0% |
-| Slav Defense: Quiet Variation, Schallopp Defense | D12 | 3 | 0-1-2 | 16.7% |
-| English Opening: Symmetrical Variation, Fianchetto Variation | A34 | 2 | 0-1-1 | 25.0% |
-| Italian Game: Giuoco Pianissimo, Italian Four Knights Variation | C50 | 2 | 1-0-1 | 50.0% |
-| Ruy Lopez: Closed, Anti-Marshall | C88 | 2 | 1-0-1 | 50.0% |
-| Ruy Lopez: Closed, Breyer Defense, Zaitsev Hybrid | C95 | 2 | 0-1-1 | 25.0% |
-| Ruy Lopez: Morphy Defense, Anderssen Variation | C77 | 2 | 0-0-2 | 0.0% |
-| Sicilian Defense: Closed, Traditional | B23 | 2 | 1-0-1 | 50.0% |
-| Slav Defense: Exchange Variation | D10 | 2 | 0-2-0 | 50.0% |
-| Zukertort Opening | A05 | 2 | 2-0-0 | 100.0% |
-| English Opening: Symmetrical Variation | A30 | 1 | 1-0-0 | 100.0% |
-| English Opening: Symmetrical Variation, Three Knights, Fianchetto Variation | A37 | 1 | 1-0-0 | 100.0% |
+| Opening | ECO | Games | W-D-L | Score | Reliable | Confidence |
+|---|---|---:|---|---:|---:|---|
+| Sicilian Defense: Accelerated Dragon, Maróczy Bind | B36 | 5 | 1-3-1 | 50.0% | 29.6% | medium |
+| Slav Defense: Quiet Variation, Schallopp Defense | D12 | 3 | 0-1-2 | 16.7% | 4.6% | low |
+| English Opening: Symmetrical Variation, Fianchetto Variation | A34 | 2 | 0-1-1 | 25.0% | 7.0% | low |
+| Italian Game: Giuoco Pianissimo, Italian Four Knights Variation | C50 | 2 | 1-0-1 | 50.0% | 21.1% | low |
+| Ruy Lopez: Closed, Anti-Marshall | C88 | 2 | 1-0-1 | 50.0% | 21.1% | low |
+| Ruy Lopez: Closed, Breyer Defense, Zaitsev Hybrid | C95 | 2 | 0-1-1 | 25.0% | 7.0% | low |
+| Ruy Lopez: Morphy Defense, Anderssen Variation | C77 | 2 | 0-0-2 | 0.0% | 0.0% | low |
+| Sicilian Defense: Closed, Traditional | B23 | 2 | 1-0-1 | 50.0% | 21.1% | low |
+| Slav Defense: Exchange Variation | D10 | 2 | 0-2-0 | 50.0% | 21.1% | low |
+| Slav Indian | A50 | 2 | 0-2-0 | 50.0% | 21.1% | low |
+| Zukertort Opening | A05 | 2 | 2-0-0 | 100.0% | 66.7% | low |
+| English Opening: Symmetrical Variation | A30 | 1 | 1-0-0 | 100.0% | 50.0% | low |
 
 
 ## Core Structure Families
 
-| Core Structure Family | Games | W-D-L | Score |
-|---|---:|---|---:|
-| Advance Caro-Kann | 0 | — | — |
-| Reversed-Sicilian / Flank Annexation | 11 | 5-3-3 | 59.1% |
-| Fianchetto KID / Grünfeld Complexes | 16 | 9-2-5 | 62.5% |
-| Catalan / Réti Squeeze | 35 | 14-13-8 | 58.6% |
-| Anti-Sicilian Counter-Package | 3 | 1-0-2 | 33.3% |
-| IQP / Panov Attack | 2 | 2-0-0 | 100.0% |
+| Core Structure Family | Games | W-D-L | Score | Reliable | Confidence |
+|---|---:|---|---:|---:|---|
+| Advance Caro-Kann | 0 | — | — | — | — |
+| Reversed-Sicilian / Flank Annexation | 11 | 5-3-3 | 59.1% | 44.1% | medium |
+| Fianchetto KID / Grünfeld Complexes | 17 | 9-3-5 | 61.8% | 49.6% | high |
+| Catalan / Réti Squeeze | 35 | 14-13-8 | 58.6% | 50.1% | high |
+| Anti-Sicilian Counter-Package | 3 | 1-0-2 | 33.3% | 13.6% | low |
+| IQP / Panov Attack | 2 | 2-0-0 | 100.0% | 66.7% | low |
 
 
 ## Engine fingerprint
 
-*From 100 analysed game(s) at depth 12. Average centipawn loss (ACPL) — lower is more accurate.*
-
-- **Overall ACPL:** 23.0 (opening 8.7, middlegame 20.0, endgame 30.1)
-- **Serious errors on file:** 37 blunders, 94 mistakes, 223 inaccuracies
-- **Target structures (least accurate):** *Anti-Sicilian Counter-Package*, *Catalan / Réti Squeeze*
-- **Avoid — they are solid here (most accurate):** *IQP / Panov Attack*, *Reversed-Sicilian / Flank Annexation*
-
-| Structure family | Moves | ACPL | Serious errors |
-|---|---:|---:|---:|
-| Anti-Sicilian Counter-Package | 80 | 70.2 | 14 |
-| Catalan / Réti Squeeze | 1133 | 20.3 | 33 |
-| Fianchetto KID / Grünfeld Complexes | 524 | 19.3 | 22 |
-| Reversed-Sicilian / Flank Annexation | 334 | 17.0 | 8 |
-| IQP / Panov Attack | 64 | 12.5 | 0 |
+_Engine fingerprint unavailable — no Stockfish binary configured (set PREP_STOCKFISH or drop one in ./stockfish/)._
 
 
 ## Player Profile
 
-*From 100 analysed game(s) at depth 12. Overall ACPL 23.0 — opening 8.7, middlegame 20.0, endgame 30.1.*
+*From 100 analysed game(s) at depth 16. Overall ACPL 22.9 — opening 8.4, middlegame 20.1, endgame 29.9.*
 
-- **Mistakes on file:** 37 blunders, 94 mistakes, 223 inaccuracies
+- **Mistakes on file:** 21 blunders, 96 mistakes, 229 inaccuracies
 - **Opening breadth:** 65 distinct openings
-- **Confidence lines:** King's Indian Defense: Fianchetto Variation, Uhlmann-Szabo System (100.0% over 3 games), Benoni Defense: Fianchetto Variation (66.7% over 3 games)
-- **Repair lines:** Ruy Lopez: Morphy Defense, Anderssen Variation (0.0% over 2 games), Slav Defense: Quiet Variation, Schallopp Defense (16.7% over 3 games), English Opening: Symmetrical Variation, Fianchetto Variation (25.0% over 2 games)
+- **Confidence lines:** King's Indian Defense: Fianchetto Variation, Uhlmann-Szabo System (100.0%, reliable 75.0% over 3 games)
+- **Repair lines:** Ruy Lopez: Morphy Defense, Anderssen Variation (0.0%, reliable 0.0% over 2 games), Slav Defense: Quiet Variation, Schallopp Defense (16.7%, reliable 4.6% over 3 games), English Opening: Symmetrical Variation, Fianchetto Variation (25.0%, reliable 7.0% over 2 games)
 
 ### Data-backed tendencies
 
-- **Opening breadth** (high confidence): Broad: 65 distinct openings across 100 games.
-- **Risk tendency** (high confidence): High tactical volatility: 131 blunders/mistakes in 100 analysed games.
-- **Phase stability** (high confidence): Least accurate phase: endgame ACPL 30.1; best phase: opening ACPL 8.7.
-- **Conversion reliability** (medium confidence): 1 conversion-failure sample(s) among 7 classified endgame/late-simplified samples.
-- **Drawing-defense reliability** (medium confidence): 2 drawing-defense failure sample(s) among 7 classified endgame/late-simplified samples.
-- **Confidence lines** (medium confidence): King's Indian Defense: Fianchetto Variation, Uhlmann-Szabo System (100.0%/3g), Benoni Defense: Fianchetto Variation (66.7%/3g)
+- **Opening breadth** (high confidence): Broad: 65 distinct openings across 102 games.
+- **Risk tendency** (high confidence): High tactical volatility: 117 blunders/mistakes in 100 analysed games.
+- **Phase stability** (high confidence): Least accurate phase: endgame ACPL 29.9; best phase: opening ACPL 8.4.
+- **Conversion reliability** (medium confidence): 4 conversion-failure sample(s) among 12 classified endgame/late-simplified samples.
+- **Drawing-defense reliability** (medium confidence): 5 drawing-defense failure sample(s) among 12 classified endgame/late-simplified samples.
+- **Confidence lines** (low confidence): King's Indian Defense: Fianchetto Variation, Uhlmann-Szabo System (100.0%, reliable 75.0%/3g)
 
 ### Endgame / simplified-position weakness categories
 
 | Category | Samples | Evidence |
 |---|---:|---|
-| Philidor | 3 | The rook-and-pawn structure resembles a Philidor defense.; The move turned a winning position into a non-winning one. |
-| Drawing defense failure | 2 | The move turned a drawable position into a losing one. |
-| Conversion failure | 1 | The rook-and-pawn structure resembles a Philidor defense.; The move turned a winning position into a non-winning one. |
+| Drawing defense failure | 5 | The engine score changed from drawable to losing.; The move turned a drawable position into a losing one. |
+| Conversion failure | 4 | The engine score changed from winning to non-winning.; The rook-and-pawn structure resembles a Philidor defense.; The move turned a winning position into a non-winning one. |
+| Philidor | 2 | The rook-and-pawn structure resembles a Philidor defense.; The move turned a winning position into a non-winning one. |
 | Rook activity | 1 | The rook became passive after the move. |
 
 ### Sample positions
 
-| Game | Move | Severity | Category | Engine prefers |
-|---|---|---|---|---|
-| vs Zakhartsov,Vladimir | 34...Nc5+ | blunder | Philidor, Conversion failure | Nd3-b2 |
-| vs Liu,Casper Yukun | 31...Bd3 | blunder | Drawing defense failure | h7-h5 |
-| vs Jyotshnav,Talukdar | 30...Bc2 | mistake | Philidor | e6-e5 |
-| vs Chan,Kim Yew | 39...f6+ | mistake | Philidor | Be1-d2 |
-| vs Piliposyan,Robert | 37...Rg8 | mistake | Rook activity | Nc8xb6 |
-| vs Azhar,Muhd Syakir Shazmee | 33...Ra6 | inaccuracy | Drawing defense failure | Ra8-f8 |
+| Game | Move | Severity | Practical loss | Category | Engine prefers |
+|---|---|---|---:|---|---|
+| vs Polschikov,Alexey | 23.Rc2 | blunder | 39.7 pts | Drawing defense failure | Rc1xc6 |
+| vs Polschikov,Alexey | 26.Rc6 | blunder | 37.3 pts | Conversion failure | Qb6-b4 |
+| vs Zakhartsov,Vladimir | 34...Nc5+ | blunder | 35.3 pts | Philidor, Conversion failure | Nd3-b2 |
+| vs Liu,Casper Yukun | 31...Bd3 | blunder | 20.1 pts | Drawing defense failure | h7-h5 |
+| vs Mohammad,Nubairshah Shaikh | 29...a2 | mistake | 16.6 pts | Conversion failure | Nc5-e4 |
+| vs Jyotshnav,Talukdar | 30...Bc2 | mistake | 11.6 pts | Philidor | e6-e5 |
 
 
 ## Prep pointers

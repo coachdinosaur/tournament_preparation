@@ -1,115 +1,104 @@
 # Opponent Dossier — GM Shyaam, Nikhil P
 
-*Generated 2026-06-14 from 101 games (101 over-the-board PGN, 0 Lichess online).*
+*Generated 2026-06-23 from 103 games (103 over-the-board PGN, 0 Lichess online).*
 
 **Title:** GM | **Federation:** IND | **FIDE:** 2435
 
-**Overall record on file:** 44W 43D 14L (64.9%)
+**Tournament pairing:** Round 5, Wednesday, June 24 at 16:00, Board 4 — Dino has White.
 
-## Repertoire as White (49 games, 71.4%)
+**Overall record on file:** 44W 45D 14L (64.6%, reliable 59.7%)
 
-| Opening | ECO | Games | W-D-L | Score |
-|---|---|---:|---|---:|
-| Zukertort Opening | A05 | 4 | 4-0-0 | 100.0% |
-| King's Indian Attack | A07 | 3 | 2-0-1 | 66.7% |
-| King's Indian Attack, with e6 | A07 | 3 | 3-0-0 | 100.0% |
-| Nimzo-Larsen Attack: Classical Variation | A06 | 3 | 1-2-0 | 66.7% |
-| Sicilian Defense: Najdorf Variation, Adams Attack | B90 | 3 | 0-3-0 | 50.0% |
-| Nimzo-Larsen Attack: Indian Variation | A01 | 2 | 2-0-0 | 100.0% |
-| Alekhine Defense: Modern Variation, Larsen Variation | B04 | 1 | 0-1-0 | 50.0% |
-| Caro-Kann Defense: Apocalypse Attack | B10 | 1 | 1-0-0 | 100.0% |
-| Caro-Kann Defense: Endgame Offer | B10 | 1 | 0-1-0 | 50.0% |
-| Dutch Defense: Blackburne Variation | A81 | 1 | 1-0-0 | 100.0% |
-| English Opening: Anglo-Indian Defense, King's Indian Formation | A15 | 1 | 1-0-0 | 100.0% |
-| English Opening: Symmetrical Variation, Rubinstein Variation | A34 | 1 | 0-1-0 | 50.0% |
+## Repertoire as White (50 games, 71.0%)
+
+| Opening | ECO | Games | W-D-L | Score | Reliable | Confidence |
+|---|---|---:|---|---:|---:|---|
+| Zukertort Opening | A05 | 4 | 4-0-0 | 100.0% | 80.0% | medium |
+| King's Indian Attack | A07 | 3 | 2-0-1 | 66.7% | 38.6% | low |
+| King's Indian Attack, with e6 | A07 | 3 | 3-0-0 | 100.0% | 75.0% | low |
+| Nimzo-Larsen Attack: Classical Variation | A06 | 3 | 1-2-0 | 66.7% | 38.6% | low |
+| Sicilian Defense: Najdorf Variation, Adams Attack | B90 | 3 | 0-3-0 | 50.0% | 25.0% | low |
+| Nimzo-Larsen Attack: Indian Variation | A01 | 2 | 2-0-0 | 100.0% | 66.7% | low |
+| Alekhine Defense: Modern Variation, Larsen Variation | B04 | 1 | 0-1-0 | 50.0% | 14.6% | low |
+| Caro-Kann Defense: Apocalypse Attack | B10 | 1 | 1-0-0 | 100.0% | 50.0% | low |
+| Caro-Kann Defense: Endgame Offer | B10 | 1 | 0-1-0 | 50.0% | 14.6% | low |
+| Caro-Kann Defense: Endgame Variation | B10 | 1 | 0-1-0 | 50.0% | 14.6% | low |
+| Dutch Defense: Blackburne Variation | A81 | 1 | 1-0-0 | 100.0% | 50.0% | low |
+| English Opening: Anglo-Indian Defense, King's Indian Formation | A15 | 1 | 1-0-0 | 100.0% | 50.0% | low |
 
 
-## Repertoire as Black (52 games, 58.7%)
+## Repertoire as Black (53 games, 58.5%)
 
-| Opening | ECO | Games | W-D-L | Score |
-|---|---|---:|---|---:|
-| Sicilian Defense: Najdorf Variation | B94 | 4 | 1-1-2 | 37.5% |
-| King's Indian Attack: Symmetrical Defense | A05 | 2 | 0-1-1 | 25.0% |
-| Nimzo-Indian Defense: Rubinstein System | E40 | 2 | 2-0-0 | 100.0% |
-| Queen's Gambit Accepted: Classical Defense, Main Line | D27 | 2 | 1-1-0 | 75.0% |
-| Sicilian Defense: Prins Variation | B54 | 2 | 2-0-0 | 100.0% |
-| Bird Opening: Dutch Variation | A03 | 1 | 0-1-0 | 50.0% |
-| Bogo-Indian Defense: Nimzowitsch Variation | E11 | 1 | 1-0-0 | 100.0% |
-| Catalan Opening | E00 | 1 | 0-1-0 | 50.0% |
-| English Opening: Anglo-Indian Defense | A15 | 1 | 1-0-0 | 100.0% |
-| English Opening: Anglo-Indian Defense, King's Knight Variation | A15 | 1 | 1-0-0 | 100.0% |
-| English Opening: Great Snake Variation | A10 | 1 | 0-1-0 | 50.0% |
-| English Opening: King's English Variation | A20 | 1 | 0-1-0 | 50.0% |
+| Opening | ECO | Games | W-D-L | Score | Reliable | Confidence |
+|---|---|---:|---|---:|---:|---|
+| Sicilian Defense: Najdorf Variation | B94 | 4 | 1-1-2 | 37.5% | 18.2% | medium |
+| King's Indian Attack: Symmetrical Defense | A05 | 2 | 0-1-1 | 25.0% | 7.0% | low |
+| Nimzo-Indian Defense: Rubinstein System | E40 | 2 | 2-0-0 | 100.0% | 66.7% | low |
+| Queen's Gambit Accepted: Classical Defense, Main Line | D27 | 2 | 1-1-0 | 75.0% | 40.3% | low |
+| Sicilian Defense: Prins Variation | B54 | 2 | 2-0-0 | 100.0% | 66.7% | low |
+| Bird Opening: Dutch Variation | A03 | 1 | 0-1-0 | 50.0% | 14.6% | low |
+| Bogo-Indian Defense: Nimzowitsch Variation | E11 | 1 | 1-0-0 | 100.0% | 50.0% | low |
+| Catalan Opening | E00 | 1 | 0-1-0 | 50.0% | 14.6% | low |
+| English Opening: Anglo-Indian Defense | A15 | 1 | 1-0-0 | 100.0% | 50.0% | low |
+| English Opening: Anglo-Indian Defense, King's Knight Variation | A15 | 1 | 1-0-0 | 100.0% | 50.0% | low |
+| English Opening: Great Snake Variation | A10 | 1 | 0-1-0 | 50.0% | 14.6% | low |
+| English Opening: King's English Variation | A20 | 1 | 0-1-0 | 50.0% | 14.6% | low |
 
 
 ## Core Structure Families
 
-| Core Structure Family | Games | W-D-L | Score |
-|---|---:|---|---:|
-| Advance Caro-Kann | 0 | — | — |
-| Reversed-Sicilian / Flank Annexation | 14 | 10-2-2 | 78.6% |
-| Fianchetto KID / Grünfeld Complexes | 1 | 0-1-0 | 50.0% |
-| Catalan / Réti Squeeze | 22 | 15-5-2 | 79.5% |
-| Anti-Sicilian Counter-Package | 12 | 5-6-1 | 66.7% |
-| IQP / Panov Attack | 2 | 1-1-0 | 75.0% |
+| Core Structure Family | Games | W-D-L | Score | Reliable | Confidence |
+|---|---:|---|---:|---:|---|
+| Advance Caro-Kann | 0 | — | — | — | — |
+| Reversed-Sicilian / Flank Annexation | 14 | 10-2-2 | 78.6% | 65.9% | high |
+| Fianchetto KID / Grünfeld Complexes | 2 | 0-2-0 | 50.0% | 21.1% | low |
+| Catalan / Réti Squeeze | 22 | 15-5-2 | 79.5% | 69.8% | high |
+| Anti-Sicilian Counter-Package | 12 | 5-6-1 | 66.7% | 52.2% | high |
+| IQP / Panov Attack | 2 | 1-1-0 | 75.0% | 40.3% | low |
 
 
 ## Engine fingerprint
 
-*From 101 analysed game(s) at depth 12. Average centipawn loss (ACPL) — lower is more accurate.*
-
-- **Overall ACPL:** 14.5 (opening 9.9, middlegame 13.2, endgame 17.0)
-- **Serious errors on file:** 8 blunders, 43 mistakes, 173 inaccuracies
-- **Target structures (least accurate):** *Anti-Sicilian Counter-Package*, *Fianchetto KID / Grünfeld Complexes*
-- **Avoid — they are solid here (most accurate):** *Reversed-Sicilian / Flank Annexation*, *IQP / Panov Attack*
-
-| Structure family | Moves | ACPL | Serious errors |
-|---|---:|---:|---:|
-| Anti-Sicilian Counter-Package | 425 | 14.6 | 7 |
-| Fianchetto KID / Grünfeld Complexes | 19 | 13.1 | 0 |
-| Catalan / Réti Squeeze | 718 | 13.1 | 8 |
-| IQP / Panov Attack | 66 | 12.9 | 1 |
-| Reversed-Sicilian / Flank Annexation | 442 | 12.3 | 2 |
+_Engine fingerprint unavailable — no Stockfish binary configured (set PREP_STOCKFISH or drop one in ./stockfish/)._
 
 
 ## Player Profile
 
 *From 101 analysed game(s) at depth 12. Overall ACPL 14.5 — opening 9.9, middlegame 13.2, endgame 17.0.*
 
-- **Mistakes on file:** 8 blunders, 43 mistakes, 173 inaccuracies
-- **Opening breadth:** 79 distinct openings
-- **Confidence lines:** Zukertort Opening (100.0% over 4 games), King's Indian Attack, with e6 (100.0% over 3 games), King's Indian Attack (66.7% over 3 games)
-- **Repair lines:** King's Indian Attack: Symmetrical Defense (25.0% over 2 games), Sicilian Defense: Najdorf Variation (37.5% over 4 games)
+- **Mistakes on file:** 2 blunders, 45 mistakes, 177 inaccuracies
+- **Opening breadth:** 81 distinct openings
+- **Confidence lines:** Zukertort Opening (100.0%, reliable 80.0% over 4 games), King's Indian Attack, with e6 (100.0%, reliable 75.0% over 3 games)
+- **Repair lines:** King's Indian Attack: Symmetrical Defense (25.0%, reliable 7.0% over 2 games), Sicilian Defense: Najdorf Variation (37.5%, reliable 18.2% over 4 games), Trompowsky Attack (50.0%, reliable 21.1% over 2 games)
 
 ### Data-backed tendencies
 
-- **Opening breadth** (high confidence): Broad: 79 distinct openings across 101 games.
-- **Risk tendency** (high confidence): Moderate tactical volatility: 51 blunders/mistakes in 101 analysed games.
+- **Opening breadth** (high confidence): Broad: 81 distinct openings across 103 games.
+- **Risk tendency** (high confidence): Moderate tactical volatility: 47 blunders/mistakes in 101 analysed games.
 - **Phase stability** (high confidence): Least accurate phase: endgame ACPL 17.0; best phase: opening ACPL 9.9.
-- **Conversion reliability** (medium confidence): 5 conversion-failure sample(s) among 18 classified endgame/late-simplified samples.
-- **Drawing-defense reliability** (medium confidence): 3 drawing-defense failure sample(s) among 18 classified endgame/late-simplified samples.
-- **Confidence lines** (medium confidence): Zukertort Opening (100.0%/4g), King's Indian Attack, with e6 (100.0%/3g), King's Indian Attack (66.7%/3g)
+- **Conversion reliability** (medium confidence): 5 conversion-failure sample(s) among 17 classified endgame/late-simplified samples.
+- **Drawing-defense reliability** (medium confidence): 3 drawing-defense failure sample(s) among 17 classified endgame/late-simplified samples.
+- **Confidence lines** (medium confidence): Zukertort Opening (100.0%, reliable 80.0%/4g), King's Indian Attack, with e6 (100.0%, reliable 75.0%/3g)
 
 ### Endgame / simplified-position weakness categories
 
 | Category | Samples | Evidence |
 |---|---:|---|
 | Conversion failure | 5 | The move turned a winning position into a non-winning one.; The rook-and-pawn structure resembles a Philidor defense.; A passed pawn was present but the rook was not behind it. |
-| Philidor | 5 | The rook-and-pawn structure resembles a Philidor defense.; The move turned a winning position into a non-winning one.; A passed pawn was present but the rook was not behind it. |
+| Philidor | 4 | The rook-and-pawn structure resembles a Philidor defense.; The move turned a winning position into a non-winning one.; A passed pawn was present but the rook was not behind it. |
 | Drawing defense failure | 3 | The move turned a drawable position into a losing one.; The rook-and-pawn structure resembles a Philidor defense. |
 | Rook behind pawn | 3 | A passed pawn was present but the rook was not behind it.; The move turned a winning position into a non-winning one.; The rook became passive after the move. |
 | Rook activity | 2 | The rook became passive after the move.; A passed pawn was present but the rook was not behind it.; The move turned a winning position into a non-winning one. |
 
 ### Sample positions
 
-| Game | Move | Severity | Category | Engine prefers |
-|---|---|---|---|---|
-| vs Shen,Ree Herng | 31...Rf6 | blunder | Philidor, Conversion failure | Rf4-f1 |
-| vs Nagare,Kaivalya Sandip | 40...Na7 | mistake | Drawing defense failure | Nc6-d4 |
-| vs Krishnan,Ritvik | 33...Rb6 | mistake | Philidor, Drawing defense failure | Rb8xb3 |
-| vs Utsab,Chatterjee | 35.Bxe3 | mistake | Philidor | f2xe3 |
-| vs Dotzer,Lukas | 34...Bc7 | mistake | Drawing defense failure | Bd6-e7 |
-| vs Gavrilescu,David | 37.Ra7 | mistake | Rook activity, Rook behind pawn, Conversion failure | Be4-d5 |
+| Game | Move | Severity | Practical loss | Category | Engine prefers |
+|---|---|---|---:|---|---|
+| vs Shen,Ree Herng | 31...Rf6 | mistake | 16.8 pts | Philidor, Conversion failure | Rf4-f1 |
+| vs Nagare,Kaivalya Sandip | 40...Na7 | mistake | 13.9 pts | Drawing defense failure | Nc6-d4 |
+| vs Utsab,Chatterjee | 35.Bxe3 | mistake | 11.1 pts | Philidor | f2xe3 |
+| vs Krishnan,Ritvik | 33...Rb6 | mistake | 10.5 pts | Philidor, Drawing defense failure | Rb8xb3 |
+| vs Dotzer,Lukas | 34...Bc7 | mistake | 9.0 pts | Drawing defense failure | Bd6-e7 |
+| vs Manafov,Vugar Gulam | 30.Rxd5 | mistake | 8.5 pts | Rook activity, Rook behind pawn | f3-f4 |
 
 
 ## Prep pointers

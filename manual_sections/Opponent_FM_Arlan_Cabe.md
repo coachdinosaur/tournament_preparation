@@ -1,14 +1,14 @@
 # Opponent Dossier — FM Arlan Cabe
 
-*Generated 2026-06-20 from 81 games (81 over-the-board PGN, 0 Lichess online).*
+*Generated 2026-06-23 from 83 games (83 over-the-board PGN, 0 Lichess online).*
 
 **Title:** FM | **Federation:** PHI | **FIDE:** 2298
 
 **Tournament pairing:** Round 3, Tuesday, June 23 at 16:00, Board 5 — Dino has White.
 
-**Overall record on file:** 37W 16D 28L (55.6%, reliable 50.0%)
+**Overall record on file:** 37W 16D 30L (54.2%, reliable 48.7%)
 
-## Repertoire as White (39 games, 64.1%)
+## Repertoire as White (40 games, 62.5%)
 
 | Opening | ECO | Games | W-D-L | Score | Reliable | Confidence |
 |---|---|---:|---|---:|---:|---|
@@ -26,7 +26,7 @@
 | French Defense: Tarrasch Variation, Chistyakov Defense, Modern Line | C07 | 1 | 0-0-1 | 0.0% | 0.0% | low |
 
 
-## Repertoire as Black (42 games, 47.6%)
+## Repertoire as Black (43 games, 46.5%)
 
 | Opening | ECO | Games | W-D-L | Score | Reliable | Confidence |
 |---|---|---:|---|---:|---:|---|
@@ -63,14 +63,14 @@ _Engine fingerprint unavailable — no Stockfish binary configured (set PREP_STO
 
 ## Player Profile
 
-_No cached engine profile yet (81 games pending). Run the fast Stockfish pass from the app or CLI._
+_No cached engine profile yet (83 games pending). Run the fast Stockfish pass from the app or CLI._
 
-- **Opening breadth:** 70 distinct openings
+- **Opening breadth:** 72 distinct openings
 - **Repair lines:** Sicilian Defense: Kramnik Variation (0.0%, reliable 0.0% over 2 games), Sicilian Defense: Taimanov Variation (0.0%, reliable 0.0% over 2 games), Sicilian Defense: French Variation, Normal (50.0%, reliable 21.1% over 2 games)
 
 ### Data-backed tendencies
 
-- **Opening breadth** (high confidence): Broad: 70 distinct openings across 81 games.
+- **Opening breadth** (high confidence): Broad: 72 distinct openings across 83 games.
 
 
 ## Prep pointers
@@ -79,9 +79,9 @@ _No cached engine profile yet (81 games pending). Run the fast Stockfish pass fr
 
 ## Recent losses (model games to study)
 
+- 2026.06.23 2nd DAV-Go Checkmate International Chess Prix 2026 | GM / IM Norm RR (R?): as white vs Morris, James — Pirc Defense: Classical Variation, Quiet System (B08), 0-1 in 69 moves
+- 2026.06.22 2nd DAV-Go Checkmate International Chess Prix 2026 (R1): as black vs Thejkumar, M. S. — Semi-Slav Defense: Accelerated Meran Variation (D45), 1-0 in 46 moves
 - 2024.11.29 Singapore op (R1): as black vs Piorun,Kacper — English Opening: Anglo-Indian Defense, Slav Formation (A15), 1-0 in 40 moves
 - 2023.11.05 Wch Seniors 50 31st (R11): as black vs Holzke,Frank — Pirc Defense: Austrian Attack, Dragon Formation (B09), 1-0 in 35 moves
 - 2023.11.03 Wch Seniors 50 31st (R9): as black vs Stefansson,Hannes — Sicilian Defense: Scheveningen Variation, Keres Attack (B81), 1-0 in 43 moves
 - 2023.10.27 Wch Seniors 50 31st (R3): as black vs Milat,Marcel Victor — Slav Defense: Quiet Variation (D11), 1-0 in 37 moves
-- 2022.10.16 Asian-ch Seniors 50 (R3): as black vs Lane,Gary William — Ruy Lopez: Closed (C88), 1-0 in 33 moves
-- 2020.03.03 Titled Tuesday intern op 3rd March (R5): as black vs Gukesh,Dommaraju — Sicilian Defense: Najdorf Variation, Opocensky Variation (B92), 1-0 in 46 moves

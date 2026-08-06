@@ -1,8 +1,9 @@
 # Tournament Prep Manual — generated sections
 
-*Generated 2026-06-14 by prep_manual_app.py*
+*Generated 2026-06-23 by prep_manual_app.py*
 
 - Tournament_Schedule.md
+- Prep_Readiness.md
 - Opponent_GM_Vignesh_N_R.md
 - Opponent_GM_Shyaam_Nikhil_P.md
 - Opponent_IM_Morris_James.md
